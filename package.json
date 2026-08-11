@@ -1,0 +1,22 @@
+{
+  "name": "noor-quran",
+  "version": "1.0.0",
+  "description": "Read the Qur'an surah by surah, explore daily duas, and test your knowledge — with translations, notes, bookmarks, and a quiet, distraction-free design.",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static site - no build needed'",
+    "lint": "echo 'No linter configured'"
+  },
+  "keywords": [
+    "quran",
+    "islamic",
+    "dua",
+    "knowledge"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
