@@ -37,7 +37,21 @@
   --font-bn:'Noto Sans Bengali','Inter', sans-serif;
   --header-h:66px;
 }
+<body>
+    <!-- 1. PASTE BUTTON & RESULT DIV WHERE YOU WANT THEM TO APPEAR -->
+    <button onclick="loadData()">Fetch Data</button>
+    <div id="result"></div>
 
+
+    <!-- 2. PASTE SCRIPT TAG RIGHT BEFORE THE CLOSING </body> TAG -->
+    <script>
+      async function loadData() {
+        const response = await fetch('/api/hello');
+        const data = await response.json();
+        document.getElementById('result').innerText = data.message;
+      }
+    </script>
+</body>
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
 body{
