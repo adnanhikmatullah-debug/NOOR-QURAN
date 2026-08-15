@@ -654,6 +654,58 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 .dua-empty{grid-column:1/-1;text-align:center;padding:40px;color:var(--slate);}
 
 /* ============================================================
+   ALL SURAHS MENU VIEW
+   ============================================================ */
+.surahs-hero{text-align:center;padding:44px 22px 20px;}
+.surahs-hero .glyph{font-family:var(--font-arabic);font-size:1.6rem;color:var(--gold-light);margin-bottom:8px;}
+.surahs-hero h1{
+  font-family:var(--font-display);font-size:clamp(1.8rem,4.4vw,2.8rem);margin:0 0 8px;
+  background:linear-gradient(180deg,var(--parchment) 0%, var(--gold-light) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.surahs-hero p{color:var(--slate);max-width:520px;margin:0 auto;font-size:.98rem;line-height:1.65;}
+
+.surahs-toolbar{position:relative;max-width:420px;margin:22px auto 6px;padding:0 22px;}
+.surahs-toolbar input{
+  width:100%;padding:10px 16px 10px 38px;border-radius:999px;
+  border:1px solid rgba(201,162,39,.35);background:rgba(255,255,255,.05);
+  color:var(--parchment);font-size:.9rem;
+}
+.surahs-toolbar input::placeholder{color:var(--slate);}
+.surahs-toolbar .search-icon{color:var(--slate);}
+
+.surah-grid{
+  max-width:1100px;margin:26px auto 60px;padding:0 22px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;
+}
+.surah-card{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(201,162,39,.22);
+  border-radius:var(--radius);
+  padding:14px 16px;
+  cursor:pointer;
+  text-align:left;
+  animation:fadeIn .4s ease both;
+  -webkit-tap-highlight-color:transparent;
+}
+.surah-card:hover, .surah-card:focus-visible{background:rgba(201,162,39,.1);border-color:rgba(201,162,39,.45);}
+.surah-card:active{background:rgba(201,162,39,.18);}
+.surah-card .sc-num{
+  flex:none;width:36px;height:36px;border-radius:50%;
+  border:1px solid var(--gold);color:var(--gold-light);
+  font-size:.8rem;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:600;
+}
+.surah-card .sc-info{flex:1;min-width:0;}
+.surah-card .sc-info .en{font-size:.92rem;font-weight:600;color:var(--parchment);}
+.surah-card .sc-info .meta{font-size:.72rem;color:var(--slate);margin-top:2px;}
+.surah-card .sc-ar{font-family:var(--font-arabic);color:var(--gold-light);font-size:1.15rem;flex:none;}
+@media (max-width:480px){
+  .surah-grid{grid-template-columns:1fr;}
+}
+
+/* ============================================================
    QUIZ VIEW
    ============================================================ */
 .quiz-hero{text-align:center;padding:44px 22px 10px;}
@@ -1207,6 +1259,7 @@ footer nav a:hover{color:var(--gold-light);}
 <aside class="nav-drawer" id="navDrawer">
   <div class="drawer-brand">Noor</div>
   <button data-view="home" class="drawer-nav-btn active">Home · Qur'an</button>
+  <button data-view="surahs" class="drawer-nav-btn">All Surahs</button>
   <button data-view="dua" class="drawer-nav-btn">Dua</button>
   <button data-view="quiz" class="drawer-nav-btn">Quiz</button>
   <button id="notesNavBtnMobile">My Notes</button>
@@ -1233,6 +1286,7 @@ footer nav a:hover{color:var(--gold-light);}
     </div>
     <nav class="nav" id="mainNav">
       <button data-view="home" class="active">Home</button>
+      <button data-view="surahs">All Surahs</button>
       <button data-view="dua">Dua</button>
       <button data-view="quiz">Quiz</button>
       <button id="notesNavBtn">My Notes</button>
@@ -1296,6 +1350,7 @@ footer nav a:hover{color:var(--gold-light);}
       </div>
 
       <div class="hero-shortcuts">
+        <button class="shortcut-btn" data-view="surahs">📖 Browse All Surahs</button>
         <button class="shortcut-btn emerald" data-view="dua">🤲 Explore Daily Dua</button>
         <button class="shortcut-btn" data-view="quiz">🧠 Take the Qur'an Quiz</button>
       </div>
@@ -1350,6 +1405,24 @@ footer nav a:hover{color:var(--gold-light);}
         <div id="surahPanel" class="hidden"></div>
       </section>
     </main>
+  </section>
+
+  <!-- ============ ALL SURAHS MENU VIEW ============ -->
+  <section class="view-section" id="view-surahs">
+    <div class="surahs-hero">
+      <div class="glyph">﷽</div>
+      <h1>All 114 Surahs</h1>
+      <p>Tap any surah to open it — jump straight to the reader.</p>
+    </div>
+
+    <div class="surahs-toolbar">
+      <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
+      <input id="surahGridFilter" type="text" placeholder="Filter by name, number or meaning…" autocomplete="off">
+    </div>
+
+    <div class="surah-grid" id="surahGrid">
+      <div class="empty-msg">Loading surah list…</div>
+    </div>
   </section>
 
   <!-- ============ DUA VIEW ============ -->
@@ -2595,6 +2668,7 @@ footer nav a:hover{color:var(--gold-light);}
       .then(data => {
         surahIndex = (data && data.data) ? data.data : [];
         renderSurahList(surahIndex);
+        renderSurahGrid(surahIndex);
       })
       .catch(err => {
         const offline = (typeof navigator !== "undefined" && navigator.onLine === false);
@@ -2628,6 +2702,40 @@ footer nav a:hover{color:var(--gold-light);}
     listEl.querySelectorAll("li[data-num]").forEach(function(li){
       li.addEventListener("click", function(){ openSurah(parseInt(li.dataset.num,10)); });
     });
+  }
+
+  // ---------- all-surahs grid menu (tap any surah to open it) ----------
+  function renderSurahGrid(list){
+    const gridEl = document.getElementById("surahGrid");
+    if(!gridEl) return;
+    if(!list.length){
+      gridEl.innerHTML = '<div class="empty-msg">No surahs match your filter.</div>';
+      return;
+    }
+    gridEl.innerHTML = list.map(function(raw){
+      const s = getSurahMeta(raw);
+      return '<button type="button" class="surah-card" data-num="'+s.number+'">'
+        + '<span class="sc-num">'+s.number+'</span>'
+        + '<span class="sc-info"><span class="en">'+escapeHtml(s.englishName)+'</span>'
+        + '<span class="meta">'+escapeHtml(s.englishNameTranslation)+' · '+s.numberOfAyahs+' ayat · '+escapeHtml(s.revelationType)+'</span></span>'
+        + '<span class="sc-ar">'+s.name+'</span>'
+        + '</button>';
+    }).join("");
+
+    gridEl.querySelectorAll(".surah-card[data-num]").forEach(function(card){
+      card.addEventListener("click", function(){
+        showView("home");
+        openSurah(parseInt(card.dataset.num,10));
+      });
+    });
+  }
+
+  function initSurahGridFilter(){
+    const input = document.getElementById("surahGridFilter");
+    if(!input) return;
+    input.addEventListener("input", debounce(function(){
+      renderSurahGrid(matchSurahs(input.value.trim()));
+    }, 250));
   }
 
   // Shared by the sidebar filter AND the header search dropdown, so
@@ -3626,6 +3734,7 @@ footer nav a:hover{color:var(--gold-light);}
     safeCall(initQuotes, "initQuotes");
     safeCall(initTranslator, "initTranslator");
     safeCall(initSurahFilter, "initSurahFilter");
+    safeCall(initSurahGridFilter, "initSurahGridFilter");
     safeCall(initGlobalSearch, "initGlobalSearch");
     safeCall(initTafsirOutsideClose, "initTafsirOutsideClose");
     safeCall(fetchSurahList, "fetchSurahList");
