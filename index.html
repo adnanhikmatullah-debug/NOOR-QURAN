@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-</html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -39,7 +38,7 @@
 }
 
 *{box-sizing:border-box;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 body{
   margin:0;
   background:var(--night);
@@ -48,8 +47,8 @@ body{
   min-height:100vh;
   overflow-x:hidden;
 }
-a{color:inherit;}
-button{font-family:inherit;cursor:pointer;}
+a{color:inherit;-webkit-tap-highlight-color:transparent;}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 ::selection{background:var(--gold);color:var(--night);}
 :focus-visible{outline:2px solid var(--gold-light);outline-offset:2px;}
 [lang="bn"], .bn-text{font-family:var(--font-bn);}
@@ -114,7 +113,7 @@ button{font-family:inherit;cursor:pointer;}
 /* ============================================================
    LAYOUT SHELL
    ============================================================ */
-.wrap{position:relative;z-index:1;}
+.wrap{position:relative;}
 
 header.topbar{
   position:sticky;top:0;z-index:50;
@@ -911,6 +910,23 @@ footer nav a:hover{color:var(--gold-light);}
 .sm-edit-col{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:16px;}
 .sm-edit-col .sm-placeholder{color:var(--slate);font-size:.85rem;text-align:center;padding:40px 10px;}
 @media (max-width:700px){ .surah-manager{grid-template-columns:1fr;} }
+.tf-ayah-grid{display:flex;flex-wrap:wrap;gap:6px;max-height:180px;overflow-y:auto;padding:6px;border:1px solid rgba(255,255,255,.08);border-radius:8px;margin:4px 0 16px;}
+.tf-ayah-btn{
+  flex:none;min-width:34px;padding:6px 8px;border-radius:7px;
+  border:1px solid rgba(201,162,39,.25);background:rgba(255,255,255,.03);
+  color:var(--parchment-dim);font-size:.75rem;text-align:center;
+}
+.tf-ayah-btn:hover{border-color:rgba(201,162,39,.5);}
+.tf-ayah-btn.active{background:var(--gold);color:var(--night);border-color:var(--gold);font-weight:700;}
+.tf-ayah-btn.has-tafsir{border-color:rgba(95,217,164,.5);}
+.tf-ayah-btn.has-tafsir::after{content:"•";color:var(--emerald-light);margin-left:3px;}
+.tf-ayah-empty{color:var(--slate);font-size:.85rem;padding:10px 0;}
+.tf-ayah-editor label{display:block;font-size:.72rem;color:var(--slate);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase;}
+.tf-ayah-editor textarea{
+  width:100%;min-height:140px;padding:9px 12px;border-radius:8px;
+  border:1px solid rgba(201,162,39,.3);background:rgba(0,0,0,.2);
+  color:var(--parchment);font-family:var(--font-ui);font-size:.9rem;resize:vertical;
+}
 .admin-gate{text-align:center;padding:80px 22px;color:var(--slate);}
 .admin-gate h3{font-family:var(--font-display);color:var(--parchment);font-size:1.6rem;margin-bottom:10px;}
 .admin-gate button{margin-top:16px;background:var(--gold);color:var(--night);border:none;padding:10px 22px;border-radius:999px;font-weight:700;}
@@ -1073,6 +1089,29 @@ footer nav a:hover{color:var(--gold-light);}
 }
 @media (max-width:600px){
   .img-slider .is-viewport{padding-top:66%;}
+}
+/* ============================================================
+   MOBILE-SPECIFIC OVERRIDES (kept last so they win the cascade)
+   ============================================================ */
+@media (max-width:768px){
+  /* iOS Safari auto-zooms the page on focus for any input under 16px,
+     which shoves the whole layout around and makes dropdowns/panels
+     feel like they "jump" or vanish right as you start typing. */
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="tel"], input[type="url"], input[type="search"],
+  textarea, select{
+    font-size:16px !important;
+  }
+}
+@media (hover:none) and (pointer:coarse){
+  /* Touch devices never trigger :hover, so buttons gave zero feedback
+     on tap. This gives an immediate, cheap press-state on any device
+     that's actually touch-driven (skipped on mouse/trackpad). */
+  button:active:not(:disabled),
+  .surah-list li:active, .sm-list li:active, .drawer-item:active,
+  .quiz-option:active:not(:disabled), .search-result-item:active{
+    opacity:.65;
+  }
 }
 </style>
 </head>
@@ -1317,8 +1356,6 @@ footer nav a:hover{color:var(--gold-light);}
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1327,41 +1364,23 @@ footer nav a:hover{color:var(--gold-light);}
   const ARABIC_EDITION = "quran-uthmani";
 
   // ============================================================
-  //  TAFSIR — lazy-loaded from Firestore, cached in localStorage
+  //  TAFSIR — stored on-device (same model as duas/quotes/etc.),
+  //  edited from the Admin panel, shown instantly for every ayah.
   // ============================================================
-  const TAFSIR_CACHE_KEY = "noor_tafsir_cache_v1";
-  const TAFSIR_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — tafsir text rarely changes
-  const tafsirMemCache = new Map(); // in-memory, avoids re-parsing localStorage on every click
-  let tafsirDb = null; // set once firebase.initializeApp has run (see bottom of file)
+  const LS_ADMIN_TAFSIR = "noor_admin_tafsir_v1";
+  let adminTafsir = loadJSON("noor_admin_tafsir_v1", {}); // { "2_255": "text…" }
 
-  function loadTafsirCache(){
-    try{ return JSON.parse(localStorage.getItem(TAFSIR_CACHE_KEY) || "{}"); }
-    catch(e){ return {}; }
-  }
-  function saveTafsirCache(cache){
-    try{ localStorage.setItem(TAFSIR_CACHE_KEY, JSON.stringify(cache)); }
-    catch(e){ /* storage full or unavailable — fail silently, cache is optional */ }
+  function tafsirKey(surah, ayah){ return surah + "_" + ayah; }
+
+  function getTafsir(surah, ayah){
+    // Kept as a Promise so callers don't need to change if this ever moves to a real backend.
+    return Promise.resolve(adminTafsir[tafsirKey(surah, ayah)] || "");
   }
 
-  async function getTafsir(surah, ayah){
-    const key = surah + "_" + ayah;
-    if(tafsirMemCache.has(key)) return tafsirMemCache.get(key);
-
-    const diskCache = loadTafsirCache();
-    const cached = diskCache[key];
-    if(cached && (Date.now() - cached.t) < TAFSIR_TTL_MS){
-      tafsirMemCache.set(key, cached.text);
-      return cached.text;
-    }
-
-    if(!tafsirDb) throw new Error("Tafsir service unavailable");
-    const doc = await tafsirDb.collection("tafsirs").doc(key).get();
-    const text = doc.exists ? (doc.data().text || "") : "";
-
-    tafsirMemCache.set(key, text);
-    diskCache[key] = { text: text, t: Date.now() };
-    saveTafsirCache(diskCache);
-    return text;
+  function saveTafsirEntry(surah, ayah, text){
+    const key = tafsirKey(surah, ayah);
+    if(text){ adminTafsir[key] = text; } else { delete adminTafsir[key]; }
+    saveJSON(LS_ADMIN_TAFSIR, adminTafsir);
   }
 
   function toggleTafsir(btn){
@@ -1376,22 +1395,24 @@ footer nav a:hover{color:var(--gold-light);}
     btn.classList.toggle("active", willOpen);
     if(!willOpen) return;
 
-    // Fetch (or read from cache) only on first expand — nothing is pre-fetched
-    // for the other ~280 ayahs in the surah, which is what keeps this lag-free.
-    if(box.dataset.loaded === "1") return;
     box.innerHTML = '<div class="tafsir-loading">Loading tafsir…</div>';
     getTafsir(surah, ayah).then(function(text){
-      box.dataset.loaded = "1";
       box.innerHTML = text
         ? '<div class="tafsir-text">'+escapeHtml(text).replace(/\n/g,"<br>")+'</div>'
         : '<div class="tafsir-empty">No tafsir has been added for this ayah yet.</div>';
-    }).catch(function(){
-      box.innerHTML = '<div class="tafsir-empty">Couldn\'t load tafsir — check your connection and try again.'
-        + '<br><button class="tafsir-retry">Retry</button></div>';
-      box.querySelector(".tafsir-retry").addEventListener("click", function(){
-        box.dataset.loaded = "";
-        toggleTafsir(btn); // closes...
-        toggleTafsir(btn); // ...then reopens to retry
+    });
+  }
+
+  // On mobile the expanded tafsir is a fixed bottom sheet — let a tap
+  // anywhere outside it (or its trigger button) close it.
+  function initTafsirOutsideClose(){
+    document.addEventListener("click", function(e){
+      if(window.innerWidth > 640) return;
+      if(e.target.closest(".tafsir-box") || e.target.closest(".tafsir-btn")) return;
+      document.querySelectorAll(".tafsir-box:not(.hidden)").forEach(function(box){
+        box.classList.add("hidden");
+        const b = document.querySelector('.tafsir-btn[data-surah="'+box.dataset.surah+'"][data-ayah="'+box.dataset.ayah+'"]');
+        if(b){ b.classList.remove("active"); b.setAttribute("aria-expanded","false"); }
       });
     });
   }
@@ -1744,6 +1765,17 @@ footer nav a:hover{color:var(--gold-light);}
       +     '<div class="sm-edit-col" id="smEditCol"><div class="sm-placeholder">Select a surah from the list to view and edit it.</div></div>'
       +   '</div>'
       + '</div>'
+      // Tafsir manager panel
+      + '<div class="admin-panel">'
+      +   '<h3>Manage Tafsir</h3><p class="hint">Add or edit the tafsir (explanation) shown under the 📖 Tafsir button for any ayah, in any surah. Saved on this device and visible to every reader immediately — no internet service required.</p>'
+      +   '<div class="surah-manager">'
+      +     '<div class="sm-list-col">'
+      +       '<input type="text" id="tfSearch" placeholder="Filter by name or number…" autocomplete="off">'
+      +       '<ul class="sm-list" id="tfSurahListEl"></ul>'
+      +     '</div>'
+      +     '<div class="sm-edit-col" id="tfEditCol"><div class="sm-placeholder">Select a surah to manage its tafsir.</div></div>'
+      +   '</div>'
+      + '</div>'
       // Dua panel
       + '<div class="admin-panel">'
       +   '<h3>Add a Daily Dua</h3><p class="hint">Appears instantly in the Dua section for every visitor on this device.</p>'
@@ -1924,6 +1956,7 @@ footer nav a:hover{color:var(--gold-light);}
     });
 
     initAdminSurahManager();
+    initAdminTafsirManager();
     renderAdminDuaList();
     renderAdminQuoteList();
     renderAdminQuizList();
@@ -2054,6 +2087,150 @@ footer nav a:hover{color:var(--gold-light);}
         if(currentSurah === smSelectedNumber){ openSurah(smSelectedNumber, true); }
       });
     }
+  }
+
+  // ---------- admin: manage tafsir ----------
+  let tfSelectedSurahNum = null;
+  let tfSelectedAyah = null;
+
+  function initAdminTafsirManager(){
+    tfSelectedSurahNum = null;
+    tfSelectedAyah = null;
+    renderTfSurahListEl(document.getElementById("tfSearch") ? document.getElementById("tfSearch").value : "");
+    renderTfEditor();
+    document.getElementById("tfSearch").addEventListener("input", function(e){
+      renderTfSurahListEl(e.target.value);
+    });
+  }
+
+  function tfCountForSurah(num){
+    let n = 0;
+    Object.keys(adminTafsir).forEach(function(k){
+      if(k.split("_")[0] === String(num)) n++;
+    });
+    return n;
+  }
+
+  function renderTfSurahListEl(filterText){
+    const listEl = document.getElementById("tfSurahListEl");
+    if(!listEl) return;
+    if(!surahIndex.length){
+      listEl.innerHTML = '<li class="admin-empty" style="cursor:default;">Surah list is still loading…</li>';
+      return;
+    }
+    const q = (filterText || "").trim().toLowerCase();
+    const items = surahIndex.filter(function(raw){
+      if(!q) return true;
+      const s = getSurahMeta(raw);
+      return s.englishName.toLowerCase().includes(q)
+        || s.englishNameTranslation.toLowerCase().includes(q)
+        || String(s.number) === q
+        || s.name.includes(q);
+    });
+    if(!items.length){
+      listEl.innerHTML = '<li class="admin-empty" style="cursor:default;">No surahs match.</li>';
+      return;
+    }
+    listEl.innerHTML = items.map(function(raw){
+      const s = getSurahMeta(raw);
+      const count = tfCountForSurah(raw.number);
+      return '<li data-num="'+raw.number+'" class="'+(tfSelectedSurahNum===raw.number?"active":"")+'">'
+        + '<span class="sm-num">'+raw.number+'</span>'
+        + '<span class="sm-name">'+escapeHtml(s.englishName)+'</span>'
+        + (count ? '<span class="sm-edited">'+count+'</span>' : '')
+        + '</li>';
+    }).join("");
+    listEl.querySelectorAll("li[data-num]").forEach(function(li){
+      li.addEventListener("click", function(){
+        tfSelectedSurahNum = parseInt(li.dataset.num, 10);
+        tfSelectedAyah = null;
+        renderTfSurahListEl(document.getElementById("tfSearch").value);
+        renderTfEditor();
+      });
+    });
+  }
+
+  function renderTfEditor(){
+    const col = document.getElementById("tfEditCol");
+    if(!col) return;
+    if(tfSelectedSurahNum === null){
+      col.innerHTML = '<div class="sm-placeholder">Select a surah to manage its tafsir.</div>';
+      return;
+    }
+    const raw = surahIndex.find(function(s){ return s.number === tfSelectedSurahNum; });
+    if(!raw){
+      col.innerHTML = '<div class="sm-placeholder">Could not find that surah.</div>';
+      return;
+    }
+    const s = getSurahMeta(raw);
+    let grid = '<div class="tf-ayah-grid" id="tfAyahGrid">';
+    for(let i=1;i<=raw.numberOfAyahs;i++){
+      const has = !!adminTafsir[tafsirKey(tfSelectedSurahNum, i)];
+      grid += '<button type="button" class="tf-ayah-btn'+(has?" has-tafsir":"")+(tfSelectedAyah===i?" active":"")+'" data-ayah="'+i+'">'+i+'</button>';
+    }
+    grid += '</div>';
+
+    col.innerHTML = ''
+      + '<p class="hint" style="margin:0 0 4px;">'+escapeHtml(s.englishName)+' — '+raw.numberOfAyahs+' ayat. Tap an ayah number to add or edit its tafsir.</p>'
+      + grid
+      + '<div class="tf-ayah-editor" id="tfAyahEditor"></div>';
+
+    col.querySelectorAll(".tf-ayah-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        tfSelectedAyah = parseInt(btn.dataset.ayah, 10);
+        col.querySelectorAll(".tf-ayah-btn").forEach(function(b){ b.classList.remove("active"); });
+        btn.classList.add("active");
+        renderTfAyahEditor();
+      });
+    });
+
+    renderTfAyahEditor();
+  }
+
+  function renderTfAyahEditor(){
+    const box = document.getElementById("tfAyahEditor");
+    if(!box) return;
+    if(tfSelectedAyah === null){
+      box.innerHTML = '<div class="tf-ayah-empty">Select an ayah above to add or edit its tafsir.</div>';
+      return;
+    }
+    const existing = adminTafsir[tafsirKey(tfSelectedSurahNum, tfSelectedAyah)] || "";
+    box.innerHTML = ''
+      + '<label>Tafsir for ayah '+tfSelectedAyah+'</label>'
+      + '<textarea id="tfText" placeholder="Write or paste the tafsir for this ayah…">'+escapeHtml(existing)+'</textarea>'
+      + '<div style="margin-top:12px;">'
+      +   '<button class="admin-submit-btn" id="tfSave">Save Tafsir</button>'
+      +   (existing ? '<button class="admin-submit-btn" id="tfDelete" style="background:transparent;border:1px solid var(--danger);color:var(--danger);margin-left:10px;">Delete</button>' : '')
+      + '</div>';
+
+    document.getElementById("tfSave").addEventListener("click", function(){
+      const text = document.getElementById("tfText").value.trim();
+      if(!text){ alert("Please enter the tafsir text before saving."); return; }
+      saveTafsirEntry(tfSelectedSurahNum, tfSelectedAyah, text);
+      renderTfEditor();
+      renderTfSurahListEl(document.getElementById("tfSearch").value);
+      refreshOpenTafsirBox(tfSelectedSurahNum, tfSelectedAyah);
+    });
+    if(existing){
+      document.getElementById("tfDelete").addEventListener("click", function(){
+        saveTafsirEntry(tfSelectedSurahNum, tfSelectedAyah, "");
+        renderTfEditor();
+        renderTfSurahListEl(document.getElementById("tfSearch").value);
+        refreshOpenTafsirBox(tfSelectedSurahNum, tfSelectedAyah);
+      });
+    }
+  }
+
+  // If this exact ayah's tafsir happens to be open in the Qur'an reading view
+  // right now, refresh it live so admin edits show up without a re-toggle.
+  function refreshOpenTafsirBox(surah, ayah){
+    const box = document.querySelector('.tafsir-box[data-surah="'+surah+'"][data-ayah="'+ayah+'"]');
+    if(!box || box.classList.contains("hidden")) return;
+    getTafsir(surah, ayah).then(function(text){
+      box.innerHTML = text
+        ? '<div class="tafsir-text">'+escapeHtml(text).replace(/\n/g,"<br>")+'</div>'
+        : '<div class="tafsir-empty">No tafsir has been added for this ayah yet.</div>';
+    });
   }
 
   function renderAdminBannerStatus(){
@@ -3039,6 +3216,7 @@ footer nav a:hover{color:var(--gold-light);}
     initTranslator();
     initSurahFilter();
     initGlobalSearch();
+    initTafsirOutsideClose();
     fetchSurahList();
     initDua();
     lastRead = loadJSON(LS_LAST_READ, null);
@@ -3050,22 +3228,6 @@ footer nav a:hover{color:var(--gold-light);}
   }
 
   document.addEventListener("DOMContentLoaded", init);
-
-  // Tafsir reads happen through Firestore directly from the browser
-  // (public read-only per firestore.rules) — no custom backend needed.
-  if(window.firebase){
-    try{
-      firebase.initializeApp({
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        projectId: "YOUR_PROJECT",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
-      });
-      tafsirDb = firebase.firestore();
-    }catch(e){ /* tafsir buttons will show a retry state if this fails */ }
-  }
 })();
 </script>
 </body>
