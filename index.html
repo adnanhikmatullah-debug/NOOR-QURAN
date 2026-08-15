@@ -88,8 +88,10 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
    the blur radius (which scales roughly quadratically in cost) and
    dropping the blend mode keeps the ambient look without the frame drops. */
 @media (max-width:768px){
-  .aurora-orb{filter:blur(30px);mix-blend-mode:normal;opacity:.22;}
-  .grain{display:none;}
+  /* Still much cheaper than desktop's 70px/screen blend, but closer in
+     look — the grain layer is a static (non-animated) raster, so it can
+     stay on for mobile too without the scroll-jank cost the orbs have. */
+  .aurora-orb{filter:blur(42px);mix-blend-mode:normal;opacity:.27;}
 }
 @media (prefers-reduced-motion: reduce){
   .grain{display:none;}
@@ -216,6 +218,34 @@ header.topbar{
 .search-result-item .ref{color:var(--gold-light);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;}
 .search-result-item p{margin:4px 0 0;font-size:.88rem;color:var(--parchment-dim);line-height:1.5;}
 .search-note{padding:10px 16px;color:var(--slate);font-size:.8rem;}
+.search-result-item.active-kb, .search-result-item:focus-visible{background:rgba(201,162,39,.16);outline:none;}
+/* "surah" hits are instant, local, name/number matches; "ayah" hits come
+   from the verse-text API a beat later. Both render in the same dropdown
+   so one input covers surah lookup and verse search together. */
+.search-section-label{padding:8px 16px 4px;font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;color:var(--slate);}
+.search-result-item.is-surah{display:flex;align-items:center;gap:10px;}
+.search-result-item.is-surah .num{
+  flex:none;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:var(--gold-light);border:1px solid rgba(201,162,39,.4);
+}
+.search-result-item.is-surah .info{flex:1;min-width:0;}
+.search-result-item.is-surah .en{font-size:.88rem;font-weight:600;color:var(--parchment);}
+.search-result-item.is-surah .meta{font-size:.72rem;color:var(--slate);}
+.search-result-item.is-surah .ar{font-family:var(--font-arabic);color:var(--gold-light);font-size:1rem;flex:none;}
+/* the sidebar's local surah filter and the header's combined search both
+   read/write the same query, so this link jumps from "no surah matched"
+   straight into a full verse-text search without retyping. */
+.filter-to-search{
+  display:none;
+  width:100%;text-align:left;
+  margin-top:8px;padding:9px 12px;
+  border-radius:10px;border:1px dashed rgba(201,162,39,.4);
+  background:rgba(201,162,39,.06);color:var(--gold-light);
+  font-size:.78rem;font-family:var(--font-ui);
+}
+.filter-to-search.show{display:block;}
+.filter-to-search:hover{background:rgba(201,162,39,.12);}
 
 nav.nav{display:flex;gap:2px;align-items:center;flex:none;}
 nav.nav button{
@@ -1304,6 +1334,7 @@ footer nav a:hover{color:var(--gold-light);}
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-head">
           <input id="surahFilter" type="text" placeholder="Filter by name, number or meaning…" autocomplete="off">
+          <button type="button" class="filter-to-search" id="filterToSearchBtn">⌕ Search verse text for this too →</button>
         </div>
         <ul class="surah-list" id="surahList">
           <li class="empty-msg">Loading surah list…</li>
@@ -2599,21 +2630,50 @@ footer nav a:hover{color:var(--gold-light);}
     });
   }
 
+  // Shared by the sidebar filter AND the header search dropdown, so
+  // "surah search" means the same thing — and returns the same surahs —
+  // no matter which of the two boxes it's typed into.
+  function matchSurahs(query){
+    const q = (query || "").trim().toLowerCase();
+    if(!q) return surahIndex.slice();
+    return surahIndex.filter(function(raw){
+      const s = getSurahMeta(raw);
+      return s.englishName.toLowerCase().includes(q)
+        || s.englishNameTranslation.toLowerCase().includes(q)
+        || String(s.number) === q
+        || s.name.includes(q);
+    });
+  }
+
   function initSurahFilter(){
     const input = document.getElementById("surahFilter");
+    const linkBtn = document.getElementById("filterToSearchBtn");
     if(!input) return;
     input.addEventListener("input", debounce(function(){
-      const q = input.value.trim().toLowerCase();
-      if(!q){ renderSurahList(surahIndex); return; }
-      const filtered = surahIndex.filter(function(raw){
-        const s = getSurahMeta(raw);
-        return s.englishName.toLowerCase().includes(q)
-          || s.englishNameTranslation.toLowerCase().includes(q)
-          || String(s.number) === q
-          || s.name.includes(q);
-      });
+      const q = input.value.trim();
+      const filtered = matchSurahs(q);
       renderSurahList(filtered);
-    }, 300));
+      // Nothing matched by name/number/meaning locally? Offer a one-tap
+      // hop into the header's full verse-text search for the same query —
+      // this is the link between the two search panels.
+      if(linkBtn){
+        linkBtn.classList.toggle("show", !!q && filtered.length === 0);
+        linkBtn.textContent = "⌕ Search verse text for “" + q + "” →";
+      }
+    }, 250));
+
+    if(linkBtn){
+      linkBtn.addEventListener("click", function(){
+        const q = input.value.trim();
+        if(!q) return;
+        const header = document.getElementById("globalSearch");
+        if(!header) return;
+        header.value = q;
+        header.focus();
+        runSearch(q, {surahs:false});
+        linkBtn.classList.remove("show");
+      });
+    }
   }
 
   // ---------- opening a surah ----------
@@ -2890,9 +2950,50 @@ footer nav a:hover{color:var(--gold-light);}
   // click) sidesteps that race entirely, and a small guard flag makes the
   // handler idempotent even if a click slips through anyway.
   let searchSelecting = false;
+  // Verse-search responses are cached per edition+query so switching
+  // back to a query you already typed (very common while narrowing down
+  // a search) is instant and costs no extra network round trip.
+  const verseSearchCache = new Map();
+  // Bumped on every new keystroke-triggered search so a slow response for
+  // an old query can never overwrite the results of a newer one.
+  let searchRequestId = 0;
 
   function hideSearchResults(){
     document.getElementById("searchResults").classList.add("hidden");
+  }
+
+  function surahResultHtml(raw){
+    const s = getSurahMeta(raw);
+    return '<div class="search-result-item is-surah" data-surah="'+s.number+'" tabindex="-1">'
+      + '<span class="num">'+s.number+'</span>'
+      + '<span class="info"><span class="en">'+escapeHtml(s.englishName)+'</span>'
+      + '<span class="meta">'+escapeHtml(s.englishNameTranslation)+' · '+s.numberOfAyahs+' ayat</span></span>'
+      + '<span class="ar">'+s.name+'</span>'
+      + '</div>';
+  }
+
+  function ayahResultHtml(m){
+    return '<div class="search-result-item" data-surah="'+m.surah.number+'" tabindex="-1">'
+      + '<span class="ref">'+escapeHtml(m.surah.englishName)+' '+m.surah.number+':'+m.numberInSurah+'</span>'
+      + '<p>'+escapeHtml(m.text)+'</p>'
+      + '</div>';
+  }
+
+  // Wires click/touch/keyboard selection onto whatever result items are
+  // currently in the dropdown. Safe to call repeatedly as the dropdown's
+  // content is replaced (surah section first, verse section a moment later).
+  function wireResultItems(){
+    const results = document.getElementById("searchResults");
+    if(!results) return;
+    results.querySelectorAll(".search-result-item").forEach(function(item){
+      item.addEventListener("touchstart", function(e){
+        e.preventDefault();
+        selectSearchResult(item);
+      }, {passive:false});
+      item.addEventListener("click", function(){
+        selectSearchResult(item);
+      });
+    });
   }
 
   function initGlobalSearch(){
@@ -2902,15 +3003,41 @@ footer nav a:hover{color:var(--gold-light);}
 
     input.addEventListener("input", debounce(function(){
       const q = input.value.trim();
-      if(q.length < 2){ hideSearchResults(); results.innerHTML=""; return; }
+      if(!q){ hideSearchResults(); results.innerHTML=""; return; }
       runSearch(q);
-    }, 300));
+    }, 250));
 
     // Bring a still-populated result list back if the user refocuses
     // the field instead of forcing them to retype.
     input.addEventListener("focus", function(){
-      if(results.innerHTML && input.value.trim().length >= 2){
+      if(results.innerHTML && input.value.trim().length >= 1){
         results.classList.remove("hidden");
+      }
+    });
+
+    // Arrow-key / Enter / Escape navigation through the combined
+    // surah + verse result list, same as any native search box.
+    input.addEventListener("keydown", function(e){
+      if(results.classList.contains("hidden")) return;
+      const items = Array.prototype.slice.call(results.querySelectorAll(".search-result-item"));
+      if(!items.length) return;
+      let idx = items.findIndex(function(it){ return it.classList.contains("active-kb"); });
+      if(e.key === "ArrowDown"){
+        e.preventDefault();
+        if(idx >= 0) items[idx].classList.remove("active-kb");
+        idx = (idx + 1) % items.length;
+        items[idx].classList.add("active-kb");
+        items[idx].scrollIntoView({block:"nearest"});
+      }else if(e.key === "ArrowUp"){
+        e.preventDefault();
+        if(idx >= 0) items[idx].classList.remove("active-kb");
+        idx = (idx <= 0) ? items.length - 1 : idx - 1;
+        items[idx].classList.add("active-kb");
+        items[idx].scrollIntoView({block:"nearest"});
+      }else if(e.key === "Enter"){
+        if(idx >= 0){ e.preventDefault(); selectSearchResult(items[idx]); }
+      }else if(e.key === "Escape"){
+        hideSearchResults();
       }
     });
 
@@ -2929,49 +3056,87 @@ footer nav a:hover{color:var(--gold-light);}
     searchSelecting = true;
     hideSearchResults();
     const input = document.getElementById("globalSearch");
+    const number = parseInt(item.dataset.surah, 10);
     input.value = "";
     input.blur();
-    openSurah(parseInt(item.dataset.surah,10));
+    openSurah(number);
+    // Keep the sidebar's surah search in sync: clear its filter so the
+    // full list is showing, then scroll the now-active surah into view —
+    // so picking a result in the header panel is reflected in the sidebar
+    // panel too, not just in the main content pane.
+    const filterInput = document.getElementById("surahFilter");
+    if(filterInput && filterInput.value){
+      filterInput.value = "";
+      renderSurahList(surahIndex);
+      const linkBtn = document.getElementById("filterToSearchBtn");
+      if(linkBtn) linkBtn.classList.remove("show");
+    }
+    const activeLi = document.querySelector('#surahList li[data-num="'+number+'"]');
+    if(activeLi) activeLi.scrollIntoView({block:"nearest"});
     setTimeout(function(){ searchSelecting = false; }, 300);
   }
 
-  function runSearch(query){
+  // opts.surahs = false skips the local surah section (used when the
+  // sidebar filter already told us nothing matched by name/number).
+  function runSearch(query, opts){
+    const showSurahs = !opts || opts.surahs !== false;
     const results = document.getElementById("searchResults");
     if(!results) return;
     results.classList.remove("hidden");
-    results.innerHTML = '<div class="search-note">Searching…</div>';
+
+    const surahHits = showSurahs ? matchSurahs(query).slice(0, 5) : [];
+    const surahSectionHtml = surahHits.length
+      ? '<div class="search-section-label">Surahs</div>' + surahHits.map(surahResultHtml).join("")
+      : "";
+
+    // Show instant local surah matches right away; verse text needs the
+    // network and lands a moment later underneath.
+    results.innerHTML = surahSectionHtml
+      + '<div class="search-section-label">Verses</div>'
+      + '<div class="search-note">Searching…</div>';
+    wireResultItems();
+
+    if(query.trim().length < 2){
+      // Too short for the verse-text API — local surah matches (if any)
+      // are still shown above.
+      const verseNote = results.querySelector(".search-note");
+      if(verseNote) verseNote.textContent = "Keep typing to search verse text…";
+      return;
+    }
+
+    const cacheKey = currentEdition + "::" + query.toLowerCase();
+    const myRequestId = ++searchRequestId;
+
+    function renderVerses(matches){
+      if(myRequestId !== searchRequestId) return; // a newer search has superseded this one
+      const verseHtml = matches.length
+        ? matches.map(ayahResultHtml).join("")
+        : '<div class="search-note">No verses found for "'+escapeHtml(query)+'".</div>';
+      results.innerHTML = surahSectionHtml + '<div class="search-section-label">Verses</div>' + verseHtml;
+      wireResultItems();
+    }
+
+    if(verseSearchCache.has(cacheKey)){
+      renderVerses(verseSearchCache.get(cacheKey));
+      return;
+    }
 
     fetchJSON(API + "/search/" + encodeURIComponent(query) + "/all/" + currentEdition)
       .then(data => {
         const matches = (data && data.data && data.data.matches) ? data.data.matches.slice(0,10) : [];
-        if(!matches.length){
-          results.innerHTML = '<div class="search-note">No verses found for "'+escapeHtml(query)+'".</div>';
-          return;
-        }
-        results.innerHTML = matches.map(function(m){
-          return '<div class="search-result-item" data-surah="'+m.surah.number+'">'
-            + '<span class="ref">'+escapeHtml(m.surah.englishName)+' '+m.surah.number+':'+m.numberInSurah+'</span>'
-            + '<p>'+escapeHtml(m.text)+'</p>'
-            + '</div>';
-        }).join("");
-        results.querySelectorAll(".search-result-item").forEach(function(item){
-          item.addEventListener("touchstart", function(e){
-            e.preventDefault();
-            selectSearchResult(item);
-          }, {passive:false});
-          item.addEventListener("click", function(){
-            selectSearchResult(item);
-          });
-        });
+        verseSearchCache.set(cacheKey, matches);
+        renderVerses(matches);
       })
       .catch(err => {
+        if(myRequestId !== searchRequestId) return;
         const offline = (typeof navigator !== "undefined" && navigator.onLine === false);
         const msg = (err && err.name === "AbortError")
           ? "Search took too long to respond — try again."
           : offline
             ? "You appear to be offline — reconnect to search."
             : "Search is unavailable in this translation right now — try switching translation, or check your connection.";
-        results.innerHTML = '<div class="search-note">'+msg+'</div>';
+        results.innerHTML = surahSectionHtml + '<div class="search-section-label">Verses</div><div class="search-note">'+msg+'</div>';
+        wireResultItems();
       });
   }
 
