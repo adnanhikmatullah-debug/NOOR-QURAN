@@ -50,7 +50,13 @@ body{
 }
 /* applied while a drawer/modal/sidebar is open on mobile so the page
    behind it can't scroll along with it */
-body.scroll-locked{overflow:hidden;}
+body.scroll-locked{
+  overflow:hidden;
+  position:fixed;
+  width:100%;
+  touch-action:none;
+  overscroll-behavior:contain;
+}
 a{color:inherit;-webkit-tap-highlight-color:transparent;}
 button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 ::selection{background:var(--gold);color:var(--night);}
@@ -75,6 +81,18 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
   opacity:.32;
   mix-blend-mode:screen;
   will-change:transform;
+  transform:translateZ(0);
+}
+/* Blurred, blended, animated orbs are expensive to composite on mobile
+   GPUs (Adreno/Mali) and were a leading cause of scroll jank. Shrinking
+   the blur radius (which scales roughly quadratically in cost) and
+   dropping the blend mode keeps the ambient look without the frame drops. */
+@media (max-width:768px){
+  .aurora-orb{filter:blur(30px);mix-blend-mode:normal;opacity:.22;}
+  .grain{display:none;}
+}
+@media (prefers-reduced-motion: reduce){
+  .grain{display:none;}
 }
 .aurora-orb.o1{width:520px;height:520px;top:-160px;left:-120px;background:radial-gradient(circle, var(--gold) 0%, transparent 70%);animation:driftA 26s ease-in-out infinite;}
 .aurora-orb.o2{width:460px;height:460px;top:20%;right:-140px;background:radial-gradient(circle, var(--emerald) 0%, transparent 70%);animation:driftB 32s ease-in-out infinite;}
@@ -102,6 +120,7 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
   opacity:.5;
   animation:twinkle 4s ease-in-out infinite;
 }
+#starCanvas{position:absolute;inset:0;width:100%;height:100%;}
 @keyframes twinkle{
   0%,100%{opacity:.15;transform:scale(1);}
   50%{opacity:.9;transform:scale(1.6);}
@@ -129,6 +148,14 @@ header.topbar{
   backdrop-filter:blur(10px);
   -webkit-backdrop-filter:blur(10px);
   border-bottom:1px solid rgba(201,162,39,.25);
+}
+/* backdrop-filter forces the browser to re-composite everything behind
+   a sticky element on every scroll frame — on mid-range Android phones
+   this alone can drop a header well under 60fps. A solid, near-opaque
+   background looks almost identical while scrolling but is essentially
+   free to paint. */
+@media (max-width:768px){
+  header.topbar{background:rgba(11,27,43,.95);backdrop-filter:none;-webkit-backdrop-filter:none;}
 }
 .brand{
   display:flex;align-items:center;gap:10px;
@@ -206,15 +233,19 @@ nav.nav button.active{color:var(--gold-light);background:rgba(201,162,39,.14);}
 
 /* mobile nav drawer */
 .nav-drawer{
-  position:fixed;top:0;left:-300px;bottom:0;width:min(280px, 85vw);z-index:95;
+  position:fixed;top:0;left:0;bottom:0;width:min(280px, 85vw);z-index:95;
   background:var(--night-2);
   border-right:1px solid rgba(201,162,39,.3);
   box-shadow:var(--shadow-lg);
-  transition:left .3s ease;
+  /* transform is GPU-composited (its own layer); animating "left" forces
+     layout+paint on every frame and is a common source of janky drawers. */
+  transform:translateX(-100%);
+  transition:transform .3s ease;
+  will-change:transform;
   padding:18px 14px;
   display:flex;flex-direction:column;gap:4px;
 }
-.nav-drawer.open{left:0;}
+.nav-drawer.open{transform:translateX(0);}
 .nav-drawer .drawer-brand{
   font-family:var(--font-display);font-size:1.2rem;color:var(--gold-light);
   padding:6px 10px 16px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px;
@@ -505,7 +536,9 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 @media (max-width:640px){
   .tafsir-box{
     position:fixed;left:0;right:0;bottom:0;z-index:80;
-    max-height:60vh;overflow-y:auto;
+    max-height:60vh;max-height:60dvh;overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
     border-radius:16px 16px 0 0;
     background:var(--teal);
     box-shadow:var(--shadow-lg);
@@ -699,10 +732,13 @@ footer nav a:hover{color:var(--gold-light);}
 @media (max-width:900px){
   .app{grid-template-columns:1fr;margin-top:6px;}
   .sidebar{
-    position:fixed;top:0;left:-320px;bottom:0;width:min(300px, 85vw);z-index:90;
-    border-radius:0;max-height:none;transition:left .3s ease;top:0;
+    position:fixed;top:0;left:0;bottom:0;width:min(300px, 85vw);z-index:90;
+    border-radius:0;max-height:none;
+    transform:translateX(-100%);
+    transition:transform .3s ease;
+    will-change:transform;
   }
-  .sidebar.open{left:0;}
+  .sidebar.open{transform:translateX(0);}
   nav.nav{display:none;}
   .menu-toggle{display:flex;align-items:center;justify-content:center;}
   .search-wrap{max-width:none;}
@@ -1128,6 +1164,7 @@ footer nav a:hover{color:var(--gold-light);}
 <body>
 
 <div id="bgLayer">
+  <canvas id="starCanvas" aria-hidden="true"></canvas>
   <div class="aurora-orb o1"></div>
   <div class="aurora-orb o2"></div>
   <div class="aurora-orb o3"></div>
@@ -1373,6 +1410,36 @@ footer nav a:hover{color:var(--gold-light);}
   const API = "https://api.alquran.cloud/v1";
   const ARABIC_EDITION = "quran-uthmani";
 
+  // ---------- small utilities ----------
+  // Generic debounce: delays invoking fn until `wait`ms of silence.
+  function debounce(fn, wait){
+    let t;
+    return function(){
+      const args = arguments, ctx = this;
+      clearTimeout(t);
+      t = setTimeout(function(){ fn.apply(ctx, args); }, wait);
+    };
+  }
+
+  // fetch() with a hard timeout and a normalized rejection reason, so
+  // every caller can show one consistent "offline / slow connection"
+  // message instead of hanging indefinitely on a dead network.
+  function fetchJSON(url, timeoutMs){
+    timeoutMs = timeoutMs || 10000;
+    const controller = (typeof AbortController !== "undefined") ? new AbortController() : null;
+    const timer = controller ? setTimeout(function(){ controller.abort(); }, timeoutMs) : null;
+    return fetch(url, controller ? {signal: controller.signal} : {})
+      .then(function(r){
+        if(timer) clearTimeout(timer);
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .catch(function(err){
+        if(timer) clearTimeout(timer);
+        throw err;
+      });
+  }
+
   // ============================================================
   //  TAFSIR — stored on-device (same model as duas/quotes/etc.),
   //  edited from the Admin panel, shown instantly for every ayah.
@@ -1498,20 +1565,73 @@ footer nav a:hover{color:var(--gold-light);}
   }
 
   // ---------- dynamic background ----------
+  // Was: up to 100 individually-animated <div class="star"> nodes, each
+  // running its own CSS animation — cheap alone, but 100 concurrently
+  // animated layers is a real cost on low-end Android GPUs (extra
+  // compositor layers + style recalculation). A single <canvas>,
+  // redrawn on a slow interval instead of every frame, gives the same
+  // twinkling starfield for a fraction of the work.
+  let starCanvasCtx = null, starPoints = [], starRAFHandle = null, starLastDraw = 0;
   function buildStars(){
-    const el = document.getElementById("bgLayer");
-    const frag = document.createDocumentFragment();
-    const count = window.innerWidth < 600 ? 50 : 100;
-    for(let i=0;i<count;i++){
-      const s = document.createElement("div");
-      s.className = "star";
-      s.style.top = Math.random()*100 + "%";
-      s.style.left = Math.random()*100 + "%";
-      s.style.animationDelay = (Math.random()*4).toFixed(2)+"s";
-      s.style.width = s.style.height = (Math.random()*1.6+1).toFixed(1)+"px";
-      frag.appendChild(s);
+    const canvas = document.getElementById("starCanvas");
+    const layer = document.getElementById("bgLayer");
+    if(!canvas || !layer) return;
+
+    const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resize(){
+      const w = layer.clientWidth || window.innerWidth;
+      const h = layer.clientHeight || window.innerHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const count = w < 600 ? 50 : 100;
+      starPoints = [];
+      for(let i=0;i<count;i++){
+        starPoints.push({
+          x: Math.random()*w,
+          y: Math.random()*h,
+          r: Math.random()*0.8+0.6,
+          phase: Math.random()*Math.PI*2
+        });
+      }
+      drawStars(0);
     }
-    el.appendChild(frag);
+
+    function drawStars(t){
+      if(!starCanvasCtx) starCanvasCtx = canvas.getContext("2d");
+      const ctx = starCanvasCtx;
+      if(!ctx) return;
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(let i=0;i<starPoints.length;i++){
+        const s = starPoints[i];
+        const twinkle = reducedMotion ? 0.4 : 0.5 + Math.sin(t/1200 + s.phase)*0.4;
+        ctx.globalAlpha = Math.max(0.1, twinkle);
+        ctx.fillStyle = "#f6eedd";
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function loop(t){
+      // Throttle to ~10fps — a twinkling starfield doesn't need 60fps,
+      // and this keeps the main thread nearly idle between frames.
+      if(t - starLastDraw > 100){
+        starLastDraw = t;
+        drawStars(t);
+      }
+      starRAFHandle = requestAnimationFrame(loop);
+    }
+
+    resize();
+    window.addEventListener("resize", debounce(resize, 200));
+    if(!reducedMotion){
+      if(starRAFHandle) cancelAnimationFrame(starRAFHandle);
+      starRAFHandle = requestAnimationFrame(loop);
+    }
   }
 
   // ---------- theme picker (dynamic background) ----------
@@ -1542,6 +1662,8 @@ footer nav a:hover{color:var(--gold-light);}
 
   function initThemePicker(){
     const panel = document.getElementById("themePanel");
+    const fab = document.getElementById("themeFab");
+    if(!panel || !fab) return;
     const h = panel.querySelector("h4");
     THEMES.forEach(function(t){
       const sw = document.createElement("button");
@@ -1584,21 +1706,25 @@ footer nav a:hover{color:var(--gold-light);}
 
   function tickClock(){
     const sel = document.getElementById("regionSelect");
+    const timeEl = document.getElementById("clockTime");
+    const dateEl = document.getElementById("clockDate");
+    if(!sel || !timeEl || !dateEl) return;
     const tz = sel.value === "auto" ? Intl.DateTimeFormat().resolvedOptions().timeZone : sel.value;
     const now = new Date();
     try{
       const timeStr = new Intl.DateTimeFormat(undefined, {timeZone:tz, hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:true}).format(now);
       const dateStr = new Intl.DateTimeFormat(undefined, {timeZone:tz, weekday:"short", year:"numeric", month:"short", day:"numeric"}).format(now);
-      document.getElementById("clockTime").textContent = timeStr;
-      document.getElementById("clockDate").textContent = dateStr + " · " + (sel.value==="auto" ? tz : tz.split("/").pop().replace("_"," "));
+      timeEl.textContent = timeStr;
+      dateEl.textContent = dateStr + " · " + (sel.value==="auto" ? tz : tz.split("/").pop().replace("_"," "));
     }catch(e){
-      document.getElementById("clockTime").textContent = now.toLocaleTimeString();
-      document.getElementById("clockDate").textContent = now.toDateString();
+      timeEl.textContent = now.toLocaleTimeString();
+      dateEl.textContent = now.toDateString();
     }
   }
 
   function initClock(){
     const sel = document.getElementById("regionSelect");
+    if(!sel) return;
     sel.innerHTML = REGIONS.map(function(r){
       return '<option value="'+r.tz+'">'+escapeHtml(r.label)+'</option>';
     }).join("");
@@ -2328,7 +2454,8 @@ footer nav a:hover{color:var(--gold-light);}
     document.querySelectorAll(".drawer-nav-btn[data-view]").forEach(function(b){
       b.classList.toggle("active", b.dataset.view === view);
     });
-    document.getElementById("quranSearchWrap").style.display = (view === "home") ? "" : "none";
+    const searchWrap = document.getElementById("quranSearchWrap");
+    if(searchWrap) searchWrap.style.display = (view === "home") ? "" : "none";
     closeEverything();
     window.scrollTo({top:0, behavior:"smooth"});
     if(view === "quiz" && !quizStarted){ startQuiz(); }
@@ -2347,44 +2474,72 @@ footer nav a:hover{color:var(--gold-light);}
   // ---------- nav / drawers ----------
   // Keeps the page behind a drawer/sidebar/modal from scrolling along
   // with it on mobile — a big part of things feeling "broken" on touch.
-  function lockScroll(){ document.body.classList.add("scroll-locked"); }
-  function unlockScroll(){ document.body.classList.remove("scroll-locked"); }
+  // scroll-locked uses position:fixed (see CSS) so iOS Safari can't
+  // rubber-band the page behind an open sheet; that means we have to
+  // remember and restore the scroll offset manually, or the page would
+  // silently jump to the top every time a drawer opens.
+  let lockedScrollY = 0;
+  function lockScroll(){
+    lockedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.top = (-lockedScrollY) + "px";
+    document.body.classList.add("scroll-locked");
+  }
+  function unlockScroll(){
+    document.body.classList.remove("scroll-locked");
+    document.body.style.top = "";
+    window.scrollTo(0, lockedScrollY);
+  }
 
   function initNav(){
-    document.getElementById("menuToggle").addEventListener("click", function(){
-      const isOpen = document.getElementById("navDrawer").classList.toggle("open");
-      document.getElementById("overlay").classList.toggle("open", isOpen);
-      if(isOpen){ lockScroll(); } else { unlockScroll(); }
-    });
-    document.getElementById("overlay").addEventListener("click", closeEverything);
+    const menuToggle = document.getElementById("menuToggle");
+    const overlay = document.getElementById("overlay");
+    if(menuToggle && overlay){
+      menuToggle.addEventListener("click", function(){
+        const navDrawer = document.getElementById("navDrawer");
+        if(!navDrawer) return;
+        const isOpen = navDrawer.classList.toggle("open");
+        overlay.classList.toggle("open", isOpen);
+        if(isOpen){ lockScroll(); } else { unlockScroll(); }
+      });
+      overlay.addEventListener("click", closeEverything);
+    }
 
-    document.getElementById("mobileBrowseBtn").addEventListener("click", function(){
-      const isOpen = document.getElementById("sidebar").classList.toggle("open");
-      document.getElementById("overlay").classList.toggle("open", isOpen);
-      if(isOpen){ lockScroll(); } else { unlockScroll(); }
-    });
+    const mobileBrowseBtn = document.getElementById("mobileBrowseBtn");
+    if(mobileBrowseBtn){
+      mobileBrowseBtn.addEventListener("click", function(){
+        const sidebar = document.getElementById("sidebar");
+        if(!sidebar) return;
+        const isOpen = sidebar.classList.toggle("open");
+        if(overlay) overlay.classList.toggle("open", isOpen);
+        if(isOpen){ lockScroll(); } else { unlockScroll(); }
+      });
+    }
 
-    document.getElementById("notesNavBtn").addEventListener("click", openNotesDrawer);
-    document.getElementById("bookmarksNavBtn").addEventListener("click", openBookmarksDrawer);
-    document.getElementById("notesNavBtnMobile").addEventListener("click", openNotesDrawer);
-    document.getElementById("bookmarksNavBtnMobile").addEventListener("click", openBookmarksDrawer);
+    const notesBtn = document.getElementById("notesNavBtn");
+    const bmBtn = document.getElementById("bookmarksNavBtn");
+    const notesBtnMobile = document.getElementById("notesNavBtnMobile");
+    const bmBtnMobile = document.getElementById("bookmarksNavBtnMobile");
+    if(notesBtn) notesBtn.addEventListener("click", openNotesDrawer);
+    if(bmBtn) bmBtn.addEventListener("click", openBookmarksDrawer);
+    if(notesBtnMobile) notesBtnMobile.addEventListener("click", openNotesDrawer);
+    if(bmBtnMobile) bmBtnMobile.addEventListener("click", openBookmarksDrawer);
     document.querySelectorAll("[data-close-drawer]").forEach(function(b){
       b.addEventListener("click", closeEverything);
     });
   }
 
   function closeEverything(){
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("navDrawer").classList.remove("open");
-    document.getElementById("notesDrawer").classList.remove("open");
-    document.getElementById("bookmarksDrawer").classList.remove("open");
-    document.getElementById("overlay").classList.remove("open");
+    ["sidebar","navDrawer","notesDrawer","bookmarksDrawer","overlay"].forEach(function(id){
+      const el = document.getElementById(id);
+      if(el) el.classList.remove("open");
+    });
     unlockScroll();
   }
 
   // ---------- translator ----------
   function initTranslator(){
     const sel = document.getElementById("translatorSelect");
+    if(!sel) return;
     sel.innerHTML = TRANSLATIONS.map(function(t){
       return '<option value="'+t.code+'"'+(t.code===currentEdition?' selected':'')+'>'+escapeHtml(t.label)+'</option>';
     }).join("");
@@ -2404,14 +2559,22 @@ footer nav a:hover{color:var(--gold-light);}
 
   function fetchSurahList(){
     const listEl = document.getElementById("surahList");
-    fetch(API + "/surah")
-      .then(r => r.json())
+    if(!listEl) return;
+    fetchJSON(API + "/surah")
       .then(data => {
         surahIndex = (data && data.data) ? data.data : [];
         renderSurahList(surahIndex);
       })
-      .catch(() => {
-        listEl.innerHTML = '<li class="empty-msg">Could not load the surah list. Check your internet connection and reload.</li>';
+      .catch(err => {
+        const offline = (typeof navigator !== "undefined" && navigator.onLine === false);
+        const msg = (err && err.name === "AbortError")
+          ? "The surah list took too long to load. Check your connection and try again."
+          : offline
+            ? "You appear to be offline. Reconnect and reload to load the surah list."
+            : "Could not load the surah list. Check your internet connection and reload.";
+        listEl.innerHTML = '<li class="empty-msg">'+msg+' <button id="retrySurahList" class="tafsir-retry">Retry</button></li>';
+        const retryBtn = document.getElementById("retrySurahList");
+        if(retryBtn) retryBtn.addEventListener("click", fetchSurahList);
       });
   }
 
@@ -2438,7 +2601,8 @@ footer nav a:hover{color:var(--gold-light);}
 
   function initSurahFilter(){
     const input = document.getElementById("surahFilter");
-    input.addEventListener("input", function(){
+    if(!input) return;
+    input.addEventListener("input", debounce(function(){
       const q = input.value.trim().toLowerCase();
       if(!q){ renderSurahList(surahIndex); return; }
       const filtered = surahIndex.filter(function(raw){
@@ -2449,14 +2613,16 @@ footer nav a:hover{color:var(--gold-light);}
           || s.name.includes(q);
       });
       renderSurahList(filtered);
-    });
+    }, 300));
   }
 
   // ---------- opening a surah ----------
   function openSurah(number, silent){
     currentSurah = number;
-    document.getElementById("welcomePanel").classList.add("hidden");
+    const welcomePanel = document.getElementById("welcomePanel");
+    if(welcomePanel) welcomePanel.classList.add("hidden");
     const panel = document.getElementById("surahPanel");
+    if(!panel) return;
     panel.classList.remove("hidden");
     panel.innerHTML = '<div class="loading"><div class="spin"></div>Loading surah…</div>';
 
@@ -2465,19 +2631,27 @@ footer nav a:hover{color:var(--gold-light);}
     });
 
     Promise.all([
-      fetch(API + "/surah/" + number + "/" + ARABIC_EDITION).then(r=>r.json()),
-      fetch(API + "/surah/" + number + "/" + currentEdition).then(r=>r.json())
+      fetchJSON(API + "/surah/" + number + "/" + ARABIC_EDITION),
+      fetchJSON(API + "/surah/" + number + "/" + currentEdition)
     ]).then(function(results){
       const arabic = results[0].data;
       const translation = results[1].data;
       renderSurahPanel(arabic, translation);
       recordLastRead(arabic);
       if(!silent){
-        document.getElementById("app").scrollIntoView({behavior:"smooth", block:"start"});
+        const app = document.getElementById("app");
+        if(app) app.scrollIntoView({behavior:"smooth", block:"start"});
       }
-    }).catch(function(){
-      panel.innerHTML = '<div class="error-box">This surah could not be loaded — the connection may have dropped, or this translation may not be available for this surah.<br><button id="retrySurah">Try again</button></div>';
-      document.getElementById("retrySurah").addEventListener("click", function(){ openSurah(number); });
+    }).catch(function(err){
+      const offline = (typeof navigator !== "undefined" && navigator.onLine === false);
+      const msg = (err && err.name === "AbortError")
+        ? "This surah took too long to load."
+        : offline
+          ? "You appear to be offline."
+          : "This surah could not be loaded — the connection may have dropped, or this translation may not be available for this surah.";
+      panel.innerHTML = '<div class="error-box">'+msg+'<br><button id="retrySurah">Try again</button></div>';
+      const retryBtn = document.getElementById("retrySurah");
+      if(retryBtn) retryBtn.addEventListener("click", function(){ openSurah(number); });
     });
   }
 
@@ -2715,7 +2889,6 @@ footer nav a:hover{color:var(--gold-light);}
   // (with preventDefault, so the browser doesn't also fire a trailing
   // click) sidesteps that race entirely, and a small guard flag makes the
   // handler idempotent even if a click slips through anyway.
-  let searchTimer = null;
   let searchSelecting = false;
 
   function hideSearchResults(){
@@ -2725,13 +2898,13 @@ footer nav a:hover{color:var(--gold-light);}
   function initGlobalSearch(){
     const input = document.getElementById("globalSearch");
     const results = document.getElementById("searchResults");
+    if(!input || !results) return;
 
-    input.addEventListener("input", function(){
+    input.addEventListener("input", debounce(function(){
       const q = input.value.trim();
-      clearTimeout(searchTimer);
       if(q.length < 2){ hideSearchResults(); results.innerHTML=""; return; }
-      searchTimer = setTimeout(function(){ runSearch(q); }, 420);
-    });
+      runSearch(q);
+    }, 300));
 
     // Bring a still-populated result list back if the user refocuses
     // the field instead of forcing them to retype.
@@ -2764,11 +2937,11 @@ footer nav a:hover{color:var(--gold-light);}
 
   function runSearch(query){
     const results = document.getElementById("searchResults");
+    if(!results) return;
     results.classList.remove("hidden");
     results.innerHTML = '<div class="search-note">Searching…</div>';
 
-    fetch(API + "/search/" + encodeURIComponent(query) + "/all/" + currentEdition)
-      .then(r => r.json())
+    fetchJSON(API + "/search/" + encodeURIComponent(query) + "/all/" + currentEdition)
       .then(data => {
         const matches = (data && data.data && data.data.matches) ? data.data.matches.slice(0,10) : [];
         if(!matches.length){
@@ -2791,8 +2964,14 @@ footer nav a:hover{color:var(--gold-light);}
           });
         });
       })
-      .catch(() => {
-        results.innerHTML = '<div class="search-note">Search is unavailable in this translation right now — try switching translation, or check your connection.</div>';
+      .catch(err => {
+        const offline = (typeof navigator !== "undefined" && navigator.onLine === false);
+        const msg = (err && err.name === "AbortError")
+          ? "Search took too long to respond — try again."
+          : offline
+            ? "You appear to be offline — reconnect to search."
+            : "Search is unavailable in this translation right now — try switching translation, or check your connection.";
+        results.innerHTML = '<div class="search-note">'+msg+'</div>';
       });
   }
 
@@ -3265,26 +3444,35 @@ footer nav a:hover{color:var(--gold-light);}
   }
 
   // ---------- boot ----------
+  // Each step runs independently: if one throws (e.g. an unexpected
+  // DOM change removes an element a feature depends on), the rest of
+  // the app still boots instead of silently dying on the first error.
+  function safeCall(fn, label){
+    try{ fn(); }
+    catch(err){ console.error("[Noor] init step failed: " + label, err); }
+  }
   function init(){
-    buildStars();
-    initThemePicker();
-    initViewNav();
-    initNav();
-    initAuth();
-    initClock();
-    initQuotes();
-    initTranslator();
-    initSurahFilter();
-    initGlobalSearch();
-    initTafsirOutsideClose();
-    fetchSurahList();
-    initDua();
-    lastRead = loadJSON(LS_LAST_READ, null);
-    renderContinueCard();
-    updateSavedStat();
-    renderAnnounceBanner();
-    renderFeaturedVideo();
-    renderImgSlider();
+    safeCall(buildStars, "buildStars");
+    safeCall(initThemePicker, "initThemePicker");
+    safeCall(initViewNav, "initViewNav");
+    safeCall(initNav, "initNav");
+    safeCall(initAuth, "initAuth");
+    safeCall(initClock, "initClock");
+    safeCall(initQuotes, "initQuotes");
+    safeCall(initTranslator, "initTranslator");
+    safeCall(initSurahFilter, "initSurahFilter");
+    safeCall(initGlobalSearch, "initGlobalSearch");
+    safeCall(initTafsirOutsideClose, "initTafsirOutsideClose");
+    safeCall(fetchSurahList, "fetchSurahList");
+    safeCall(initDua, "initDua");
+    safeCall(function(){
+      lastRead = loadJSON(LS_LAST_READ, null);
+      renderContinueCard();
+    }, "renderContinueCard");
+    safeCall(updateSavedStat, "updateSavedStat");
+    safeCall(renderAnnounceBanner, "renderAnnounceBanner");
+    safeCall(renderFeaturedVideo, "renderFeaturedVideo");
+    safeCall(renderImgSlider, "renderImgSlider");
   }
 
   document.addEventListener("DOMContentLoaded", init);
