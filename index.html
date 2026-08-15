@@ -45,8 +45,12 @@ body{
   color:var(--parchment);
   font-family:var(--font-ui);
   min-height:100vh;
+  min-height:100dvh;
   overflow-x:hidden;
 }
+/* applied while a drawer/modal/sidebar is open on mobile so the page
+   behind it can't scroll along with it */
+body.scroll-locked{overflow:hidden;}
 a{color:inherit;-webkit-tap-highlight-color:transparent;}
 button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 ::selection{background:var(--gold);color:var(--night);}
@@ -108,6 +112,7 @@ button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparen
   .star{animation:none;opacity:.4;}
   .aurora-orb{animation:none !important;}
   *{animation-duration:.001ms !important;}
+  .search-results{transition:none;}
 }
 
 /* ============================================================
@@ -165,11 +170,15 @@ header.topbar{
   background:var(--teal);
   border:1px solid rgba(201,162,39,.35);
   border-radius:12px;
-  max-height:360px;overflow-y:auto;
+  max-height:360px;max-height:min(360px, 60dvh);overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
   box-shadow:var(--shadow-lg);
   z-index:60;
+  opacity:1;visibility:visible;transform:translateY(0);
+  transition:opacity .16s ease, transform .16s ease;
 }
-.search-results.hidden{display:none;}
+.search-results.hidden{opacity:0;visibility:hidden;transform:translateY(-6px);pointer-events:none;}
 .search-result-item{
   padding:12px 16px;
   border-bottom:1px solid rgba(255,255,255,.06);
@@ -197,7 +206,7 @@ nav.nav button.active{color:var(--gold-light);background:rgba(201,162,39,.14);}
 
 /* mobile nav drawer */
 .nav-drawer{
-  position:fixed;top:0;left:-300px;bottom:0;width:280px;z-index:95;
+  position:fixed;top:0;left:-300px;bottom:0;width:min(280px, 85vw);z-index:95;
   background:var(--night-2);
   border-right:1px solid rgba(201,162,39,.3);
   box-shadow:var(--shadow-lg);
@@ -690,7 +699,7 @@ footer nav a:hover{color:var(--gold-light);}
 @media (max-width:900px){
   .app{grid-template-columns:1fr;margin-top:6px;}
   .sidebar{
-    position:fixed;top:0;left:-320px;bottom:0;width:300px;z-index:90;
+    position:fixed;top:0;left:-320px;bottom:0;width:min(300px, 85vw);z-index:90;
     border-radius:0;max-height:none;transition:left .3s ease;top:0;
   }
   .sidebar.open{left:0;}
@@ -825,7 +834,8 @@ footer nav a:hover{color:var(--gold-light);}
 .modal-box{
   background:var(--night-2);border:1px solid rgba(201,162,39,.35);
   border-radius:var(--radius);padding:28px 26px;max-width:380px;width:100%;
-  box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg);max-height:90vh;max-height:90dvh;overflow-y:auto;
+  overscroll-behavior:contain;
 }
 .modal-box h3{font-family:var(--font-display);color:var(--gold-light);margin:0 0 6px;font-size:1.4rem;}
 .modal-box p.sub{color:var(--slate);font-size:.82rem;margin:0 0 18px;}
@@ -1679,6 +1689,7 @@ footer nav a:hover{color:var(--gold-light);}
   function openAuthModal(mode){
     const body = document.getElementById("authModalBody");
     document.getElementById("authModal").classList.add("open");
+    lockScroll();
     if(mode === "signup"){
       body.innerHTML = ''
         + '<h3>Create your account</h3>'
@@ -1726,7 +1737,7 @@ footer nav a:hover{color:var(--gold-light);}
       });
     }
   }
-  function closeAuthModal(){ document.getElementById("authModal").classList.remove("open"); }
+  function closeAuthModal(){ document.getElementById("authModal").classList.remove("open"); unlockScroll(); }
 
   function initAuth(){
     renderAuthArea();
@@ -2334,16 +2345,23 @@ footer nav a:hover{color:var(--gold-light);}
   }
 
   // ---------- nav / drawers ----------
+  // Keeps the page behind a drawer/sidebar/modal from scrolling along
+  // with it on mobile — a big part of things feeling "broken" on touch.
+  function lockScroll(){ document.body.classList.add("scroll-locked"); }
+  function unlockScroll(){ document.body.classList.remove("scroll-locked"); }
+
   function initNav(){
     document.getElementById("menuToggle").addEventListener("click", function(){
-      document.getElementById("navDrawer").classList.toggle("open");
-      document.getElementById("overlay").classList.toggle("open");
+      const isOpen = document.getElementById("navDrawer").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("open", isOpen);
+      if(isOpen){ lockScroll(); } else { unlockScroll(); }
     });
     document.getElementById("overlay").addEventListener("click", closeEverything);
 
     document.getElementById("mobileBrowseBtn").addEventListener("click", function(){
-      document.getElementById("sidebar").classList.toggle("open");
-      document.getElementById("overlay").classList.toggle("open");
+      const isOpen = document.getElementById("sidebar").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("open", isOpen);
+      if(isOpen){ lockScroll(); } else { unlockScroll(); }
     });
 
     document.getElementById("notesNavBtn").addEventListener("click", openNotesDrawer);
@@ -2361,6 +2379,7 @@ footer nav a:hover{color:var(--gold-light);}
     document.getElementById("notesDrawer").classList.remove("open");
     document.getElementById("bookmarksDrawer").classList.remove("open");
     document.getElementById("overlay").classList.remove("open");
+    unlockScroll();
   }
 
   // ---------- translator ----------
@@ -2689,7 +2708,20 @@ footer nav a:hover{color:var(--gold-light);}
   }
 
   // ---------- global search (Qur'an) ----------
+  // Rebuilt for reliable mobile touch: on Android, a tap that lands on a
+  // freshly-rendered result can get eaten by a keyboard-close / viewport
+  // reflow between touchstart and click, so the dropdown "opens then
+  // disappears" without ever registering the tap. Selecting on touchstart
+  // (with preventDefault, so the browser doesn't also fire a trailing
+  // click) sidesteps that race entirely, and a small guard flag makes the
+  // handler idempotent even if a click slips through anyway.
   let searchTimer = null;
+  let searchSelecting = false;
+
+  function hideSearchResults(){
+    document.getElementById("searchResults").classList.add("hidden");
+  }
+
   function initGlobalSearch(){
     const input = document.getElementById("globalSearch");
     const results = document.getElementById("searchResults");
@@ -2697,13 +2729,37 @@ footer nav a:hover{color:var(--gold-light);}
     input.addEventListener("input", function(){
       const q = input.value.trim();
       clearTimeout(searchTimer);
-      if(q.length < 2){ results.classList.add("hidden"); results.innerHTML=""; return; }
+      if(q.length < 2){ hideSearchResults(); results.innerHTML=""; return; }
       searchTimer = setTimeout(function(){ runSearch(q); }, 420);
     });
 
-    document.addEventListener("click", function(e){
-      if(!e.target.closest(".search-wrap")) results.classList.add("hidden");
+    // Bring a still-populated result list back if the user refocuses
+    // the field instead of forcing them to retype.
+    input.addEventListener("focus", function(){
+      if(results.innerHTML && input.value.trim().length >= 2){
+        results.classList.remove("hidden");
+      }
     });
+
+    function dismissIfOutside(e){
+      if(searchSelecting) return;
+      if(!e.target.closest(".search-wrap")) hideSearchResults();
+    }
+    // touchstart closes it the instant a tap lands outside — well before
+    // any Android keyboard-close reflow can shift things mid-gesture.
+    document.addEventListener("touchstart", dismissIfOutside, {passive:true});
+    document.addEventListener("click", dismissIfOutside);
+  }
+
+  function selectSearchResult(item){
+    if(searchSelecting) return;
+    searchSelecting = true;
+    hideSearchResults();
+    const input = document.getElementById("globalSearch");
+    input.value = "";
+    input.blur();
+    openSurah(parseInt(item.dataset.surah,10));
+    setTimeout(function(){ searchSelecting = false; }, 300);
   }
 
   function runSearch(query){
@@ -2726,10 +2782,12 @@ footer nav a:hover{color:var(--gold-light);}
             + '</div>';
         }).join("");
         results.querySelectorAll(".search-result-item").forEach(function(item){
+          item.addEventListener("touchstart", function(e){
+            e.preventDefault();
+            selectSearchResult(item);
+          }, {passive:false});
           item.addEventListener("click", function(){
-            results.classList.add("hidden");
-            document.getElementById("globalSearch").value = "";
-            openSurah(parseInt(item.dataset.surah,10));
+            selectSearchResult(item);
           });
         });
       })
@@ -2765,6 +2823,7 @@ footer nav a:hover{color:var(--gold-light);}
     }
     document.getElementById("notesDrawer").classList.add("open");
     document.getElementById("overlay").classList.add("open");
+    lockScroll();
   }
 
   function openBookmarksDrawer(){
@@ -2790,6 +2849,7 @@ footer nav a:hover{color:var(--gold-light);}
     }
     document.getElementById("bookmarksDrawer").classList.add("open");
     document.getElementById("overlay").classList.add("open");
+    lockScroll();
   }
 
   // ============================================================
