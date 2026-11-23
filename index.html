@@ -3,11 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Noor — Qur'an, Dua &amp; Knowledge</title>
-<meta name="description" content="Read the Qur'an surah by surah, explore daily duas, and test your knowledge — with translations, notes, bookmarks, and a quiet, distraction-free design.">
+<title>Noor — Qur'an, Dua, Hadith &amp; Knowledge</title>
+<meta name="description" content="Read the Qur'an surah by surah, explore daily duas, read authentic hadith, and test your knowledge — with translations, notes, bookmarks, and a quiet, distraction-free design.">
+<script>
+/* Lite mode: set before first paint. Auto-on for low-memory / low-core / Save-Data devices. */
+(function(){try{var v=localStorage.getItem("noor_lite_v1");
+var low=(navigator.deviceMemory&&navigator.deviceMemory<=2)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=2)||(navigator.connection&&navigator.connection.saveData);
+if(v==="on"||(v!=="off"&&low))document.documentElement.classList.add("lite");}catch(e){}})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <style>
 /* ============================================================
    TOKENS
@@ -654,6 +661,70 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 .dua-empty{grid-column:1/-1;text-align:center;padding:40px;color:var(--slate);}
 
 /* ============================================================
+   HADITH VIEW
+   ============================================================ */
+.hadith-hero{text-align:center;padding:44px 22px 20px;}
+.hadith-hero .glyph{font-family:var(--font-arabic);font-size:1.6rem;color:var(--gold-light);margin-bottom:8px;}
+.hadith-hero h1{
+  font-family:var(--font-display);font-size:clamp(1.8rem,4.4vw,2.8rem);margin:0 0 8px;
+  background:linear-gradient(180deg,var(--parchment) 0%, var(--gold-light) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hadith-hero p{color:var(--slate);max-width:540px;margin:0 auto;font-size:.98rem;line-height:1.65;}
+.hadith-toolbar{
+  max-width:900px;margin:22px auto 6px;padding:0 22px;
+  display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+}
+.hadith-search{position:relative;flex:1;min-width:220px;max-width:420px;}
+.hadith-search input{
+  width:100%;padding:10px 16px 10px 38px;border-radius:999px;
+  border:1px solid rgba(201,162,39,.4);background:rgba(255,255,255,.05);
+  color:var(--parchment);font-size:.9rem;
+}
+.hadith-search input::placeholder{color:var(--slate);}
+.hadith-search .search-icon{color:var(--slate);}
+.hd-toggle{display:flex;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(201,162,39,.35);border-radius:999px;padding:4px;}
+.hd-toggle button{background:none;border:none;color:var(--parchment-dim);padding:7px 14px;border-radius:999px;font-size:.78rem;font-weight:600;}
+.hd-toggle button.active{background:var(--gold);color:var(--night);}
+.hadith-count{max-width:900px;margin:10px auto 0;padding:0 22px;font-size:.78rem;color:var(--slate);}
+.hadith-list{
+  max-width:900px;margin:16px auto 20px;padding:0 22px;
+  display:grid;grid-template-columns:1fr;gap:16px;
+}
+.hadith-card{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(201,162,39,.25);
+  border-left:3px solid var(--gold);
+  border-radius:var(--radius);
+  padding:22px;
+  content-visibility:auto;contain-intrinsic-size:auto 320px;
+}
+.hadith-card .hd-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);}
+.hadith-card .hd-num{flex:none;min-width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(201,162,39,.16);color:var(--gold-light);font-size:.78rem;font-weight:700;}
+.hadith-card .hd-title{font-family:var(--font-display);font-weight:700;font-size:1.15rem;color:var(--gold-light);}
+.hadith-card .arabic-text{font-family:var(--font-arabic);direction:rtl;text-align:right;font-size:1.5rem;line-height:2.2;color:var(--parchment);margin-bottom:12px;}
+.hadith-card .translation{font-size:.93rem;color:var(--parchment-dim);line-height:1.7;white-space:pre-line;}
+.hadith-card .translation + .translation{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.08);}
+.hadith-card .hd-narrator{margin-top:12px;font-size:.78rem;color:var(--emerald-light);}
+.hadith-card .reference{margin-top:4px;font-size:.75rem;color:var(--slate);font-style:italic;}
+.hadith-more{display:block;margin:0 auto 60px;padding:11px 26px;border-radius:999px;border:1px solid rgba(201,162,39,.5);background:rgba(201,162,39,.12);color:var(--gold-light);font-size:.88rem;font-weight:600;}
+.hadith-more:hover{background:rgba(201,162,39,.22);}
+.hadith-note{max-width:900px;margin:0 auto 14px;padding:0 22px;font-size:.74rem;color:var(--slate);text-align:center;line-height:1.6;}
+@media (max-width:520px){.hadith-card .arabic-text{font-size:1.3rem;line-height:2;}.hadith-card{padding:18px;}}
+
+/* ============================================================
+   LITE MODE — for low-end / low-memory devices
+   Static background, no blur, no animation, no starfield.
+   ============================================================ */
+html.lite{scroll-behavior:auto;}
+html.lite .aurora-orb, html.lite .grain, html.lite #starCanvas{display:none !important;}
+html.lite #bgLayer{background:var(--night);}
+html.lite *, html.lite *::before, html.lite *::after{animation:none !important;transition:none !important;}
+html.lite header.topbar{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--night);}
+html.lite .hadith-card, html.lite .dua-card{box-shadow:none;}
+[data-lite-toggle]{cursor:pointer;}
+
+/* ============================================================
    ALL SURAHS MENU VIEW
    ============================================================ */
 .surahs-hero{text-align:center;padding:44px 22px 20px;}
@@ -1261,7 +1332,9 @@ footer nav a:hover{color:var(--gold-light);}
   <button data-view="home" class="drawer-nav-btn active">Home · Qur'an</button>
   <button data-view="surahs" class="drawer-nav-btn">All Surahs</button>
   <button data-view="dua" class="drawer-nav-btn">Dua</button>
+  <button data-view="hadith" class="drawer-nav-btn">Hadith</button>
   <button data-view="quiz" class="drawer-nav-btn">Quiz</button>
+  <button data-lite-toggle id="liteDrawerBtn">⚡ Lite mode</button>
   <button id="notesNavBtnMobile">My Notes</button>
   <button id="bookmarksNavBtnMobile">Bookmarks</button>
   <button data-view="admin" id="adminNavBtnMobile" class="drawer-nav-btn" style="display:none;">Admin</button>
@@ -1277,7 +1350,7 @@ footer nav a:hover{color:var(--gold-light);}
         <rect x="8" y="14" width="24" height="5" fill="currentColor" opacity=".8"/>
         <path d="M20 4 L23 12 L17 12 Z" fill="currentColor"/>
       </svg>
-      <div>Noor <small>Qur'an, Dua &amp; Knowledge</small></div>
+      <div>Noor <small>Qur'an, Dua, Hadith &amp; Knowledge</small></div>
     </div>
     <div class="search-wrap" id="quranSearchWrap">
       <span class="search-icon">⌕</span>
@@ -1288,6 +1361,7 @@ footer nav a:hover{color:var(--gold-light);}
       <button data-view="home" class="active">Home</button>
       <button data-view="surahs">All Surahs</button>
       <button data-view="dua">Dua</button>
+      <button data-view="hadith">Hadith</button>
       <button data-view="quiz">Quiz</button>
       <button id="notesNavBtn">My Notes</button>
       <button id="bookmarksNavBtn">Bookmarks</button>
@@ -1352,6 +1426,7 @@ footer nav a:hover{color:var(--gold-light);}
       <div class="hero-shortcuts">
         <button class="shortcut-btn" data-view="surahs">📖 Browse All Surahs</button>
         <button class="shortcut-btn emerald" data-view="dua">🤲 Explore Daily Dua</button>
+        <button class="shortcut-btn" data-view="hadith">📜 Read Hadith</button>
         <button class="shortcut-btn" data-view="quiz">🧠 Take the Qur'an Quiz</button>
       </div>
 
@@ -1448,6 +1523,32 @@ footer nav a:hover{color:var(--gold-light);}
     <div class="dua-grid" id="duaGrid"></div>
   </section>
 
+  <!-- ============ HADITH VIEW ============ -->
+  <section class="view-section" id="view-hadith">
+    <div class="hadith-hero">
+      <div class="glyph">قَالَ رَسُولُ اللَّهِ ﷺ</div>
+      <h1>Hadith</h1>
+      <p>A hand-picked collection of well-known authentic hadith — Arabic text with English and বাংলা translation, narrator and source. Light and fast on any device.</p>
+    </div>
+
+    <div class="hadith-toolbar">
+      <div class="hadith-search">
+        <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
+        <input id="hadithSearch" type="text" placeholder="Search hadith (e.g. 'anger', 'knowledge')" autocomplete="off">
+      </div>
+      <div class="hd-toggle" id="hadithLangToggle" role="group" aria-label="Hadith translation language">
+        <button data-lang="both" class="active">EN + বাংলা</button>
+        <button data-lang="en">English</button>
+        <button data-lang="bn">বাংলা</button>
+      </div>
+    </div>
+    <div class="hadith-count" id="hadithCount"></div>
+
+    <div class="hadith-list" id="hadithList"></div>
+    <button class="hadith-more" id="hadithMore" style="display:none;">Load more</button>
+    <p class="hadith-note">Translations are simplified for readability. Please verify wording and numbering against the full collections (e.g. sunnah.com) before quoting.</p>
+  </section>
+
   <!-- ============ QUIZ VIEW ============ -->
   <section class="view-section" id="view-quiz">
     <div class="quiz-hero">
@@ -1474,6 +1575,8 @@ footer nav a:hover{color:var(--gold-light);}
     <nav>
       <a href="#" data-view="home">Qur'an</a>
       <a href="#" data-view="dua">Dua</a>
+      <a href="#" data-view="hadith">Hadith</a>
+      <a href="#" data-lite-toggle id="liteFooterBtn">⚡ Lite mode</a>
       <a href="#" data-view="quiz">Quiz</a>
     </nav>
   </footer>
@@ -1677,6 +1780,7 @@ footer nav a:hover{color:var(--gold-light);}
   // twinkling starfield for a fraction of the work.
   let starCanvasCtx = null, starPoints = [], starRAFHandle = null, starLastDraw = 0;
   function buildStars(){
+    if(document.documentElement.classList.contains("lite")) return;
     const canvas = document.getElementById("starCanvas");
     const layer = document.getElementById("bgLayer");
     if(!canvas || !layer) return;
@@ -3589,6 +3693,142 @@ footer nav a:hover{color:var(--gold-light);}
   }
 
   // ============================================================
+  //  HADITH VIEW
+  // ============================================================
+  const LS_HADITH_LANG = "noor_hadith_lang_v1";
+  const LS_LITE = "noor_lite_v1";
+  const HADITH_PAGE = 8;
+  const HADITHS = [
+    {title:"Actions Are by Intentions",arabic:"إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",en:"Actions are judged by intentions, and every person will have what they intended.",bn:"কর্মের ফলাফল নিয়তের ওপর নির্ভরশীল, আর প্রত্যেক ব্যক্তি তা-ই পাবে যার নিয়ত সে করেছে।",narrator:"Umar ibn al-Khattab (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"intention niyyah sincerity নিয়ত ইখলাস"},
+    {title:"The Pillars of Islam",arabic:"بُنِيَ الْإِسْلَامُ عَلَى خَمْسٍ: شَهَادَةِ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَنَّ مُحَمَّدًا رَسُولُ اللَّهِ، وَإِقَامِ الصَّلَاةِ، وَإِيتَاءِ الزَّكَاةِ، وَحَجِّ الْبَيْتِ، وَصَوْمِ رَمَضَانَ",en:"Islam is built on five: testifying that there is no god but Allah and that Muhammad is the Messenger of Allah, establishing the prayer, paying zakat, performing Hajj to the House, and fasting Ramadan.",bn:"ইসলাম পাঁচটি ভিত্তির ওপর প্রতিষ্ঠিত: আল্লাহ ছাড়া কোনো ইলাহ নেই ও মুহাম্মাদ ﷺ আল্লাহর রাসূল—এ সাক্ষ্য দেওয়া, সালাত কায়েম করা, যাকাত আদায় করা, কাবা ঘরের হজ করা এবং রমযানের রোযা রাখা।",narrator:"Abdullah ibn Umar (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"islam pillars prayer zakat hajj fasting salah সালাত যাকাত হজ রোযা ইসলাম"},
+    {title:"Love for Your Brother",arabic:"لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ",en:"None of you truly believes until he loves for his brother what he loves for himself.",bn:"তোমাদের কেউ প্রকৃত মুমিন হতে পারবে না, যতক্ষণ না সে তার ভাইয়ের জন্য তা-ই পছন্দ করে যা নিজের জন্য পছন্দ করে।",narrator:"Anas ibn Malik (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"brotherhood love faith iman ভাই ভালোবাসা ঈমান"},
+    {title:"Speak Good or Remain Silent",arabic:"مَنْ كَانَ يُؤْمِنُ بِاللَّهِ وَالْيَوْمِ الْآخِرِ فَلْيَقُلْ خَيْرًا أَوْ لِيَصْمُتْ",en:"Whoever believes in Allah and the Last Day, let him speak good or remain silent.",bn:"যে আল্লাহ ও শেষ দিনের প্রতি ঈমান রাখে, সে যেন ভালো কথা বলে অথবা চুপ থাকে।",narrator:"Abu Hurayrah (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"speech tongue silence manners কথা চুপ জিহ্বা"},
+    {title:"Religion Is Sincere Advice",arabic:"الدِّينُ النَّصِيحَةُ. قُلْنَا: لِمَنْ؟ قَالَ: لِلَّهِ وَلِكِتَابِهِ وَلِرَسُولِهِ وَلِأَئِمَّةِ الْمُسْلِمِينَ وَعَامَّتِهِمْ",en:"Religion is sincere advice. We asked: for whom? He said: for Allah, His Book, His Messenger, the leaders of the Muslims, and their common people.",bn:"দ্বীন হলো কল্যাণকামিতা। আমরা জিজ্ঞেস করলাম, কার জন্য? তিনি বললেন: আল্লাহর জন্য, তাঁর কিতাবের জন্য, তাঁর রাসূলের জন্য, মুসলিম নেতাদের জন্য এবং সাধারণ মুসলিমদের জন্য।",narrator:"Tamim ad-Dari (RA)",reference:"Sahih Muslim",tags:"advice sincerity naseeha deen নসিহত কল্যাণকামিতা দ্বীন"},
+    {title:"The True Muslim",arabic:"الْمُسْلِمُ مَنْ سَلِمَ الْمُسْلِمُونَ مِنْ لِسَانِهِ وَيَدِهِ",en:"The Muslim is the one from whose tongue and hand the Muslims are safe.",bn:"প্রকৃত মুসলিম সে, যার জিহ্বা ও হাত থেকে অন্য মুসলিমরা নিরাপদ থাকে।",narrator:"Abdullah ibn Amr (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"muslim safety harm tongue hand নিরাপত্তা মুসলিম"},
+    {title:"Best of You: Learn and Teach the Qur'an",arabic:"خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",en:"The best of you are those who learn the Qur'an and teach it.",bn:"তোমাদের মধ্যে সর্বোত্তম সে, যে কুরআন শেখে এবং শেখায়।",narrator:"Uthman ibn Affan (RA)",reference:"Sahih al-Bukhari",tags:"quran learn teach best কুরআন শেখা শেখানো"},
+    {title:"The Path of Knowledge",arabic:"مَنْ سَلَكَ طَرِيقًا يَلْتَمِسُ فِيهِ عِلْمًا سَهَّلَ اللَّهُ لَهُ بِهِ طَرِيقًا إِلَى الْجَنَّةِ",en:"Whoever travels a path seeking knowledge, Allah makes easy for him a path to Paradise.",bn:"যে ব্যক্তি জ্ঞান অন্বেষণের পথে চলে, আল্লাহ তার জন্য জান্নাতের পথ সহজ করে দেন।",narrator:"Abu Hurayrah (RA)",reference:"Sahih Muslim",tags:"knowledge study seeking paradise jannah জ্ঞান ইলম জান্নাত"},
+    {title:"The Strong Man",arabic:"لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ",en:"The strong man is not the one who overpowers others in wrestling; the strong man is the one who controls himself when angry.",bn:"প্রকৃত বীর সে নয় যে কুস্তিতে অন্যকে হারায়; প্রকৃত বীর সে, যে রাগের সময় নিজেকে নিয়ন্ত্রণ করে।",narrator:"Abu Hurayrah (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"anger strength self-control patience রাগ ধৈর্য শক্তি"},
+    {title:"Do Not Become Angry",arabic:"أَوْصِنِي. قَالَ: لَا تَغْضَبْ. فَرَدَّدَ مِرَارًا، قَالَ: لَا تَغْضَبْ",en:"A man said to the Prophet ﷺ: Advise me. He said: Do not become angry. The man repeated his request several times, and each time he said: Do not become angry.",bn:"এক ব্যক্তি নবী ﷺ-কে বললেন, আমাকে উপদেশ দিন। তিনি বললেন, ‘রাগ করো না।’ লোকটি কয়েকবার একই কথা বললেন, প্রতিবারই তিনি বললেন, ‘রাগ করো না।’",narrator:"Abu Hurayrah (RA)",reference:"Sahih al-Bukhari",tags:"anger advice calm রাগ উপদেশ"},
+    {title:"Purity Is Half of Faith",arabic:"الطُّهُورُ شَطْرُ الْإِيمَانِ",en:"Purity is half of faith.",bn:"পবিত্রতা ঈমানের অর্ধেক।",narrator:"Abu Malik al-Ash'ari (RA)",reference:"Sahih Muslim",tags:"purity cleanliness wudu faith পবিত্রতা পরিচ্ছন্নতা ওযু"},
+    {title:"Leaving What Does Not Concern You",arabic:"مِنْ حُسْنِ إِسْلَامِ الْمَرْءِ تَرْكُهُ مَا لَا يَعْنِيهِ",en:"Part of the excellence of a person's Islam is his leaving that which does not concern him.",bn:"কোনো ব্যক্তির ইসলামের সৌন্দর্যের অংশ হলো অনর্থক বিষয় ত্যাগ করা।",narrator:"Abu Hurayrah (RA)",reference:"Jami' at-Tirmidhi — Hasan",tags:"time useless manners অনর্থক সময়"},
+    {title:"A Smile Is Charity",arabic:"تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ لَكَ صَدَقَةٌ",en:"Your smiling in the face of your brother is charity for you.",bn:"তোমার ভাইয়ের সামনে তোমার হাসি তোমার জন্য সদকা।",narrator:"Abu Dharr (RA)",reference:"Jami' at-Tirmidhi — Hasan",tags:"smile charity sadaqah kindness হাসি সদকা"},
+    {title:"The Most Beloved Deeds",arabic:"أَحَبُّ الْأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ",en:"The most beloved deeds to Allah are the most consistent, even if they are small.",bn:"আল্লাহর কাছে সবচেয়ে প্রিয় আমল তা-ই, যা নিয়মিত করা হয়, যদিও তা অল্প হয়।",narrator:"Aisha (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"consistency deeds worship আমল নিয়মিত"},
+    {title:"A Good Word Is Charity",arabic:"الْكَلِمَةُ الطَّيِّبَةُ صَدَقَةٌ",en:"A good word is charity.",bn:"উত্তম কথা সদকা।",narrator:"Abu Hurayrah (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"kind word charity sadaqah speech সদকা ভালো কথা"},
+    {title:"Mercy to Others",arabic:"مَنْ لَا يَرْحَمُ لَا يُرْحَمُ",en:"Whoever does not show mercy will not be shown mercy.",bn:"যে দয়া করে না, তাকে দয়া করা হয় না।",narrator:"Abu Hurayrah (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"mercy compassion kindness দয়া রহম"},
+    {title:"The Merciful Are Shown Mercy",arabic:"الرَّاحِمُونَ يَرْحَمُهُمُ الرَّحْمَنُ، ارْحَمُوا مَنْ فِي الْأَرْضِ يَرْحَمْكُمْ مَنْ فِي السَّمَاءِ",en:"The merciful are shown mercy by the Most Merciful. Show mercy to those on earth, and the One above the heavens will show mercy to you.",bn:"দয়াশীলদের প্রতি দয়াময় (আর-রাহমান) দয়া করেন। তোমরা পৃথিবীবাসীর প্রতি দয়া করো, আসমানের অধিপতি তোমাদের প্রতি দয়া করবেন।",narrator:"Abdullah ibn Amr (RA)",reference:"Sunan Abi Dawud & Jami' at-Tirmidhi — Sahih",tags:"mercy compassion creation দয়া রহম"},
+    {title:"Allah Looks at Hearts",arabic:"إِنَّ اللَّهَ لَا يَنْظُرُ إِلَى صُوَرِكُمْ وَأَمْوَالِكُمْ، وَلَكِنْ يَنْظُرُ إِلَى قُلُوبِكُمْ وَأَعْمَالِكُمْ",en:"Indeed Allah does not look at your appearances or your wealth, but He looks at your hearts and your deeds.",bn:"আল্লাহ তোমাদের চেহারা ও সম্পদের দিকে তাকান না; বরং তিনি তোমাদের অন্তর ও কর্মের দিকে তাকান।",narrator:"Abu Hurayrah (RA)",reference:"Sahih Muslim",tags:"heart deeds sincerity wealth appearance অন্তর আমল সম্পদ"},
+    {title:"Two Light Words",arabic:"كَلِمَتَانِ خَفِيفَتَانِ عَلَى اللِّسَانِ، ثَقِيلَتَانِ فِي الْمِيزَانِ، حَبِيبَتَانِ إِلَى الرَّحْمَنِ: سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ",en:"Two words are light on the tongue, heavy on the scale, and beloved to the Most Merciful: Subhan-Allahi wa bihamdihi, Subhan-Allahil-'Azeem.",bn:"দুটি বাক্য জিহ্বায় হালকা, মিযানে ভারী এবং দয়াময়ের কাছে প্রিয়: সুবহানাল্লাহি ওয়া বিহামদিহি, সুবহানাল্লাহিল আযীম।",narrator:"Abu Hurayrah (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"dhikr tasbih remembrance scale যিকর তাসবিহ মিযান"},
+    {title:"Guiding to Good",arabic:"مَنْ دَلَّ عَلَى خَيْرٍ فَلَهُ مِثْلُ أَجْرِ فَاعِلِهِ",en:"Whoever guides to something good will have a reward like that of the one who does it.",bn:"যে কল্যাণের পথ দেখায়, সে সেই কাজ সম্পাদনকারীর সমান সওয়াব পায়।",narrator:"Abu Mas'ud al-Ansari (RA)",reference:"Sahih Muslim",tags:"guidance good reward teaching সওয়াব কল্যাণ"},
+    {title:"Best in Character",arabic:"إِنَّ مِنْ خِيَارِكُمْ أَحْسَنَكُمْ أَخْلَاقًا",en:"Among the best of you are those with the best character.",bn:"তোমাদের মধ্যে সর্বোত্তম তারা, যাদের চরিত্র সবচেয়ে সুন্দর।",narrator:"Abdullah ibn Amr (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"character manners akhlaq চরিত্র আখলাক"},
+    {title:"Fear Allah Wherever You Are",arabic:"اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا، وَخَالِقِ النَّاسَ بِخُلُقٍ حَسَنٍ",en:"Fear Allah wherever you are, follow a bad deed with a good deed and it will erase it, and treat people with good character.",bn:"তুমি যেখানেই থাকো আল্লাহকে ভয় করো, মন্দ কাজের পর ভালো কাজ করো, তা মন্দকে মুছে দেবে, আর মানুষের সঙ্গে উত্তম আচরণ করো।",narrator:"Abu Dharr (RA)",reference:"Jami' at-Tirmidhi — Hasan",tags:"taqwa repentance good deeds character তাকওয়া তওবা চরিত্র"},
+    {title:"No Arrogance",arabic:"لَا يَدْخُلُ الْجَنَّةَ مَنْ كَانَ فِي قَلْبِهِ مِثْقَالُ ذَرَّةٍ مِنْ كِبْرٍ",en:"No one will enter Paradise who has even an atom's weight of arrogance in his heart.",bn:"যার অন্তরে অণু পরিমাণ অহংকার আছে, সে জান্নাতে প্রবেশ করবে না।",narrator:"Abdullah ibn Mas'ud (RA)",reference:"Sahih Muslim",tags:"pride arrogance humility অহংকার বিনয়"},
+    {title:"Sending Blessings on the Prophet",arabic:"مَنْ صَلَّى عَلَيَّ وَاحِدَةً صَلَّى اللَّهُ عَلَيْهِ بِهَا عَشْرًا",en:"Whoever sends one blessing upon me, Allah sends ten blessings upon him.",bn:"যে আমার ওপর একবার দরুদ পাঠায়, আল্লাহ তার ওপর দশবার রহমত বর্ষণ করেন।",narrator:"Abu Hurayrah (RA)",reference:"Sahih Muslim",tags:"durood salawat blessings prophet দরুদ সালাত নবী"},
+    {title:"The Believers Are Like a Building",arabic:"الْمُؤْمِنُ لِلْمُؤْمِنِ كَالْبُنْيَانِ يَشُدُّ بَعْضُهُ بَعْضًا",en:"The believer to the believer is like a building, each part strengthening the other.",bn:"এক মুমিন অপর মুমিনের জন্য প্রাচীরের মতো, যার একাংশ অপরাংশকে মজবুত করে।",narrator:"Abu Musa al-Ash'ari (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"unity brotherhood support community ঐক্য ভ্রাতৃত্ব"},
+    {title:"Honesty in Dealings",arabic:"مَنْ غَشَّنَا فَلَيْسَ مِنَّا",en:"Whoever deceives us is not one of us.",bn:"যে আমাদের ধোঁকা দেয়, সে আমাদের দলভুক্ত নয়।",narrator:"Abu Hurayrah (RA)",reference:"Sahih Muslim",tags:"honesty trade deceit business সততা ধোঁকা ব্যবসা"},
+    {title:"Modesty Is Part of Faith",arabic:"الْحَيَاءُ مِنَ الْإِيمَانِ",en:"Modesty is part of faith.",bn:"লজ্জাশীলতা ঈমানের অংশ।",narrator:"Abdullah ibn Umar (RA)",reference:"Sahih al-Bukhari & Sahih Muslim",tags:"modesty haya faith লজ্জা হায়া ঈমান"}
+  ];
+  let hadithLang = loadJSON(LS_HADITH_LANG, "both");
+  let hadithQuery = "";
+  let hadithShown = HADITH_PAGE;
+
+  function filteredHadiths(){
+    const q = hadithQuery.trim().toLowerCase();
+    if(!q) return HADITHS;
+    return HADITHS.filter(function(h){
+      return h.title.toLowerCase().indexOf(q) > -1 || h.tags.toLowerCase().indexOf(q) > -1
+        || h.en.toLowerCase().indexOf(q) > -1 || h.narrator.toLowerCase().indexOf(q) > -1
+        || h.reference.toLowerCase().indexOf(q) > -1 || h.bn.indexOf(hadithQuery.trim()) > -1;
+    });
+  }
+
+  function hadithCardHtml(h, n){
+    let tr = "";
+    if(hadithLang === "en"){
+      tr = '<div class="translation">'+escapeHtml(h.en)+'</div>';
+    }else if(hadithLang === "bn"){
+      tr = '<div class="translation bn-text">'+escapeHtml(h.bn)+'</div>';
+    }else{
+      tr = '<div class="translation">'+escapeHtml(h.en)+'</div>'
+         + '<div class="translation bn-text">'+escapeHtml(h.bn)+'</div>';
+    }
+    return ''
+      + '<article class="hadith-card">'
+      +   '<div class="hd-head"><span class="hd-num">'+n+'</span><span class="hd-title">'+escapeHtml(h.title)+'</span></div>'
+      +   '<div class="arabic-text" lang="ar">'+escapeHtml(h.arabic)+'</div>'
+      +   tr
+      +   '<div class="hd-narrator">Narrated by '+escapeHtml(h.narrator)+'</div>'
+      +   '<div class="reference">'+escapeHtml(h.reference)+'</div>'
+      + '</article>';
+  }
+
+  function renderHadith(reset){
+    const list = document.getElementById("hadithList");
+    const more = document.getElementById("hadithMore");
+    const count = document.getElementById("hadithCount");
+    if(!list) return;
+    if(reset) hadithShown = HADITH_PAGE;
+    const all = filteredHadiths();
+    const slice = all.slice(0, hadithShown);
+    if(!all.length){
+      list.innerHTML = '<div class="dua-empty">No hadith match your search.</div>';
+    }else{
+      list.innerHTML = slice.map(function(h){ return hadithCardHtml(h, HADITHS.indexOf(h)+1); }).join("");
+    }
+    if(count) count.textContent = all.length ? ("Showing "+slice.length+" of "+all.length) : "";
+    if(more){
+      const left = all.length - slice.length;
+      more.style.display = left > 0 ? "" : "none";
+      more.textContent = "Load more ("+left+" left)";
+    }
+  }
+
+  function initHadith(){
+    renderHadith(true);
+    const search = document.getElementById("hadithSearch");
+    let timer = null;
+    if(search){
+      search.addEventListener("input", function(e){
+        const v = e.target.value;
+        clearTimeout(timer);
+        timer = setTimeout(function(){ hadithQuery = v; renderHadith(true); }, 200);
+      });
+    }
+    const more = document.getElementById("hadithMore");
+    if(more) more.addEventListener("click", function(){ hadithShown += HADITH_PAGE; renderHadith(false); });
+    const toggle = document.getElementById("hadithLangToggle");
+    if(toggle){
+      const btns = toggle.querySelectorAll("button");
+      btns.forEach(function(b){
+        b.classList.toggle("active", b.dataset.lang === hadithLang);
+        b.addEventListener("click", function(){
+          hadithLang = b.dataset.lang;
+          saveJSON(LS_HADITH_LANG, hadithLang);
+          btns.forEach(function(x){ x.classList.toggle("active", x === b); });
+          renderHadith(false);
+        });
+      });
+    }
+  }
+
+  // ============================================================
+  //  LITE MODE (low-end device optimisation)
+  //  The "lite" class is set before first paint by a tiny script in <head>
+  //  (auto-on for <=2GB RAM, <=2 CPU cores or Save-Data). This lets the
+  //  user override it. A reload is used so the starfield loop never starts.
+  // ============================================================
+  function initLite(){
+    const isLite = document.documentElement.classList.contains("lite");
+    document.querySelectorAll("[data-lite-toggle]").forEach(function(el){
+      el.textContent = "⚡ Lite mode: " + (isLite ? "On" : "Off");
+      el.addEventListener("click", function(e){
+        e.preventDefault();
+        try{ localStorage.setItem(LS_LITE, isLite ? "off" : "on"); }catch(err){}
+        location.reload();
+      });
+    });
+  }
+
+    // ============================================================
   //  QUIZ VIEW
   // ============================================================
   const QUIZ_BANK = [
@@ -3739,6 +3979,8 @@ footer nav a:hover{color:var(--gold-light);}
     safeCall(initTafsirOutsideClose, "initTafsirOutsideClose");
     safeCall(fetchSurahList, "fetchSurahList");
     safeCall(initDua, "initDua");
+    safeCall(initHadith, "initHadith");
+    safeCall(initLite, "initLite");
     safeCall(function(){
       lastRead = loadJSON(LS_LAST_READ, null);
       renderContinueCard();
