@@ -712,6 +712,31 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 .hadith-note{max-width:900px;margin:0 auto 14px;padding:0 22px;font-size:.74rem;color:var(--slate);text-align:center;line-height:1.6;}
 @media (max-width:520px){.hadith-card .arabic-text{font-size:1.3rem;line-height:2;}.hadith-card{padding:18px;}}
 
+/* ---- Sahih al-Bukhari reader ---- */
+[hidden]{display:none !important;}
+.hd-tabs{display:flex;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(201,162,39,.35);border-radius:999px;padding:4px;}
+.hd-tabs button{background:none;border:none;color:var(--parchment-dim);padding:8px 16px;border-radius:999px;font-size:.82rem;font-weight:600;min-height:38px;}
+.hd-tabs button.active{background:var(--gold);color:var(--night);}
+.bk-controls{max-width:900px;margin:12px auto 0;padding:0 22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.bk-select{flex:1;min-width:200px;min-height:44px;padding:10px 16px;border-radius:999px;border:1px solid rgba(201,162,39,.4);background:var(--night-2);color:var(--parchment);font-size:.9rem;font-family:var(--font-ui);}
+.bk-select option{background:var(--night-2);color:var(--parchment);}
+.bk-jump{display:flex;gap:6px;}
+.bk-jump input{width:120px;min-height:44px;padding:10px 16px;border-radius:999px;border:1px solid rgba(201,162,39,.4);background:rgba(255,255,255,.05);color:var(--parchment);font-size:.9rem;font-family:var(--font-ui);}
+.bk-jump input::placeholder{color:var(--slate);}
+.bk-btn{min-height:44px;padding:10px 20px;border-radius:999px;border:1px solid rgba(201,162,39,.5);background:rgba(201,162,39,.12);color:var(--gold-light);font-size:.85rem;font-weight:600;}
+.bk-btn:hover{background:rgba(201,162,39,.22);}
+.bk-btn:disabled{opacity:.35;cursor:default;}
+.bk-all{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--parchment-dim);white-space:nowrap;}
+.bk-all input{width:18px;height:18px;accent-color:var(--gold);}
+.bk-pager{max-width:900px;margin:0 auto 60px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.bk-pager span{font-size:.82rem;color:var(--slate);text-align:center;}
+.hadith-card.hd-hit{border-color:var(--emerald);border-left-color:var(--emerald);}
+.bk-card .hd-num{padding:0 10px;border-radius:999px;}
+.bk-card .hd-title{font-size:1.02rem;}
+.bk-card .hd-narrator.muted{color:var(--slate);}
+.bk-card{content-visibility:auto;contain-intrinsic-size:auto 420px;}
+html.lite .bk-card{content-visibility:visible;}
+
 /* ============================================================
    LITE MODE — for low-end / low-memory devices
    Static background, no blur, no animation, no starfield.
@@ -1528,13 +1553,13 @@ footer nav a:hover{color:var(--gold-light);}
     <div class="hadith-hero">
       <div class="glyph">قَالَ رَسُولُ اللَّهِ ﷺ</div>
       <h1>Hadith</h1>
-      <p>A hand-picked collection of well-known authentic hadith — Arabic text with English and বাংলা translation, narrator and source. Light and fast on any device.</p>
+      <p>Read Sahih al-Bukhari book by book in Arabic with English and বাংলা, search it, or jump to any hadith number. It loads one small part at a time, so it stays fast on older phones.</p>
     </div>
 
     <div class="hadith-toolbar">
-      <div class="hadith-search">
-        <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
-        <input id="hadithSearch" type="text" placeholder="Search hadith (e.g. 'anger', 'knowledge')" autocomplete="off">
+      <div class="hd-tabs" id="hdTabs" role="tablist" aria-label="Hadith collections">
+        <button data-hdtab="bukhari" class="active" role="tab" aria-selected="true">Sahih al-Bukhari</button>
+        <button data-hdtab="featured" role="tab" aria-selected="false">Featured</button>
       </div>
       <div class="hd-toggle" id="hadithLangToggle" role="group" aria-label="Hadith translation language">
         <button data-lang="both" class="active">EN + বাংলা</button>
@@ -1542,11 +1567,47 @@ footer nav a:hover{color:var(--gold-light);}
         <button data-lang="bn">বাংলা</button>
       </div>
     </div>
-    <div class="hadith-count" id="hadithCount"></div>
 
-    <div class="hadith-list" id="hadithList"></div>
-    <button class="hadith-more" id="hadithMore" style="display:none;">Load more</button>
-    <p class="hadith-note">Translations are simplified for readability. Please verify wording and numbering against the full collections (e.g. sunnah.com) before quoting.</p>
+    <!-- Full Sahih al-Bukhari (data loaded lazily from hadith/bukhari/) -->
+    <div id="hdPanelBukhari">
+      <div class="bk-controls">
+        <select id="bkBook" class="bk-select" aria-label="Choose a book"></select>
+        <div class="bk-jump">
+          <input id="bkJump" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Go to #" aria-label="Go to hadith number" autocomplete="off">
+          <button class="bk-btn" id="bkJumpBtn" type="button">Go</button>
+        </div>
+      </div>
+      <div class="bk-controls">
+        <div class="hadith-search">
+          <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
+          <input id="bkSearch" type="text" placeholder="Search text (English, বাংলা or Arabic)" autocomplete="off" aria-label="Search Sahih al-Bukhari">
+        </div>
+        <label class="bk-all"><input type="checkbox" id="bkAll"> All books</label>
+        <button class="bk-btn" id="bkSearchBtn" type="button">Search</button>
+      </div>
+      <div class="hadith-count" id="bkCount" aria-live="polite"></div>
+      <div class="hadith-list" id="bkList"><div class="dua-empty">Loading Sahih al-Bukhari…</div></div>
+      <div class="bk-pager">
+        <button class="bk-btn" id="bkPrev" type="button" aria-label="Previous page">‹ Prev</button>
+        <span id="bkPageInfo"></span>
+        <button class="bk-btn" id="bkNext" type="button" aria-label="Next page">Next ›</button>
+      </div>
+    </div>
+
+    <!-- Hand-picked featured hadith (always available, works offline) -->
+    <div id="hdPanelFeatured" hidden>
+      <div class="hadith-toolbar" style="margin-top:12px;">
+        <div class="hadith-search">
+          <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
+          <input id="hadithSearch" type="text" placeholder="Search featured hadith (e.g. 'anger', 'knowledge')" autocomplete="off">
+        </div>
+      </div>
+      <div class="hadith-count" id="hadithCount"></div>
+      <div class="hadith-list" id="hadithList"></div>
+      <button class="hadith-more" id="hadithMore" style="display:none;">Load more</button>
+    </div>
+
+    <p class="hadith-note">Arabic text and translations come from open hadith datasets and may differ slightly from printed editions. Please verify wording and numbering against sunnah.com before quoting.</p>
   </section>
 
   <!-- ============ QUIZ VIEW ============ -->
@@ -2668,6 +2729,7 @@ footer nav a:hover{color:var(--gold-light);}
     window.scrollTo({top:0, behavior:"smooth"});
     if(view === "quiz" && !quizStarted){ startQuiz(); }
     if(view === "admin"){ renderAdminView(); }
+    if(view === "hadith"){ ensureBukhari(); }
   }
 
   function initViewNav(){
@@ -3782,7 +3844,340 @@ footer nav a:hover{color:var(--gold-light);}
     }
   }
 
+  // ============================================================
+  //  SAHIH AL-BUKHARI - full collection, loaded one small part at a time
+  //  Data folder: hadith/bukhari/   (built by build_bukhari.py)
+  //    index.json          books + the chunk files that hold them
+  //    b<book>-<part>.json at most 150 hadith: [number, arabic, english, bangla]
+  //  Only the part being read is downloaded, the last few are kept in
+  //  memory, and only 10 hadith are in the page at once - so old / low-RAM
+  //  phones never hold the whole collection.
+  // ============================================================
+  const BK_BASE = "hadith/bukhari/";
+  const BK_PAGE = 10;
+  const BK_CACHE_MAX = 5;
+  const BK_MAX_RESULTS = 60;
+  const LS_BK_POS = "noor_bukhari_pos_v1";
+
+  let bkState = "idle";            // idle | loading | ready | failed
+  let bkIndex = null, bkBooks = {};
+  let bkBook = 1, bkPage = 0;
+  let bkHit = null, bkHitFixed = false, bkScroll = false;
+  let bkSearch = null;             // null = browsing, else {q, all, results[], page, running, scanned, total, error, shown}
+  let bkToken = 0;                 // bumps whenever the view changes, so late downloads are ignored
+  let bkCache = {}, bkOrder = [];
+  let bkTimer = null;
+
+  function bkEl(id){ return document.getElementById(id); }
+  function bkSetCount(t){ const c = bkEl("bkCount"); if(c) c.textContent = t || ""; }
+  function bkIsLite(){
+    return document.documentElement.classList.contains("lite")
+      || !!(navigator.connection && navigator.connection.saveData);
+  }
+
+  function bkFetchChunk(file){
+    if(bkCache[file]){
+      const i = bkOrder.indexOf(file);
+      if(i > -1) bkOrder.splice(i, 1);
+      bkOrder.push(file);
+      return Promise.resolve(bkCache[file]);
+    }
+    return fetch(BK_BASE + file).then(function(r){
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then(function(arr){
+      bkCache[file] = arr;
+      bkOrder.push(file);
+      while(bkOrder.length > BK_CACHE_MAX){ delete bkCache[bkOrder.shift()]; }
+      return arr;
+    });
+  }
+
+  // ---------- card ----------
+  function bkCardHtml(h, book, showBook){
+    const num = h[0], ar = h[1] || "", en = h[2] || "", bn = h[3] || "";
+    let tr = "";
+    if(hadithLang === "en"){
+      tr = en ? '<div class="translation">' + escapeHtml(en) + '</div>' : "";
+    }else if(hadithLang === "bn"){
+      if(bn) tr = '<div class="translation bn-text">' + escapeHtml(bn) + '</div>';
+      else if(en) tr = '<div class="translation">' + escapeHtml(en) + '</div>'
+        + '<div class="hd-narrator muted bn-text">এই হাদীসের বাংলা অনুবাদ পাওয়া যায়নি — English দেখানো হচ্ছে।</div>';
+    }else{
+      tr = (en ? '<div class="translation">' + escapeHtml(en) + '</div>' : "")
+         + (bn ? '<div class="translation bn-text">' + escapeHtml(bn) + '</div>' : "");
+    }
+    const bookName = book ? book.en : "";
+    return ''
+      + '<article class="hadith-card bk-card' + (bkHit === num ? ' hd-hit' : '') + '" data-n="' + num + '">'
+      +   '<div class="hd-head"><span class="hd-num">' + num + '</span>'
+      +     (showBook ? '<span class="hd-title">Book ' + book.n + ' · ' + escapeHtml(bookName) + '</span>' : '<span class="hd-title">Sahih al-Bukhari</span>')
+      +   '</div>'
+      +   (ar ? '<div class="arabic-text" lang="ar">' + escapeHtml(ar) + '</div>' : '')
+      +   tr
+      +   '<div class="reference">Sahih al-Bukhari ' + num + (book ? ' · Book ' + book.n + ': ' + escapeHtml(bookName) : '') + '</div>'
+      + '</article>';
+  }
+
+  // ---------- pager ----------
+  function bkUpdatePager(page, pages, canPrev, canNext){
+    const info = bkEl("bkPageInfo"), prev = bkEl("bkPrev"), next = bkEl("bkNext");
+    if(info) info.textContent = "Page " + (page + 1) + " / " + pages;
+    if(prev) prev.disabled = !canPrev;
+    if(next) next.disabled = !canNext;
+  }
+
+  function bkBookPos(n){
+    for(let i = 0; i < bkIndex.books.length; i++){ if(bkIndex.books[i].n === n) return i; }
+    return 0;
+  }
+
+  // ---------- browse a book ----------
+  function bkRenderBrowse(){
+    const list = bkEl("bkList");
+    const b = bkBooks[bkBook];
+    if(!list || !b) return;
+    const pages = Math.max(1, Math.ceil(b.c / BK_PAGE));
+    if(bkPage > pages - 1) bkPage = pages - 1;
+    if(bkPage < 0) bkPage = 0;
+    const start = bkPage * BK_PAGE;
+    const ci = Math.floor(start / b.s);
+    const token = ++bkToken;
+    const bi = bkBookPos(bkBook);
+    bkUpdatePager(bkPage, pages, bi > 0 || bkPage > 0, bi < bkIndex.books.length - 1 || bkPage < pages - 1);
+    if(!bkCache[b.f[ci]]) list.innerHTML = '<div class="dua-empty">Loading…</div>';
+
+    bkFetchChunk(b.f[ci]).then(function(arr){
+      if(token !== bkToken) return;
+      const off = start - ci * b.s;
+      const slice = arr.slice(off, off + BK_PAGE);
+      // jumped-to hadith is not on the guessed page (numbering gaps): find it once and redraw
+      if(bkHit !== null && !bkHitFixed && !slice.some(function(h){ return h[0] === bkHit; })){
+        bkHitFixed = true;
+        for(let i = 0; i < arr.length; i++){
+          if(arr[i][0] === bkHit){ bkPage = Math.floor((ci * b.s + i) / BK_PAGE); return bkRenderBrowse(); }
+        }
+      }
+      list.innerHTML = slice.map(function(h){ return bkCardHtml(h, b, false); }).join("");
+      if(slice.length){
+        bkSetCount("Book " + b.n + ": " + b.en + " · hadith " + slice[0][0] + "–" + slice[slice.length - 1][0] + " (" + b.c + " in this book)");
+      }
+      bkSavePos();
+      if(bkScroll){
+        bkScroll = false;
+        const hit = list.querySelector(".hd-hit");
+        const y = (hit || list).getBoundingClientRect().top + (window.pageYOffset || 0) - 84;
+        window.scrollTo(0, Math.max(0, y));
+      }
+      // warm the next part while the person reads (skipped on lite / Save-Data)
+      const nextStart = (bkPage + 1) * BK_PAGE;
+      if(!bkIsLite() && nextStart < b.c){
+        const nci = Math.floor(nextStart / b.s);
+        if(nci !== ci) bkFetchChunk(b.f[nci]).catch(function(){});
+      }
+    }).catch(function(){
+      if(token !== bkToken) return;
+      list.innerHTML = '<div class="dua-empty">Couldn’t load this part. Please check your connection. <button class="bk-btn" type="button" data-bkretry="1">Retry</button></div>';
+    });
+  }
+
+  // ---------- search results ----------
+  function bkRenderResults(){
+    const list = bkEl("bkList");
+    const s = bkSearch;
+    if(!list || !s) return;
+    const pages = Math.max(1, Math.ceil(s.results.length / BK_PAGE));
+    if(s.page > pages - 1) s.page = pages - 1;
+    const slice = s.results.slice(s.page * BK_PAGE, s.page * BK_PAGE + BK_PAGE);
+    if(slice.length){
+      list.innerHTML = slice.map(function(r){ return bkCardHtml(r.h, bkBooks[r.b], true); }).join("");
+    }else if(s.running){
+      list.innerHTML = '<div class="dua-empty">Searching…</div>';
+    }else{
+      list.innerHTML = '<div class="dua-empty">' + (s.error ? 'Search stopped because a part could not be loaded.' : 'No hadith match your search.') + '</div>';
+    }
+    let msg = s.results.length + (s.results.length === 1 ? " match" : " matches");
+    if(s.results.length >= BK_MAX_RESULTS) msg += " (first " + BK_MAX_RESULTS + " shown — refine your search)";
+    if(s.running) msg += " · searching book " + Math.min(s.scanned + 1, s.total) + " of " + s.total + "…";
+    else if(!s.all) msg += " in Book " + bkBook + ": " + bkBooks[bkBook].en;
+    bkSetCount(msg);
+    bkUpdatePager(s.page, pages, s.page > 0, s.page < pages - 1);
+  }
+
+  function bkRender(){ if(bkSearch) bkRenderResults(); else bkRenderBrowse(); }
+
+  const BK_AR_MARKS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
+  function bkNormAr(t){
+    return t.replace(BK_AR_MARKS, "").replace(/[\u0622\u0623\u0625\u0671]/g, "\u0627")
+            .replace(/\u0649/g, "\u064A").replace(/\u0629/g, "\u0647");
+  }
+  function bkMatcher(q){
+    if(/[\u0600-\u06FF]/.test(q)){
+      const nq = bkNormAr(q);
+      return function(h){ return bkNormAr(h[1] || "").indexOf(nq) > -1; };
+    }
+    if(/[\u0980-\u09FF]/.test(q)){
+      return function(h){ return (h[3] || "").indexOf(q) > -1; };
+    }
+    const lq = q.toLowerCase();
+    return function(h){ return (h[2] || "").toLowerCase().indexOf(lq) > -1; };
+  }
+
+  function bkSetSearchBtn(running){
+    const btn = bkEl("bkSearchBtn");
+    if(btn) btn.textContent = running ? "Stop" : "Search";
+  }
+
+  function bkStopSearch(){
+    ++bkToken;
+    if(bkSearch){ bkSearch.running = false; }
+    bkSetSearchBtn(false);
+    bkRenderResults();
+  }
+
+  function bkStartSearch(){
+    clearTimeout(bkTimer);
+    const q = (bkEl("bkSearch").value || "").trim();
+    const all = bkEl("bkAll").checked;
+    const token = ++bkToken;
+    if(!q){ bkSearch = null; bkSetSearchBtn(false); bkRenderBrowse(); return; }
+    if(/^\d+$/.test(q)){ bkJump(parseInt(q, 10)); return; }
+    const test = bkMatcher(q);
+    const books = all ? bkIndex.books : [bkBooks[bkBook]];
+    const s = bkSearch = {q: q, all: all, results: [], page: 0, running: true, scanned: 0, total: books.length, error: false, shown: false};
+    let bi = 0, ci = 0;
+    bkSetSearchBtn(true);
+    bkRenderResults();
+
+    function finish(){
+      if(token !== bkToken) return;
+      s.running = false;
+      bkSetSearchBtn(false);
+      bkRenderResults();
+    }
+    function step(){
+      if(token !== bkToken) return;
+      if(bi >= books.length || s.results.length >= BK_MAX_RESULTS){ finish(); return; }
+      const b = books[bi];
+      bkFetchChunk(b.f[ci]).then(function(arr){
+        if(token !== bkToken) return;
+        for(let i = 0; i < arr.length && s.results.length < BK_MAX_RESULTS; i++){
+          if(test(arr[i])) s.results.push({h: arr[i], b: b.n});
+        }
+        ci++;
+        if(ci >= b.f.length){ ci = 0; bi++; s.scanned = bi; }
+        if(!s.shown && s.results.length >= BK_PAGE){ s.shown = true; bkRenderResults(); }
+        else bkSetCount(s.results.length + " found · searching book " + Math.min(bi + 1, s.total) + " of " + s.total + "…");
+        setTimeout(step, 0);
+      }).catch(function(){
+        if(token !== bkToken) return;
+        s.error = true;
+        finish();
+      });
+    }
+    step();
+  }
+
+  // ---------- jump to a hadith number ----------
+  function bkJump(n){
+    if(!bkIndex || !n) return;
+    let target = null;
+    bkIndex.books.forEach(function(b){ if(n >= b.first && n <= b.last) target = b; });
+    if(!target){
+      const last = bkIndex.books[bkIndex.books.length - 1].last;
+      bkSetCount("No hadith numbered " + n + ". Valid numbers: " + bkIndex.books[0].first + "–" + last + ".");
+      return;
+    }
+    ++bkToken;
+    bkSearch = null;
+    bkSetSearchBtn(false);
+    bkEl("bkSearch").value = "";
+    bkEl("bkJump").value = "";
+    bkBook = target.n;
+    bkEl("bkBook").value = String(target.n);
+    bkPage = Math.floor((n - target.first) / BK_PAGE);
+    bkHit = n; bkHitFixed = false; bkScroll = true;
+    bkRenderBrowse();
+  }
+
+  function bkSavePos(){ saveJSON(LS_BK_POS, {b: bkBook, p: bkPage}); }
+
+  function bkGoPage(delta){
+    bkHit = null;
+    bkScroll = true;
+    if(bkSearch){
+      const pages = Math.max(1, Math.ceil(bkSearch.results.length / BK_PAGE));
+      bkSearch.page = Math.min(pages - 1, Math.max(0, bkSearch.page + delta));
+      bkRenderResults();
+      const y = bkEl("bkList").getBoundingClientRect().top + (window.pageYOffset || 0) - 84;
+      window.scrollTo(0, Math.max(0, y));
+      bkScroll = false;
+      return;
+    }
+    const b = bkBooks[bkBook];
+    const pages = Math.max(1, Math.ceil(b.c / BK_PAGE));
+    const np = bkPage + delta;
+    if(np >= 0 && np < pages){ bkPage = np; }
+    else{
+      const bi = bkBookPos(bkBook) + (delta > 0 ? 1 : -1);
+      if(bi < 0 || bi >= bkIndex.books.length){ bkScroll = false; return; }
+      const nb = bkIndex.books[bi];
+      bkBook = nb.n;
+      bkEl("bkBook").value = String(nb.n);
+      bkPage = delta > 0 ? 0 : Math.max(0, Math.ceil(nb.c / BK_PAGE) - 1);
+    }
+    bkRenderBrowse();
+  }
+
+  // ---------- tabs / lazy start ----------
+  function hdSetTab(t){
+    document.querySelectorAll("#hdTabs button").forEach(function(b){
+      const on = b.dataset.hdtab === t;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    const pb = bkEl("hdPanelBukhari"), pf = bkEl("hdPanelFeatured");
+    if(pb) pb.hidden = (t !== "bukhari");
+    if(pf) pf.hidden = (t !== "featured");
+  }
+
+  // Called the first time the Hadith page is opened (nothing is downloaded before that).
+  function ensureBukhari(){
+    if(bkState !== "idle") return;
+    bkState = "loading";
+    fetch(BK_BASE + "index.json").then(function(r){
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    }).then(function(idx){
+      if(!idx || !idx.books || !idx.books.length) throw new Error("empty index");
+      idx.books.sort(function(a, b){ return a.n - b.n; });
+      bkIndex = idx;
+      idx.books.forEach(function(b){ bkBooks[b.n] = b; });
+      const sel = bkEl("bkBook");
+      sel.innerHTML = idx.books.map(function(b){
+        return '<option value="' + b.n + '">' + b.n + '. ' + escapeHtml(b.en) + ' (' + b.c + ')</option>';
+      }).join("");
+      const pos = loadJSON(LS_BK_POS, null);
+      if(pos && bkBooks[pos.b]){
+        bkBook = pos.b;
+        bkPage = Math.max(0, parseInt(pos.p, 10) || 0);
+      }else{
+        bkBook = idx.books[0].n; bkPage = 0;
+      }
+      sel.value = String(bkBook);
+      bkState = "ready";
+      bkRenderBrowse();
+    }).catch(function(err){
+      bkState = "failed";
+      if(window.console) console.warn("[Noor] Sahih al-Bukhari data not available - showing featured hadith only.", err);
+      const tab = document.querySelector('#hdTabs button[data-hdtab="bukhari"]');
+      if(tab) tab.hidden = true;
+      hdSetTab("featured");
+    });
+  }
+
   function initHadith(){
+    // featured collection (always available)
     renderHadith(true);
     const search = document.getElementById("hadithSearch");
     let timer = null;
@@ -3795,6 +4190,8 @@ footer nav a:hover{color:var(--gold-light);}
     }
     const more = document.getElementById("hadithMore");
     if(more) more.addEventListener("click", function(){ hadithShown += HADITH_PAGE; renderHadith(false); });
+
+    // language toggle (shared by both collections)
     const toggle = document.getElementById("hadithLangToggle");
     if(toggle){
       const btns = toggle.querySelectorAll("button");
@@ -3805,9 +4202,53 @@ footer nav a:hover{color:var(--gold-light);}
           saveJSON(LS_HADITH_LANG, hadithLang);
           btns.forEach(function(x){ x.classList.toggle("active", x === b); });
           renderHadith(false);
+          if(bkState === "ready") bkRender();
         });
       });
     }
+
+    // tabs
+    document.querySelectorAll("#hdTabs button").forEach(function(b){
+      b.addEventListener("click", function(){ hdSetTab(b.dataset.hdtab); });
+    });
+
+    // Bukhari controls
+    const sel = bkEl("bkBook");
+    if(sel) sel.addEventListener("change", function(){
+      bkBook = parseInt(sel.value, 10) || 1;
+      bkPage = 0; bkHit = null; bkSearch = null; bkScroll = true;
+      bkEl("bkSearch").value = "";
+      bkSetSearchBtn(false);
+      bkRenderBrowse();
+    });
+    const jump = bkEl("bkJump");
+    function doJump(){ const n = parseInt((jump.value || "").replace(/\D/g, ""), 10); if(n) bkJump(n); }
+    if(jump){
+      jump.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); doJump(); } });
+      bkEl("bkJumpBtn").addEventListener("click", doJump);
+    }
+    const bs = bkEl("bkSearch");
+    if(bs){
+      bs.addEventListener("input", function(){
+        clearTimeout(bkTimer);
+        if(!bs.value.trim()){ bkStartSearch(); return; }
+        if(!bkEl("bkAll").checked && !/^\d+$/.test(bs.value.trim())){
+          bkTimer = setTimeout(bkStartSearch, 350);      // live search inside the open book
+        }
+      });
+      bs.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); bkStartSearch(); } });
+    }
+    const sbtn = bkEl("bkSearchBtn");
+    if(sbtn) sbtn.addEventListener("click", function(){
+      if(bkSearch && bkSearch.running) bkStopSearch(); else bkStartSearch();
+    });
+    const all = bkEl("bkAll");
+    if(all) all.addEventListener("change", function(){ if(bkEl("bkSearch").value.trim()) bkStartSearch(); });
+    bkEl("bkPrev").addEventListener("click", function(){ bkGoPage(-1); });
+    bkEl("bkNext").addEventListener("click", function(){ bkGoPage(1); });
+    bkEl("bkList").addEventListener("click", function(e){
+      if(e.target && e.target.getAttribute && e.target.getAttribute("data-bkretry")) bkRender();
+    });
   }
 
   // ============================================================
