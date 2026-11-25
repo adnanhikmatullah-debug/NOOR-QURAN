@@ -38,6 +38,8 @@ if(v==="on"||(v!=="off"&&low))document.documentElement.classList.add("lite");}ca
   --shadow-lg:0 20px 60px rgba(0,0,0,.45);
   --shadow-sm:0 6px 18px rgba(0,0,0,.25);
   --font-arabic:'Amiri', serif;
+  --font-scripture:'Amiri', serif;   /* Arabic font for Quran, Hadith & Dua only (changed by the ع button) */
+  --scripture-scale:1;
   --font-display:'Cormorant Garamond', serif;
   --font-ui:'Inter', sans-serif;
   --font-bn:'Noto Sans Bengali','Inter', sans-serif;
@@ -511,9 +513,9 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 .ayah.bookmarked{border-color:rgba(201,162,39,.4);background:rgba(201,162,39,.06);}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 .ayah .arabic-text{
-  font-family:var(--font-arabic);
+  font-family:var(--font-scripture);
   direction:rtl;text-align:right;
-  font-size:1.65rem;line-height:2.4;
+  font-size:calc(1.65rem * var(--scripture-scale));line-height:2.4;
   color:var(--parchment);
 }
 .ayah .ayah-badge{
@@ -649,8 +651,8 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
   margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);
 }
 .dua-card .arabic-text{
-  font-family:var(--font-arabic);direction:rtl;text-align:right;
-  font-size:1.5rem;line-height:2.2;color:var(--parchment);margin-bottom:10px;
+  font-family:var(--font-scripture);direction:rtl;text-align:right;
+  font-size:calc(1.5rem * var(--scripture-scale));line-height:2.2;color:var(--parchment);margin-bottom:10px;
 }
 .dua-card .translit{
   font-size:.85rem;color:var(--slate);font-style:italic;margin-bottom:10px;line-height:1.6;
@@ -702,7 +704,7 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 .hadith-card .hd-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);}
 .hadith-card .hd-num{flex:none;min-width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(201,162,39,.16);color:var(--gold-light);font-size:.78rem;font-weight:700;}
 .hadith-card .hd-title{font-family:var(--font-display);font-weight:700;font-size:1.15rem;color:var(--gold-light);}
-.hadith-card .arabic-text{font-family:var(--font-arabic);direction:rtl;text-align:right;font-size:1.5rem;line-height:2.2;color:var(--parchment);margin-bottom:12px;}
+.hadith-card .arabic-text{font-family:var(--font-scripture);direction:rtl;text-align:right;font-size:calc(1.5rem * var(--scripture-scale));line-height:2.2;color:var(--parchment);margin-bottom:12px;}
 .hadith-card .translation{font-size:.93rem;color:var(--parchment-dim);line-height:1.7;white-space:pre-line;}
 .hadith-card .translation + .translation{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.08);}
 .hadith-card .hd-narrator{margin-top:12px;font-size:.78rem;color:var(--emerald-light);}
@@ -710,7 +712,7 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 .hadith-more{display:block;margin:0 auto 60px;padding:11px 26px;border-radius:999px;border:1px solid rgba(201,162,39,.5);background:rgba(201,162,39,.12);color:var(--gold-light);font-size:.88rem;font-weight:600;}
 .hadith-more:hover{background:rgba(201,162,39,.22);}
 .hadith-note{max-width:900px;margin:0 auto 14px;padding:0 22px;font-size:.74rem;color:var(--slate);text-align:center;line-height:1.6;}
-@media (max-width:520px){.hadith-card .arabic-text{font-size:1.3rem;line-height:2;}.hadith-card{padding:18px;}}
+@media (max-width:520px){.hadith-card .arabic-text{font-size:calc(1.3rem * var(--scripture-scale));line-height:2;}.hadith-card{padding:18px;}}
 
 /* ---- Sahih al-Bukhari reader ---- */
 [hidden]{display:none !important;}
@@ -934,8 +936,8 @@ footer nav a:hover{color:var(--gold-light);}
 }
 @media (max-width:520px){
   .brand small{display:none;}
-  .ayah .arabic-text{font-size:1.4rem;line-height:2.2;}
-  .dua-card .arabic-text{font-size:1.3rem;line-height:2;}
+  .ayah .arabic-text{font-size:calc(1.4rem * var(--scripture-scale));line-height:2.2;}
+  .dua-card .arabic-text{font-size:calc(1.3rem * var(--scripture-scale));line-height:2;}
   .quiz-card{padding:22px 18px;}
   .quiz-question{font-size:1.15rem;}
   .app-toolbar{flex-direction:column;align-items:stretch;}
@@ -1030,6 +1032,36 @@ footer nav a:hover{color:var(--gold-light);}
 }
 .theme-swatch.active{border-color:var(--gold-light);}
 .theme-swatch span{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:.58rem;color:var(--slate);white-space:nowrap;}
+
+/* ---- Arabic font picker (Quran / Hadith / Dua) ---- */
+.arfont-fab{
+  position:fixed;bottom:22px;right:80px;z-index:80;
+  width:48px;height:48px;border-radius:50%;
+  background:var(--night-2);color:var(--gold-light);border:1px solid rgba(201,162,39,.5);
+  font-family:var(--font-scripture);font-size:1.45rem;line-height:1;box-shadow:var(--shadow-lg);
+  display:flex;align-items:center;justify-content:center;
+}
+.arfont-panel{
+  position:fixed;bottom:80px;right:22px;z-index:81;width:min(290px,calc(100vw - 44px));
+  background:var(--night-2);border:1px solid rgba(201,162,39,.35);
+  border-radius:14px;padding:14px;box-shadow:var(--shadow-lg);display:none;
+}
+.arfont-panel.open{display:block;}
+.arfont-panel h4{margin:0 0 4px;font-family:var(--font-display);color:var(--gold-light);font-size:1rem;}
+.arfont-panel .af-sub{font-size:.72rem;color:var(--slate);margin:0 0 10px;}
+.arfont-preview{
+  font-family:var(--font-scripture);direction:rtl;text-align:center;font-size:calc(1.5rem * var(--scripture-scale));line-height:2.1;
+  color:var(--parchment);background:rgba(255,255,255,.04);border-radius:10px;padding:8px 6px;margin-bottom:10px;
+}
+.arfont-list{display:flex;flex-direction:column;gap:6px;max-height:42vh;overflow:auto;}
+.arfont-opt{
+  text-align:left;background:rgba(255,255,255,.04);border:1px solid transparent;border-radius:10px;
+  padding:9px 12px;color:var(--parchment);min-height:44px;
+}
+.arfont-opt b{display:block;font-size:.88rem;font-weight:600;}
+.arfont-opt span{display:block;font-size:.72rem;color:var(--slate);}
+.arfont-opt.active{border-color:var(--gold-light);background:rgba(201,162,39,.12);}
+.arfont-opt.loading span::after{content:" · loading…";color:var(--gold-light);}
 
 /* ============================================================
    AUTH (sign up / login)
@@ -1658,6 +1690,15 @@ footer nav a:hover{color:var(--gold-light);}
 
 <!-- Theme picker -->
 <button class="theme-fab" id="themeFab" aria-label="Change background theme">🎨</button>
+
+<!-- Arabic font picker (Quran, Hadith, Dua) -->
+<button class="arfont-fab" id="arFontFab" aria-label="Choose Arabic font" title="Arabic font">ع</button>
+<div class="arfont-panel" id="arFontPanel">
+  <h4>Arabic font</h4>
+  <p class="af-sub">Applies to Quran, Hadith and Dua text.</p>
+  <div class="arfont-preview" id="arFontPreview" lang="ar">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+  <div class="arfont-list" id="arFontList"></div>
+</div>
 <div class="theme-panel" id="themePanel">
   <h4>Background</h4>
   <!-- swatches injected by JS -->
@@ -1953,6 +1994,71 @@ footer nav a:hover{color:var(--gold-light);}
       }
     });
     applyTheme(loadJSON(LS_THEME, "night"), true);
+  }
+
+  // ---------- Arabic font for Quran / Hadith / Dua ----------
+  // Only the font you pick is downloaded (one small request); "Device font" downloads nothing.
+  const LS_AR_FONT = "noor_arfont_v1";
+  const AR_FONTS = [
+    {id:"amiri",        label:"Amiri",             desc:"Classic Naskh · default",               css:"'Amiri', serif",                                   gf:null,                         scale:1},
+    {id:"amiriquran",   label:"Amiri Quran",       desc:"Mushaf style, designed for the Quran",  css:"'Amiri Quran','Amiri',serif",                      gf:"Amiri+Quran",                scale:1},
+    {id:"scheherazade", label:"Scheherazade New",  desc:"Very clear, full diacritics (tashkeel)", css:"'Scheherazade New','Amiri',serif",                 gf:"Scheherazade+New:wght@400",  scale:1},
+    {id:"notonaskh",    label:"Noto Naskh Arabic", desc:"Clean, modern and easy to read",         css:"'Noto Naskh Arabic','Amiri',serif",                gf:"Noto+Naskh+Arabic:wght@400", scale:1},
+    {id:"lateef",       label:"Lateef",            desc:"Compact, saves space on small screens",  css:"'Lateef','Amiri',serif",                           gf:"Lateef:wght@400",            scale:1.15},
+    {id:"system",       label:"Device font",       desc:"Fastest · no download, for old phones",  css:"'Traditional Arabic','Geeza Pro','Noto Naskh Arabic','Droid Arabic Naskh','Arial',serif", gf:null, scale:1}
+  ];
+  const arFontLoaded = {};
+
+  function arFontById(id){
+    for(let i = 0; i < AR_FONTS.length; i++){ if(AR_FONTS[i].id === id) return AR_FONTS[i]; }
+    return AR_FONTS[0];
+  }
+  function arFontLoad(f, done){
+    if(!f.gf || arFontLoaded[f.id]){ if(done) done(); return; }
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=" + f.gf + "&display=swap";
+    link.onload = function(){ arFontLoaded[f.id] = true; if(done) done(); };
+    link.onerror = function(){ if(done) done(); };
+    document.head.appendChild(link);
+  }
+  function arFontApply(id, skipSave){
+    const f = arFontById(id);
+    const root = document.documentElement.style;
+    root.setProperty("--font-scripture", f.css);
+    root.setProperty("--scripture-scale", String(f.scale));
+    if(!skipSave) saveJSON(LS_AR_FONT, f.id);
+    document.querySelectorAll(".arfont-opt").forEach(function(b){
+      b.classList.toggle("active", b.dataset.font === f.id);
+    });
+  }
+  function initArabicFont(){
+    const fab = document.getElementById("arFontFab");
+    const panel = document.getElementById("arFontPanel");
+    const list = document.getElementById("arFontList");
+    if(!fab || !panel || !list) return;
+    list.innerHTML = AR_FONTS.map(function(f){
+      return '<button type="button" class="arfont-opt" data-font="' + f.id + '"><b>' + f.label + '</b><span>' + f.desc + '</span></button>';
+    }).join("");
+    list.addEventListener("click", function(e){
+      const btn = e.target.closest ? e.target.closest(".arfont-opt") : null;
+      if(!btn) return;
+      const f = arFontById(btn.dataset.font);
+      btn.classList.add("loading");
+      arFontLoad(f, function(){ btn.classList.remove("loading"); });
+      arFontApply(f.id);              // applies at once; the font swaps in when it has downloaded
+    });
+    fab.addEventListener("click", function(){
+      const tp = document.getElementById("themePanel");
+      if(tp) tp.classList.remove("open");
+      panel.classList.toggle("open");
+    });
+    document.addEventListener("click", function(e){
+      if(!e.target.closest(".arfont-panel") && !e.target.closest("#arFontFab")) panel.classList.remove("open");
+    });
+    const saved = loadJSON(LS_AR_FONT, "amiri");
+    arFontLoad(arFontById(saved));
+    arFontApply(saved, true);
   }
 
   // ---------- live clock / dynamic region ----------
@@ -4408,6 +4514,7 @@ footer nav a:hover{color:var(--gold-light);}
   function init(){
     safeCall(buildStars, "buildStars");
     safeCall(initThemePicker, "initThemePicker");
+    safeCall(initArabicFont, "initArabicFont");
     safeCall(initViewNav, "initViewNav");
     safeCall(initNav, "initNav");
     safeCall(initAuth, "initAuth");
