@@ -166,7 +166,7 @@ header.topbar{
    background looks almost identical while scrolling but is essentially
    free to paint. */
 @media (max-width:768px){
-  header.topbar{background:rgba(11,27,43,.95);backdrop-filter:none;-webkit-backdrop-filter:none;}
+  header.topbar{background:rgba(var(--night-rgb,11,27,43),.95);backdrop-filter:none;-webkit-backdrop-filter:none;}
 }
 .brand{
   display:flex;align-items:center;gap:10px;
@@ -1022,7 +1022,8 @@ footer nav a:hover{color:var(--gold-light);}
   position:fixed;bottom:80px;right:22px;z-index:81;
   background:var(--night-2);border:1px solid rgba(201,162,39,.35);
   border-radius:14px;padding:14px;box-shadow:var(--shadow-lg);
-  display:none;gap:10px;flex-wrap:wrap;width:220px;
+  display:none;flex-direction:column;gap:10px;width:min(340px,calc(100vw - 44px));
+  max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);overflow-y:auto;overscroll-behavior:contain;
 }
 .theme-panel.open{display:flex;}
 .theme-panel h4{width:100%;margin:0 0 4px;font-family:var(--font-display);color:var(--gold-light);font-size:1rem;}
@@ -1031,7 +1032,47 @@ footer nav a:hover{color:var(--gold-light);}
   cursor:pointer;position:relative;
 }
 .theme-swatch.active{border-color:var(--gold-light);}
+.theme-swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding-bottom:30px;}
+.theme-swatches .theme-swatch{width:100%;}
+.theme-swatches .theme-swatch span{width:62px;white-space:normal;text-align:center;line-height:1.15;bottom:-28px;}
 .theme-swatch span{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:.58rem;color:var(--slate);white-space:nowrap;}
+
+/* ---- Design Studio (colors / background pattern / logo) ---- */
+#patternLayer{position:absolute;inset:0;background-repeat:repeat;background-position:center top;pointer-events:none;}
+html.no-aurora .aurora-orb{display:none !important;}
+html.no-stars #starCanvas{display:none !important;}
+html.no-grain .grain{display:none !important;}
+.mark-wrap{display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;
+  width:var(--logo-size,30px);height:var(--logo-size,30px);color:var(--logo-color,var(--gold-light));}
+.mark-wrap .mark{width:100%;height:100%;display:block;}
+.mark-wrap.f-circle{border:2px solid currentColor;border-radius:50%;padding:calc(var(--logo-size,30px) * .17);}
+.mark-wrap.f-rounded{border:2px solid currentColor;border-radius:26%;padding:calc(var(--logo-size,30px) * .17);}
+@media (max-width:768px){#logoName{display:inline-block;max-width:34vw;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom;}}
+.ds-tabs{display:flex;gap:4px;background:rgba(255,255,255,.04);border-radius:999px;padding:3px;}
+.ds-tabs button{flex:1;background:none;border:none;color:var(--parchment-dim);padding:8px 6px;border-radius:999px;font-size:.78rem;font-weight:600;min-height:38px;}
+.ds-tabs button.active{background:var(--gold);color:var(--night);}
+.ds-label{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin:6px 0 6px;}
+.ds-hint{font-size:.7rem;color:var(--slate);margin-top:2px;}
+.ds-row{display:flex;align-items:center;gap:10px;margin:8px 0;}
+.ds-row > label{width:78px;flex:none;font-size:.8rem;color:var(--parchment-dim);}
+.ds-row input[type=range]{flex:1;min-width:0;accent-color:var(--gold);height:28px;}
+.ds-row output{width:44px;text-align:right;font-size:.74rem;color:var(--slate);}
+.ds-row input[type=color]{width:44px;height:36px;padding:2px;border:1px solid rgba(201,162,39,.4);border-radius:8px;background:rgba(255,255,255,.05);cursor:pointer;}
+.ds-row input[type=text]{flex:1;min-width:0;min-height:38px;padding:8px 12px;border-radius:10px;border:1px solid rgba(201,162,39,.35);background:rgba(255,255,255,.05);color:var(--parchment);font-size:.85rem;font-family:var(--font-ui);}
+.ds-mini{background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.4);color:var(--gold-light);border-radius:999px;padding:6px 12px;font-size:.74rem;min-height:34px;}
+.ds-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;}
+.ds-chip{background:rgba(255,255,255,.04);border:1px solid transparent;color:var(--parchment-dim);border-radius:999px;padding:6px 12px;font-size:.76rem;min-height:34px;display:inline-flex;align-items:center;gap:6px;}
+.ds-chip i{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,.4);}
+.ds-chip.active,.pat-opt.active,.logo-opt.active{border-color:var(--gold-light);background:rgba(201,162,39,.14);}
+.ds-check{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--parchment-dim);min-height:34px;}
+.ds-check input{width:18px;height:18px;accent-color:var(--gold);}
+.pat-grid,.logo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.pat-opt,.logo-opt{background:rgba(255,255,255,.04);border:1px solid transparent;border-radius:10px;padding:6px 4px 5px;color:var(--parchment-dim);display:flex;flex-direction:column;align-items:center;gap:4px;}
+.pat-opt i{display:block;width:100%;height:38px;border-radius:6px;background-color:var(--night);background-repeat:repeat;}
+.pat-opt i.pat-none{display:flex;align-items:center;justify-content:center;font-style:normal;color:var(--slate);}
+.logo-opt svg{width:34px;height:34px;color:var(--gold-light);}
+.pat-opt span,.logo-opt span{font-size:.62rem;line-height:1.15;text-align:center;}
+.ds-reset{margin-top:6px;background:none;border:1px solid rgba(255,255,255,.18);color:var(--slate);border-radius:999px;padding:9px 14px;font-size:.78rem;min-height:40px;}
 
 /* ---- Arabic font picker (Quran / Hadith / Dua) ---- */
 .arfont-fab{
@@ -1374,6 +1415,7 @@ footer nav a:hover{color:var(--gold-light);}
 <body>
 
 <div id="bgLayer">
+  <div id="patternLayer" aria-hidden="true"></div>
   <canvas id="starCanvas" aria-hidden="true"></canvas>
   <div class="aurora-orb o1"></div>
   <div class="aurora-orb o2"></div>
@@ -1385,7 +1427,7 @@ footer nav a:hover{color:var(--gold-light);}
 
 <!-- Mobile nav drawer -->
 <aside class="nav-drawer" id="navDrawer">
-  <div class="drawer-brand">Noor</div>
+  <div class="drawer-brand" id="logoNameDrawer">Noor</div>
   <button data-view="home" class="drawer-nav-btn active">Home · Qur'an</button>
   <button data-view="surahs" class="drawer-nav-btn">All Surahs</button>
   <button data-view="dua" class="drawer-nav-btn">Dua</button>
@@ -1402,12 +1444,14 @@ footer nav a:hover{color:var(--gold-light);}
   <header class="topbar">
     <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰</button>
     <div class="brand">
-      <svg class="mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="8" y="14" width="24" height="20" rx="1.5" stroke="currentColor" stroke-width="2"/>
-        <rect x="8" y="14" width="24" height="5" fill="currentColor" opacity=".8"/>
-        <path d="M20 4 L23 12 L17 12 Z" fill="currentColor"/>
-      </svg>
-      <div>Noor <small>Qur'an, Dua, Hadith &amp; Knowledge</small></div>
+      <span class="mark-wrap" id="logoMark">
+        <svg class="mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="8" y="14" width="24" height="20" rx="1.5" stroke="currentColor" stroke-width="2"/>
+          <rect x="8" y="14" width="24" height="5" fill="currentColor" opacity=".8"/>
+          <path d="M20 4 L23 12 L17 12 Z" fill="currentColor"/>
+        </svg>
+      </span>
+      <div><span id="logoName">Noor</span> <small id="logoTag">Qur'an, Dua, Hadith &amp; Knowledge</small></div>
     </div>
     <div class="search-wrap" id="quranSearchWrap">
       <span class="search-icon">⌕</span>
@@ -1700,8 +1744,67 @@ footer nav a:hover{color:var(--gold-light);}
   <div class="arfont-list" id="arFontList"></div>
 </div>
 <div class="theme-panel" id="themePanel">
-  <h4>Background</h4>
-  <!-- swatches injected by JS -->
+  <h4>Design</h4>
+  <div class="ds-tabs" role="tablist">
+    <button type="button" data-ds="colors" class="active">Colors</button>
+    <button type="button" data-ds="bg">Background</button>
+    <button type="button" data-ds="logo">Logo</button>
+  </div>
+
+  <div data-pane="colors">
+    <div class="ds-label">Ready-made themes</div>
+    <div class="theme-swatches" id="themeSwatches"><!-- swatches injected by JS --></div>
+    <div class="ds-label">Your own colors</div>
+    <div class="ds-row"><label for="dsAccent">Accent</label><input type="color" id="dsAccent" value="#c9a227"><button type="button" class="ds-mini" id="dsAccentReset">Auto</button></div>
+    <div class="ds-row"><label for="dsBg">Background</label><input type="color" id="dsBg" value="#0b1b2b"><button type="button" class="ds-mini" id="dsBgReset">Auto</button></div>
+    <div class="ds-hint">Dark shades work best. Light ones are darkened automatically so text stays readable.</div>
+  </div>
+
+  <div data-pane="bg" hidden>
+    <div class="ds-label">Pattern</div>
+    <div class="pat-grid" id="patGrid"></div>
+    <div class="ds-row"><label for="dsPOp">Visibility</label><input type="range" id="dsPOp" min="2" max="40" step="1"><output id="dsPOpV"></output></div>
+    <div class="ds-row"><label for="dsPSize">Size</label><input type="range" id="dsPSize" min="40" max="240" step="10"><output id="dsPSizeV"></output></div>
+    <div class="ds-row"><label>Color</label>
+      <div class="ds-chips" id="dsPColor">
+        <button type="button" class="ds-chip" data-c="gold"><i style="background:var(--gold-light)"></i>Gold</button>
+        <button type="button" class="ds-chip" data-c="emerald"><i style="background:var(--emerald-light)"></i>Green</button>
+        <button type="button" class="ds-chip" data-c="white"><i style="background:#fff"></i>White</button>
+        <input type="color" id="dsPCustom" value="#e6c765" aria-label="Custom pattern color" style="width:40px;height:34px;padding:2px;border:1px solid rgba(201,162,39,.4);border-radius:8px;background:rgba(255,255,255,.05);">
+      </div>
+    </div>
+    <div class="ds-label">Effects</div>
+    <label class="ds-check"><input type="checkbox" id="dsAurora"> Aurora glow</label>
+    <label class="ds-check"><input type="checkbox" id="dsStars"> Twinkling stars</label>
+    <label class="ds-check"><input type="checkbox" id="dsGrain"> Soft grain texture</label>
+    <div class="ds-hint">Turning effects off makes the site lighter on older phones.</div>
+  </div>
+
+  <div data-pane="logo" hidden>
+    <div class="ds-label">Logo style</div>
+    <div class="logo-grid" id="logoGrid"></div>
+    <div class="ds-label">Frame</div>
+    <div class="ds-chips" id="dsFrame">
+      <button type="button" class="ds-chip" data-f="none">None</button>
+      <button type="button" class="ds-chip" data-f="circle">Circle</button>
+      <button type="button" class="ds-chip" data-f="rounded">Rounded</button>
+    </div>
+    <div class="ds-row"><label>Color</label>
+      <div class="ds-chips" id="dsLColor">
+        <button type="button" class="ds-chip" data-c="gold"><i style="background:var(--gold-light)"></i>Gold</button>
+        <button type="button" class="ds-chip" data-c="emerald"><i style="background:var(--emerald-light)"></i>Green</button>
+        <button type="button" class="ds-chip" data-c="white"><i style="background:#fff"></i>White</button>
+        <input type="color" id="dsLCustom" value="#e6c765" aria-label="Custom logo color" style="width:40px;height:34px;padding:2px;border:1px solid rgba(201,162,39,.4);border-radius:8px;background:rgba(255,255,255,.05);">
+      </div>
+    </div>
+    <div class="ds-row"><label for="dsLSize">Size</label><input type="range" id="dsLSize" min="22" max="44" step="1"><output id="dsLSizeV"></output></div>
+    <div class="ds-label">Name &amp; tagline</div>
+    <div class="ds-row"><label for="dsName">Name</label><input type="text" id="dsName" maxlength="18" autocomplete="off"></div>
+    <div class="ds-row"><label for="dsTag">Tagline</label><input type="text" id="dsTag" maxlength="44" autocomplete="off"></div>
+    <label class="ds-check"><input type="checkbox" id="dsShowTag"> Show tagline</label>
+  </div>
+
+  <button type="button" class="ds-reset" id="dsResetAll">Reset all design changes</button>
 </div>
 
 <!-- Auth modal -->
@@ -1929,7 +2032,7 @@ footer nav a:hover{color:var(--gold-light);}
     function loop(t){
       // Throttle to ~10fps — a twinkling starfield doesn't need 60fps,
       // and this keeps the main thread nearly idle between frames.
-      if(t - starLastDraw > 100){
+      if(t - starLastDraw > 100 && !document.documentElement.classList.contains("no-stars")){
         starLastDraw = t;
         drawStars(t);
       }
@@ -1964,10 +2067,235 @@ footer nav a:hover{color:var(--gold-light);}
     root.setProperty("--gold-light", t.goldLight);
     root.setProperty("--emerald", t.emerald);
     root.setProperty("--emerald-light", t.emeraldLight);
+    designApply();
     if(!skipSave) saveJSON(LS_THEME, t.id);
     document.querySelectorAll(".theme-swatch").forEach(function(sw){
       sw.classList.toggle("active", sw.dataset.theme === t.id);
     });
+  }
+
+  // ============================================================
+  //  DESIGN STUDIO  (🎨 button): colors, background patterns, logo
+  //  Everything is saved in this visitor's browser only.
+  //  Site owner: change SITE_DEFAULTS below to set what new visitors see first.
+  // ============================================================
+  const LS_DESIGN = "noor_design_v1";
+  const SITE_DEFAULTS = {
+    pattern:"none",            // none | star | hex | circles | diamond | moons | dots | tri
+    patternOpacity:12,         // 2 - 40  (%)
+    patternSize:100,           // 40 - 240 (%)
+    patternColor:"gold",       // gold | emerald | white | custom
+    patternCustom:"#e6c765",
+    aurora:true, stars:true, grain:true,
+    accent:null, bg:null,      // custom colors (null = use the selected theme)
+    logo:"minaret",            // minaret | crescent | star8 | book | mosque | lantern
+    frame:"none",              // none | circle | rounded
+    logoColor:"gold",          // gold | emerald | white | custom
+    logoCustom:"#e6c765",
+    logoSize:30,               // 22 - 44 (px)
+    name:"Noor",
+    tagline:"Qur'an, Dua, Hadith & Knowledge",
+    showTagline:true
+  };
+  const DS_LOGOS = {"minaret": "<rect x=\"8\" y=\"14\" width=\"24\" height=\"20\" rx=\"1.5\" stroke=\"currentColor\" stroke-width=\"2\"/><rect x=\"8\" y=\"14\" width=\"24\" height=\"5\" fill=\"currentColor\" opacity=\".8\"/><path d=\"M20 4 L23 12 L17 12 Z\" fill=\"currentColor\"/>", "crescent": "<path d=\"M19.57 8.01 A13 13 0 1 0 31.21 25.47 A10.5 10.5 0 1 1 19.57 8.01 Z\" fill=\"currentColor\"/><polygon points=\"29.5,8.5 30.68,11.88 34.26,11.95 31.4,14.12 32.44,17.55 29.5,15.5 26.56,17.55 27.6,14.12 24.74,11.95 28.32,11.88\" fill=\"currentColor\"/>", "star8": "<polygon points=\"20,3.5 24.83,8.33 31.67,8.33 31.67,15.17 36.5,20 31.67,24.83 31.67,31.67 24.83,31.67 20,36.5 15.17,31.67 8.33,31.67 8.33,24.83 3.5,20 8.33,15.17 8.33,8.33 15.17,8.33\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linejoin=\"round\"/><circle cx=\"20\" cy=\"20\" r=\"4.2\" fill=\"currentColor\"/>", "book": "<path d=\"M20 12.5C16 9.5 9.5 9.5 6 11.5V30C9.5 28 16 28 20 31C24 28 30.5 28 34 30V11.5C30.5 9.5 24 9.5 20 12.5Z\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M20 12.5V31\" stroke=\"currentColor\" stroke-width=\"2\"/><polygon points=\"20,2 21.05,3.05 22.55,3.05 22.55,4.55 23.6,5.6 22.55,6.65 22.55,8.15 21.05,8.15 20,9.2 18.95,8.15 17.45,8.15 17.45,6.65 16.4,5.6 17.45,4.55 17.45,3.05 18.95,3.05\" fill=\"currentColor\"/>", "mosque": "<path d=\"M9 29C9 19 14 14 20 14C26 14 31 19 31 29Z\" fill=\"currentColor\"/><path d=\"M20 14V8.5\" stroke=\"currentColor\" stroke-width=\"2\"/><circle cx=\"20\" cy=\"6.3\" r=\"2\" fill=\"currentColor\"/><rect x=\"4\" y=\"29\" width=\"32\" height=\"4.5\" rx=\"1\" fill=\"currentColor\"/><rect x=\"3.5\" y=\"17\" width=\"3.5\" height=\"12\" fill=\"currentColor\"/><path d=\"M5.25 11.5L7.4 17H3.1Z\" fill=\"currentColor\"/><rect x=\"33\" y=\"17\" width=\"3.5\" height=\"12\" fill=\"currentColor\"/><path d=\"M34.75 11.5L36.9 17H32.6Z\" fill=\"currentColor\"/>", "lantern": "<circle cx=\"20\" cy=\"4.6\" r=\"2\" stroke=\"currentColor\" stroke-width=\"1.6\"/><path d=\"M13.5 13L20 7.5L26.5 13Z\" fill=\"currentColor\"/><rect x=\"13.5\" y=\"13\" width=\"13\" height=\"16\" rx=\"1\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M20 15.5C22 18.2 22.4 20 20 23C17.6 20 18 18.2 20 15.5Z\" fill=\"currentColor\"/><path d=\"M15.5 29H24.5L22.5 34.5H17.5Z\" fill=\"currentColor\"/>"};
+  const DS_LOGO_LABEL = {"minaret": "Minaret", "crescent": "Crescent", "star8": "Star", "book": "Book", "mosque": "Mosque", "lantern": "Lantern"};
+  const DS_PATTERNS = {"star": [80, 80, "<g stroke=\"{c}\" stroke-width=\"1.2\" fill=\"none\" stroke-linejoin=\"round\"><polygon points=\"40,10 48.79,18.79 61.21,18.79 61.21,31.21 70,40 61.21,48.79 61.21,61.21 48.79,61.21 40,70 31.21,61.21 18.79,61.21 18.79,48.79 10,40 18.79,31.21 18.79,18.79 31.21,18.79\"/><circle cx=\"40\" cy=\"40\" r=\"6\"/><polygon points=\"0,-14 4.1,-9.9 9.9,-9.9 9.9,-4.1 14,0 9.9,4.1 9.9,9.9 4.1,9.9 0,14 -4.1,9.9 -9.9,9.9 -9.9,4.1 -14,0 -9.9,-4.1 -9.9,-9.9 -4.1,-9.9\"/><polygon points=\"80,-14 84.1,-9.9 89.9,-9.9 89.9,-4.1 94,0 89.9,4.1 89.9,9.9 84.1,9.9 80,14 75.9,9.9 70.1,9.9 70.1,4.1 66,0 70.1,-4.1 70.1,-9.9 75.9,-9.9\"/><polygon points=\"0,66 4.1,70.1 9.9,70.1 9.9,75.9 14,80 9.9,84.1 9.9,89.9 4.1,89.9 0,94 -4.1,89.9 -9.9,89.9 -9.9,84.1 -14,80 -9.9,75.9 -9.9,70.1 -4.1,70.1\"/><polygon points=\"80,66 84.1,70.1 89.9,70.1 89.9,75.9 94,80 89.9,84.1 89.9,89.9 84.1,89.9 80,94 75.9,89.9 70.1,89.9 70.1,84.1 66,80 70.1,75.9 70.1,70.1 75.9,70.1\"/></g>"], "hex": [56, 100, "<g stroke=\"{c}\" stroke-width=\"1.2\" fill=\"none\"><path d=\"M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100\"/><path d=\"M28 0L28 34L0 50L0 84L28 100L56 84L56 50L28 34\"/></g>"], "circles": [60, 60, "<g stroke=\"{c}\" stroke-width=\"1.2\" fill=\"none\"><circle cx=\"0\" cy=\"0\" r=\"30\"/><circle cx=\"60\" cy=\"0\" r=\"30\"/><circle cx=\"0\" cy=\"60\" r=\"30\"/><circle cx=\"60\" cy=\"60\" r=\"30\"/><circle cx=\"30\" cy=\"30\" r=\"30\"/></g>"], "diamond": [60, 60, "<g stroke=\"{c}\" stroke-width=\"1.2\" fill=\"none\"><path d=\"M30 0L60 30L30 60L0 30Z\"/><path d=\"M30 12L48 30L30 48L12 30Z\"/></g><circle cx=\"30\" cy=\"30\" r=\"3\" fill=\"{c}\"/><circle cx=\"0\" cy=\"0\" r=\"2.2\" fill=\"{c}\"/><circle cx=\"60\" cy=\"0\" r=\"2.2\" fill=\"{c}\"/><circle cx=\"0\" cy=\"60\" r=\"2.2\" fill=\"{c}\"/><circle cx=\"60\" cy=\"60\" r=\"2.2\" fill=\"{c}\"/>"], "moons": [100, 100, "<g fill=\"{c}\"><path d=\"M21.32 15.02 A11 11 0 1 0 32.56 29.08 A9 9 0 1 1 21.32 15.02 Z\"/><polygon points=\"34,11.8 34.99,14.64 37.99,14.7 35.6,16.52 36.47,19.4 34,17.68 31.53,19.4 32.4,16.52 30.01,14.7 33.01,14.64\"/><path transform=\"translate(50 50)\" d=\"M21.32 15.02 A11 11 0 1 0 32.56 29.08 A9 9 0 1 1 21.32 15.02 Z\"/><polygon transform=\"translate(50 50)\" points=\"34,11.8 34.99,14.64 37.99,14.7 35.6,16.52 36.47,19.4 34,17.68 31.53,19.4 32.4,16.52 30.01,14.7 33.01,14.64\"/></g>"], "dots": [26, 26, "<circle cx=\"13\" cy=\"13\" r=\"1.8\" fill=\"{c}\"/>"], "tri": [40, 69, "<g stroke=\"{c}\" stroke-width=\"1.1\" fill=\"none\"><path d=\"M0 0L40 0M0 34.64L40 34.64M0 69.28L40 69.28\"/><path d=\"M0 0L20 34.64L40 0M0 69.28L20 34.64L40 69.28\"/><path d=\"M0 34.64L20 0M20 0L40 34.64M0 34.64L20 69.28M20 69.28L40 34.64\"/></g>"]};      // key -> [tileWidth, tileHeight, svgBody]
+  const DS_PATTERN_LABEL = {"star": "Islamic star", "hex": "Honeycomb", "circles": "Overlapping circles", "diamond": "Lattice", "moons": "Crescents", "dots": "Dots", "tri": "Triangles"};
+  let design = null;
+
+  function dsState(){
+    if(!design){
+      const saved = loadJSON(LS_DESIGN, {}) || {};
+      design = {};
+      Object.keys(SITE_DEFAULTS).forEach(function(k){
+        design[k] = (saved[k] !== undefined) ? saved[k] : SITE_DEFAULTS[k];
+      });
+    }
+    return design;
+  }
+  function dsSave(){
+    const diff = {};
+    Object.keys(SITE_DEFAULTS).forEach(function(k){ if(design[k] !== SITE_DEFAULTS[k]) diff[k] = design[k]; });
+    saveJSON(LS_DESIGN, diff);
+  }
+
+  const DS_HEX = /^#[0-9a-f]{6}$/i;
+  function dsHexOk(v, fallback){ return (typeof v === "string" && DS_HEX.test(v)) ? v : fallback; }
+  function dsRgb(h){ const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function dsMix(a, b, t){
+    const x = dsRgb(a), y = dsRgb(b);
+    return "#" + [0, 1, 2].map(function(i){ return ("0" + Math.round(x[i] + (y[i] - x[i]) * t).toString(16)).slice(-2); }).join("");
+  }
+  function dsLum(h){
+    const c = dsRgb(h).map(function(v){ v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function dsCssVar(name, fallback){
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return DS_HEX.test(v) ? v : fallback;
+  }
+  function dsPick(mode, custom, goldVar, emeraldVar){
+    if(mode === "emerald") return dsCssVar(emeraldVar, "#5fd9a4");
+    if(mode === "white") return "#ffffff";
+    if(mode === "custom") return dsHexOk(custom, "#e6c765");
+    return dsCssVar(goldVar, "#e6c765");
+  }
+  function dsPatternUri(p, color){
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='" + p[0] + "' height='" + p[1] + "'>" + p[2].replace(/\{c\}/g, color) + "</svg>";
+    return "data:image/svg+xml," + encodeURIComponent(svg).replace(/'/g, "%27").replace(/\(/g, "%28").replace(/\)/g, "%29");
+  }
+
+  // Paints the saved design onto the page (called after every theme change too).
+  function designApply(){
+    const d = dsState();
+    const root = document.documentElement, rs = root.style;
+
+    // custom colors on top of the chosen theme
+    if(d.bg && DS_HEX.test(d.bg)){
+      let bg = d.bg;
+      if(dsLum(bg) > 0.2) bg = dsMix(bg, "#000000", 0.55);      // keep the light text readable
+      rs.setProperty("--night", bg);
+      rs.setProperty("--night-2", dsMix(bg, "#ffffff", 0.04));
+      rs.setProperty("--teal", dsMix(bg, "#ffffff", 0.09));
+      rs.setProperty("--teal-2", dsMix(bg, "#ffffff", 0.15));
+    }
+    if(d.accent && DS_HEX.test(d.accent)){
+      let ac = d.accent;
+      if(dsLum(ac) < 0.08) ac = dsMix(ac, "#ffffff", 0.4);      // keep it visible on dark backgrounds
+      rs.setProperty("--gold", ac);
+      rs.setProperty("--gold-light", dsMix(ac, "#ffffff", 0.3));
+    }
+    const nightHex = dsCssVar("--night", "#0b1b2b");
+    rs.setProperty("--night-rgb", dsRgb(nightHex).join(","));
+
+    // background pattern
+    const layer = document.getElementById("patternLayer");
+    if(layer){
+      const p = DS_PATTERNS[d.pattern];
+      if(!p){
+        layer.style.backgroundImage = "none";
+      }else{
+        const k = Math.min(240, Math.max(40, +d.patternSize || 100)) / 100;
+        layer.style.backgroundImage = 'url("' + dsPatternUri(p, dsPick(d.patternColor, d.patternCustom, "--gold-light", "--emerald-light")) + '")';
+        layer.style.backgroundSize = Math.round(p[0] * k) + "px " + Math.round(p[1] * k) + "px";
+        layer.style.opacity = String(Math.min(40, Math.max(2, +d.patternOpacity || 12)) / 100);
+      }
+    }
+    root.classList.toggle("no-aurora", !d.aurora);
+    root.classList.toggle("no-stars", !d.stars);
+    root.classList.toggle("no-grain", !d.grain);
+
+    // logo
+    const mark = document.getElementById("logoMark");
+    if(mark){
+      const key = DS_LOGOS[d.logo] ? d.logo : "minaret";
+      mark.innerHTML = '<svg class="mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' + DS_LOGOS[key] + '</svg>';
+      mark.className = "mark-wrap" + (d.frame === "circle" ? " f-circle" : d.frame === "rounded" ? " f-rounded" : "");
+      rs.setProperty("--logo-size", Math.min(44, Math.max(22, +d.logoSize || 30)) + "px");
+      const lc = d.logoColor === "white" ? "#ffffff"
+               : d.logoColor === "custom" ? dsHexOk(d.logoCustom, "#e6c765")
+               : d.logoColor === "emerald" ? "var(--emerald-light)" : "var(--gold-light)";
+      rs.setProperty("--logo-color", lc);
+    }
+    const nm = (d.name || "").trim() || "Noor";
+    const ln = document.getElementById("logoName"); if(ln) ln.textContent = nm;
+    const dn = document.getElementById("logoNameDrawer"); if(dn) dn.textContent = nm;
+    const tg = document.getElementById("logoTag");
+    if(tg){ tg.textContent = d.tagline || ""; tg.hidden = !(d.showTagline && d.tagline); }
+  }
+
+  function dsReapplyTheme(){ applyTheme(loadJSON(LS_THEME, "night"), true); }
+  function dsCommit(){ dsSave(); dsReapplyTheme(); dsSyncUI(); }
+
+  // Updates the panel controls to match the saved design (never rebuilds them).
+  function dsSyncUI(){
+    const d = dsState();
+    function $(id){ return document.getElementById(id); }
+    function mark(sel, attr, val){
+      document.querySelectorAll(sel).forEach(function(b){ b.classList.toggle("active", b.getAttribute(attr) === val); });
+    }
+    mark(".pat-opt", "data-p", d.pattern);
+    mark(".logo-opt", "data-l", d.logo);
+    mark("#dsPColor .ds-chip", "data-c", d.patternColor);
+    mark("#dsLColor .ds-chip", "data-c", d.logoColor);
+    mark("#dsFrame .ds-chip", "data-f", d.frame);
+    if($("dsPOp")){ $("dsPOp").value = d.patternOpacity; $("dsPOpV").textContent = d.patternOpacity + "%"; }
+    if($("dsPSize")){ $("dsPSize").value = d.patternSize; $("dsPSizeV").textContent = d.patternSize + "%"; }
+    if($("dsLSize")){ $("dsLSize").value = d.logoSize; $("dsLSizeV").textContent = d.logoSize + "px"; }
+    if($("dsPCustom")) $("dsPCustom").value = dsHexOk(d.patternCustom, "#e6c765");
+    if($("dsLCustom")) $("dsLCustom").value = dsHexOk(d.logoCustom, "#e6c765");
+    if($("dsAccent")) $("dsAccent").value = dsHexOk(d.accent, dsCssVar("--gold", "#c9a227"));
+    if($("dsBg")) $("dsBg").value = dsHexOk(d.bg, dsCssVar("--night", "#0b1b2b"));
+    if($("dsAurora")) $("dsAurora").checked = !!d.aurora;
+    if($("dsStars")) $("dsStars").checked = !!d.stars;
+    if($("dsGrain")) $("dsGrain").checked = !!d.grain;
+    if($("dsShowTag")) $("dsShowTag").checked = !!d.showTagline;
+    if($("dsName") && document.activeElement !== $("dsName")) $("dsName").value = d.name;
+    if($("dsTag") && document.activeElement !== $("dsTag")) $("dsTag").value = d.tagline;
+  }
+
+  function initDesignStudio(panel){
+    const d = dsState();
+    // pattern thumbnails
+    const pg = document.getElementById("patGrid");
+    if(pg){
+      pg.innerHTML = ['none'].concat(Object.keys(DS_PATTERNS)).map(function(k){
+        if(k === 'none') return '<button type="button" class="pat-opt" data-p="none"><i class="pat-none">✕</i><span>None</span></button>';
+        const p = DS_PATTERNS[k];
+        return '<button type="button" class="pat-opt" data-p="' + k + '"><i style="background-image:url(\'' + dsPatternUri(p, "#e6c765") + '\');background-size:' + Math.round(p[0] * 0.55) + 'px ' + Math.round(p[1] * 0.55) + 'px"></i><span>' + DS_PATTERN_LABEL[k] + '</span></button>';
+      }).join("");
+    }
+    // logo thumbnails
+    const lg = document.getElementById("logoGrid");
+    if(lg){
+      lg.innerHTML = Object.keys(DS_LOGOS).map(function(k){
+        return '<button type="button" class="logo-opt" data-l="' + k + '"><svg viewBox="0 0 40 40" fill="none" aria-hidden="true">' + DS_LOGOS[k] + '</svg><span>' + DS_LOGO_LABEL[k] + '</span></button>';
+      }).join("");
+    }
+
+    panel.addEventListener("click", function(e){
+      const t = e.target;
+      const tab = t.closest("[data-ds]");
+      if(tab){
+        panel.querySelectorAll("[data-ds]").forEach(function(b){ b.classList.toggle("active", b === tab); });
+        panel.querySelectorAll("[data-pane]").forEach(function(p){ p.hidden = (p.dataset.pane !== tab.dataset.ds); });
+        return;
+      }
+      let el;
+      if((el = t.closest(".pat-opt"))){ d.pattern = el.dataset.p; return dsCommit(); }
+      if((el = t.closest(".logo-opt"))){ d.logo = el.dataset.l; return dsCommit(); }
+      if((el = t.closest("#dsPColor .ds-chip"))){ d.patternColor = el.dataset.c; return dsCommit(); }
+      if((el = t.closest("#dsLColor .ds-chip"))){ d.logoColor = el.dataset.c; return dsCommit(); }
+      if((el = t.closest("#dsFrame .ds-chip"))){ d.frame = el.dataset.f; return dsCommit(); }
+      if(t.closest("#dsAccentReset")){ d.accent = null; return dsCommit(); }
+      if(t.closest("#dsBgReset")){ d.bg = null; return dsCommit(); }
+      if(t.closest("#dsResetAll")){
+        Object.keys(SITE_DEFAULTS).forEach(function(k){ d[k] = SITE_DEFAULTS[k]; });
+        return dsCommit();
+      }
+    });
+
+    panel.addEventListener("input", function(e){
+      const t = e.target, v = t.value;
+      switch(t.id){
+        case "dsPOp":     d.patternOpacity = +v; break;
+        case "dsPSize":   d.patternSize = +v; break;
+        case "dsLSize":   d.logoSize = +v; break;
+        case "dsPCustom": d.patternCustom = v; d.patternColor = "custom"; break;
+        case "dsLCustom": d.logoCustom = v; d.logoColor = "custom"; break;
+        case "dsAccent":  d.accent = v; break;
+        case "dsBg":      d.bg = v; break;
+        case "dsAurora":  d.aurora = t.checked; break;
+        case "dsStars":   d.stars = t.checked; break;
+        case "dsGrain":   d.grain = t.checked; break;
+        case "dsShowTag": d.showTagline = t.checked; break;
+        case "dsName":    d.name = v.slice(0, 18); break;
+        case "dsTag":     d.tagline = v.slice(0, 44); break;
+        default: return;
+      }
+      dsCommit();
+    });
+    dsSyncUI();
   }
 
   function initThemePicker(){
@@ -1982,8 +2310,11 @@ footer nav a:hover{color:var(--gold-light);}
       sw.style.background = "linear-gradient(135deg,"+t.night+","+t.gold+")";
       sw.title = t.label;
       sw.innerHTML = '<span>'+t.label+'</span>';
-      sw.addEventListener("click", function(){ applyTheme(t.id); });
-      panel.appendChild(sw);
+      sw.addEventListener("click", function(){
+        const ds = dsState(); ds.accent = null; ds.bg = null; dsSave();   // choosing a theme clears custom colors
+        applyTheme(t.id); dsSyncUI();
+      });
+      (document.getElementById("themeSwatches") || panel).appendChild(sw);
     });
     document.getElementById("themeFab").addEventListener("click", function(){
       panel.classList.toggle("open");
@@ -1994,6 +2325,7 @@ footer nav a:hover{color:var(--gold-light);}
       }
     });
     applyTheme(loadJSON(LS_THEME, "night"), true);
+    initDesignStudio(panel);
   }
 
   // ---------- Arabic font for Quran / Hadith / Dua ----------
