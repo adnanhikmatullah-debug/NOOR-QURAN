@@ -263,6 +263,7 @@ nav.nav button{
   letter-spacing:.02em;white-space:nowrap;
 }
 nav.nav button:hover{color:var(--gold-light);background:rgba(201,162,39,.1);}
+@media (max-width:1280px) and (min-width:901px){nav.nav button{padding:8px 8px;font-size:.8rem;}.brand small{display:none;}}
 nav.nav button.active{color:var(--gold-light);background:rgba(201,162,39,.14);}
 
 .menu-toggle{
@@ -1037,6 +1038,85 @@ footer nav a:hover{color:var(--gold-light);}
 .theme-swatches .theme-swatch span{width:62px;white-space:normal;text-align:center;line-height:1.15;bottom:-28px;}
 .theme-swatch span{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:.58rem;color:var(--slate);white-space:nowrap;}
 
+/* ---- Page translator ---- */
+.lang-btn{flex:none;display:inline-flex;align-items:center;gap:5px;min-height:38px;padding:6px 11px;border-radius:999px;
+  border:1px solid rgba(201,162,39,.45);background:rgba(201,162,39,.1);color:var(--gold-light);font-size:.78rem;font-weight:600;}
+.lang-btn:hover{background:rgba(201,162,39,.2);}
+.lang-pop{position:fixed;top:64px;right:12px;z-index:95;width:min(290px,calc(100vw - 24px));display:none;
+  background:var(--night-2);border:1px solid rgba(201,162,39,.4);border-radius:14px;padding:14px;box-shadow:var(--shadow-lg);}
+.lang-pop.open{display:block;}
+.lang-pop h4{margin:0 0 10px;font-family:var(--font-display);color:var(--gold-light);font-size:1rem;}
+.lang-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.lang-list button{min-height:42px;padding:8px 10px;border-radius:10px;border:1px solid transparent;background:rgba(255,255,255,.05);color:var(--parchment);font-size:.92rem;}
+.lang-list button.active{border-color:var(--gold-light);background:rgba(201,162,39,.16);color:var(--gold-light);}
+.lang-more-label{margin:12px 0 6px;font-size:.72rem;color:var(--slate);}
+.lang-pop select{width:100%;min-height:42px;padding:8px 12px;border-radius:10px;border:1px solid rgba(201,162,39,.35);background:var(--night);color:var(--parchment);font-size:.9rem;}
+.lang-pop .lang-note{margin-top:6px;font-size:.72rem;color:var(--gold-light);}
+html[lang="bn"]{--font-ui:'Inter','Noto Sans Bengali','Nirmala UI',sans-serif;}
+html[lang="ar"],html[lang="ur"]{--font-ui:'Inter','Segoe UI','Noto Naskh Arabic','Geeza Pro',Tahoma,sans-serif;}
+html[lang="hi"]{--font-ui:'Inter','Nirmala UI','Noto Sans Devanagari','Mangal',sans-serif;}
+
+/* ---- Prayer times & Qibla ---- */
+.pray-fab{
+  position:fixed;bottom:22px;right:138px;z-index:80;
+  width:48px;height:48px;border-radius:50%;padding:0;
+  background:linear-gradient(145deg,var(--emerald-light),var(--emerald));color:var(--night);border:none;
+  box-shadow:var(--shadow-lg);display:flex;align-items:center;justify-content:center;
+}
+.pray-fab svg{width:30px;height:30px;display:block;}
+.pr-wrap{max-width:760px;margin:0 auto;padding:0 18px 70px;display:flex;flex-direction:column;gap:14px;}
+.pr-card{background:rgba(255,255,255,.04);border:1px solid rgba(201,162,39,.22);border-radius:16px;padding:16px;}
+.pr-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.pr-row .bk-select{flex:1;min-width:190px;}
+.pr-meta{margin-top:10px;font-size:.82rem;color:var(--parchment-dim);}
+.pr-status,.pr-qstatus,#prManualMsg{font-size:.8rem;color:var(--gold-light);min-height:1em;margin-top:6px;}
+.pr-next{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,rgba(31,174,122,.16),rgba(201,162,39,.1));}
+.pr-next small{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);}
+.pr-next strong{display:block;font-family:var(--font-display);font-size:1.9rem;color:var(--gold-light);line-height:1.1;}
+.pr-next span{font-size:.85rem;color:var(--parchment-dim);}
+.pr-count{font-variant-numeric:tabular-nums;font-size:2rem;font-weight:700;letter-spacing:.02em;color:var(--parchment);}
+.pr-datenav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;text-align:center;}
+.pr-datenav button{width:44px;height:44px;border-radius:50%;border:1px solid rgba(201,162,39,.4);background:rgba(201,162,39,.1);color:var(--gold-light);font-size:1.3rem;line-height:1;}
+.pr-datenav #prDate{font-weight:600;font-size:.95rem;}
+.pr-datenav small{color:var(--slate);font-size:.78rem;}
+.pr-today{display:block;margin:0 auto 8px;background:none;border:none;color:var(--emerald-light);font-size:.78rem;min-height:30px;text-decoration:underline;}
+.pr-times{display:flex;flex-direction:column;gap:6px;}
+.pr-time{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid transparent;}
+.pr-time .pr-n{display:flex;align-items:baseline;gap:10px;}
+.pr-time b{font-weight:600;font-size:1rem;}
+.pr-time i{font-style:normal;font-family:var(--font-scripture);font-size:1.15rem;color:var(--slate);}
+.pr-time .pr-t{font-variant-numeric:tabular-nums;font-size:1.1rem;font-weight:600;color:var(--parchment);}
+.pr-time.next{border-color:var(--emerald-light);background:rgba(31,174,122,.12);}
+.pr-time.cur .pr-t,.pr-time.cur b{color:var(--gold-light);}
+.pr-time.cur{border-color:rgba(201,162,39,.45);}
+.pr-qibla{text-align:center;}
+.pr-compass-wrap{width:min(280px,78vw);margin:4px auto 6px;}
+#qSvg{width:100%;height:auto;display:block;overflow:visible;}
+#qSvg .ring{fill:var(--night);stroke:rgba(201,162,39,.55);stroke-width:2;}
+#qSvg .tk{stroke:rgba(246,238,221,.35);stroke-width:1;}
+#qSvg .tk-m{stroke:var(--gold-light);stroke-width:2;}
+#qSvg .tx{fill:var(--parchment-dim);font-size:13px;font-weight:600;font-family:var(--font-ui);}
+#qSvg .tx-n{fill:var(--danger);font-size:15px;font-weight:700;font-family:var(--font-ui);}
+#qSvg .qline{stroke:var(--emerald-light);stroke-width:3;stroke-linecap:round;}
+#qSvg .kaaba{fill:#0a0a0a;stroke:var(--gold-light);stroke-width:1.5;}
+#qSvg .kband{fill:var(--gold-light);}
+#qSvg .fix{fill:var(--gold-light);}
+#qSvg .hub{fill:var(--night);stroke:var(--gold-light);stroke-width:2;}
+#qWrap.aligned .ring{stroke:var(--emerald-light);stroke-width:4;}
+#qWrap.aligned .kaaba{stroke:var(--emerald-light);}
+.pr-qtext{font-size:.95rem;color:var(--parchment-dim);margin:6px 0;}
+.pr-qtext b{color:var(--gold-light);}
+.pr-manual summary{cursor:pointer;font-weight:600;color:var(--gold-light);min-height:34px;display:flex;align-items:center;}
+.pr-manual[open] summary{margin-bottom:8px;}
+.pr-adj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.pr-adj{display:flex;flex-direction:column;gap:4px;font-size:.74rem;color:var(--slate);}
+.pr-adj input,.pr-manual select{min-height:40px;padding:8px 10px;border-radius:10px;border:1px solid rgba(201,162,39,.35);background:var(--night-2);color:var(--parchment);font-size:.88rem;font-family:var(--font-ui);width:100%;}
+.pr-manual .ds-row > label{width:96px;}
+.pr-manual .ds-row select,.pr-manual .ds-row input[type=text]{flex:1;min-width:0;}
+.pr-coords{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0;}
+.pr-coords input{min-height:40px;padding:8px 10px;border-radius:10px;border:1px solid rgba(201,162,39,.35);background:rgba(255,255,255,.05);color:var(--parchment);font-size:.88rem;width:100%;}
+@media (max-width:520px){.pr-count{font-size:1.5rem;}.pr-next strong{font-size:1.5rem;}}
+
 /* ---- Design Studio (colors / background pattern / logo) ---- */
 #patternLayer{position:absolute;inset:0;background-repeat:repeat;background-position:center top;pointer-events:none;}
 html.no-aurora .aurora-orb{display:none !important;}
@@ -1432,7 +1512,9 @@ html.no-grain .grain{display:none !important;}
   <button data-view="surahs" class="drawer-nav-btn">All Surahs</button>
   <button data-view="dua" class="drawer-nav-btn">Dua</button>
   <button data-view="hadith" class="drawer-nav-btn">Hadith</button>
+  <button data-view="prayer" class="drawer-nav-btn">Prayer &amp; Qibla</button>
   <button data-view="quiz" class="drawer-nav-btn">Quiz</button>
+  <button id="langDrawerBtn" type="button">🌐 Language</button>
   <button data-lite-toggle id="liteDrawerBtn">⚡ Lite mode</button>
   <button id="notesNavBtnMobile">My Notes</button>
   <button id="bookmarksNavBtnMobile">Bookmarks</button>
@@ -1463,11 +1545,13 @@ html.no-grain .grain{display:none !important;}
       <button data-view="surahs">All Surahs</button>
       <button data-view="dua">Dua</button>
       <button data-view="hadith">Hadith</button>
+      <button data-view="prayer">Prayer</button>
       <button data-view="quiz">Quiz</button>
       <button id="notesNavBtn">My Notes</button>
       <button id="bookmarksNavBtn">Bookmarks</button>
       <button data-view="admin" id="adminNavBtn" style="display:none;">Admin</button>
     </nav>
+    <button class="lang-btn" id="langBtn" type="button" aria-label="Language" title="Language">🌐 <span id="langBtnCode" data-notr>EN</span></button>
     <div id="authArea"></div>
   </header>
 
@@ -1528,6 +1612,7 @@ html.no-grain .grain{display:none !important;}
         <button class="shortcut-btn" data-view="surahs">📖 Browse All Surahs</button>
         <button class="shortcut-btn emerald" data-view="dua">🤲 Explore Daily Dua</button>
         <button class="shortcut-btn" data-view="hadith">📜 Read Hadith</button>
+        <button class="shortcut-btn emerald" data-view="prayer">🕌 Prayer Times &amp; Qibla</button>
         <button class="shortcut-btn" data-view="quiz">🧠 Take the Qur'an Quiz</button>
       </div>
 
@@ -1686,6 +1771,89 @@ html.no-grain .grain{display:none !important;}
     <p class="hadith-note">Arabic text and translations come from open hadith datasets and may differ slightly from printed editions. Please verify wording and numbering against sunnah.com before quoting.</p>
   </section>
 
+  <!-- ============ PRAYER TIMES & QIBLA VIEW ============ -->
+  <section class="view-section" id="view-prayer">
+    <div class="hadith-hero">
+      <div class="glyph" lang="ar" data-notr>إِنَّ ٱلصَّلَوٰةَ كَانَتْ عَلَى ٱلْمُؤْمِنِينَ كِتَٰبًا مَّوْقُوتًا</div>
+      <h1>Prayer &amp; Qibla</h1>
+      <p>Salah times for your zone and the direction of the Qibla. Everything is calculated on your device, so it keeps working without internet once the page has loaded.</p>
+    </div>
+    <div class="pr-wrap">
+      <div class="pr-card">
+        <div class="ds-label">Zone</div>
+        <div class="pr-row">
+          <select id="prCity" class="bk-select" aria-label="Choose your city or zone"></select>
+          <button class="bk-btn" id="prGps" type="button">📍 Use my location</button>
+        </div>
+        <div class="pr-meta" id="prMeta"></div>
+        <div class="pr-meta" id="prMethodNote"></div>
+        <div class="pr-status" id="prGpsMsg" aria-live="polite"></div>
+      </div>
+
+      <div class="pr-card pr-next">
+        <div><small>Next prayer</small><strong id="prNextName">—</strong><span id="prNextAt"></span></div>
+        <div class="pr-count" id="prCount" aria-live="off">--:--:--</div>
+      </div>
+
+      <div class="pr-card">
+        <div class="pr-datenav">
+          <button type="button" id="prPrevDay" aria-label="Previous day">‹</button>
+          <div><div id="prDate"></div><small id="prHijri"></small></div>
+          <button type="button" id="prNextDay" aria-label="Next day">›</button>
+        </div>
+        <button type="button" class="pr-today" id="prToday">Today</button>
+        <div class="pr-times" id="prTimes"></div>
+      </div>
+
+      <div class="pr-card pr-qibla" id="qWrap">
+        <div class="ds-label">Qibla direction</div>
+        <div class="pr-compass-wrap">
+          <svg id="qSvg" viewBox="-110 -110 220 220" role="img" aria-label="Qibla compass">
+            <circle class="ring" r="104"/>
+            <g id="qDial">
+              <g id="qTicks"></g>
+              <g id="qMarker">
+                <line class="qline" x1="0" y1="-10" x2="0" y2="-50"/>
+                <g transform="translate(0,-59)"><rect class="kaaba" x="-8" y="-8" width="16" height="16" rx="2"/><rect class="kband" x="-8" y="-2.5" width="16" height="3.2"/></g>
+              </g>
+            </g>
+            <path class="fix" d="M0 -108 L6 -97 L-6 -97 Z"/>
+            <circle class="hub" r="6"/>
+          </svg>
+        </div>
+        <div class="pr-qtext"><b id="qDeg">--°</b> <span>from North, clockwise</span> · <b id="qDist">-- km</b> <span>to the Kaaba</span></div>
+        <div class="pr-qstatus" id="qStatus" aria-live="polite"></div>
+        <button class="bk-btn" id="qBtn" type="button">🧭 Start live compass</button>
+        <div class="ds-hint" style="margin-top:8px;">Hold your phone flat and away from magnets or metal. If the needle drifts, move the phone in a figure 8 to calibrate it.</div>
+      </div>
+
+      <details class="pr-card pr-manual">
+        <summary>Manual settings</summary>
+        <div class="ds-row"><label for="prMethod">Method</label><select id="prMethod"></select></div>
+        <div class="ds-row"><label for="prAsr">Asr time</label>
+          <select id="prAsr"><option value="auto">Auto</option><option value="standard">Standard (Shafi, Maliki, Hanbali)</option><option value="hanafi">Hanafi</option></select></div>
+        <div class="ds-row"><label for="prFmt">Clock</label>
+          <select id="prFmt"><option value="12">12-hour</option><option value="24">24-hour</option></select></div>
+        <div class="ds-row"><label for="prHijriAdj">Hijri date</label>
+          <select id="prHijriAdj"><option value="-1">−1 day</option><option value="0">No change</option><option value="1">+1 day</option></select></div>
+        <div class="ds-label">Adjust minutes</div>
+        <div class="pr-adj-grid" id="prAdjGrid"></div>
+        <button type="button" class="ds-mini" id="prAdjReset" style="margin-top:8px;">Reset adjustments</button>
+        <div class="ds-label" style="margin-top:14px;">Custom coordinates</div>
+        <div class="pr-coords">
+          <input type="text" id="prLat" inputmode="decimal" placeholder="Latitude" aria-label="Latitude">
+          <input type="text" id="prLng" inputmode="decimal" placeholder="Longitude" aria-label="Longitude">
+        </div>
+        <input type="text" id="prTz" list="prTzList" placeholder="Time zone, e.g. Asia/Dhaka" aria-label="Time zone" style="width:100%;min-height:40px;padding:8px 10px;border-radius:10px;border:1px solid rgba(201,162,39,.35);background:rgba(255,255,255,.05);color:var(--parchment);font-size:.88rem;">
+        <datalist id="prTzList"></datalist>
+        <button type="button" class="bk-btn" id="prApplyCoords" style="margin-top:8px;">Use these coordinates</button>
+        <div id="prManualMsg" aria-live="polite"></div>
+      </details>
+
+      <p class="hadith-note">Times are calculated from the sun's position and can differ by a few minutes from your local mosque or timetable. Use the adjust-minutes boxes to match your local timetable.</p>
+    </div>
+  </section>
+
   <!-- ============ QUIZ VIEW ============ -->
   <section class="view-section" id="view-quiz">
     <div class="quiz-hero">
@@ -1713,6 +1881,7 @@ html.no-grain .grain{display:none !important;}
       <a href="#" data-view="home">Qur'an</a>
       <a href="#" data-view="dua">Dua</a>
       <a href="#" data-view="hadith">Hadith</a>
+      <a href="#" data-view="prayer">Prayer &amp; Qibla</a>
       <a href="#" data-lite-toggle id="liteFooterBtn">⚡ Lite mode</a>
       <a href="#" data-view="quiz">Quiz</a>
     </nav>
@@ -1734,6 +1903,25 @@ html.no-grain .grain{display:none !important;}
 
 <!-- Theme picker -->
 <button class="theme-fab" id="themeFab" aria-label="Change background theme">🎨</button>
+
+<!-- Interface language -->
+<div class="lang-pop" id="langPop" role="dialog" aria-label="Language">
+  <h4>Language</h4>
+  <div class="lang-list" id="langList" data-notr></div>
+  <div class="lang-more-label">More languages (opens Google Translate)</div>
+  <select id="langMore" aria-label="More languages" data-notr></select>
+  <div class="lang-note" id="langMoreNote" aria-live="polite"></div>
+</div>
+
+<!-- Prayer times & Qibla shortcut (bottom row, next to the design buttons) -->
+<button class="pray-fab" id="prayFab" data-view="prayer" aria-label="Prayer times and Qibla" title="Prayer times &amp; Qibla">
+  <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+    <circle cx="20" cy="20" r="16.5" stroke="currentColor" stroke-width="2.2"/>
+    <path d="M20 4.5v3.2M20 32.3v3.2M4.5 20h3.2M32.3 20h3.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    <g transform="rotate(38 20 20)"><path d="M20 9.5L24.2 20H15.8Z" fill="currentColor"/><path d="M20 30.5L24.2 20H15.8Z" fill="currentColor" opacity=".35"/></g>
+    <circle cx="20" cy="20" r="2.3" fill="var(--emerald)"/>
+  </svg>
+</button>
 
 <!-- Arabic font picker (Quran, Hadith, Dua) -->
 <button class="arfont-fab" id="arFontFab" aria-label="Choose Arabic font" title="Arabic font">ع</button>
@@ -2298,6 +2486,731 @@ html.no-grain .grain{display:none !important;}
     dsSyncUI();
   }
 
+  // ============================================================
+  //  PRAYER TIMES & QIBLA  (calculated on the device - no internet / API needed)
+  //  Sun-position method as used by PrayTimes.org (public-domain formulas).
+  // ============================================================
+  const PRAYER_METHODS = {
+    karachi:  {name:"Karachi — Univ. of Islamic Sciences (Bangladesh, Pakistan, India)", fajr:18,   isha:18},
+    mwl:      {name:"Muslim World League",                      fajr:18,   isha:17},
+    makkah:   {name:"Umm al-Qura, Makkah",                      fajr:18.5, ishaMin:90},
+    egypt:    {name:"Egyptian General Authority of Survey",     fajr:19.5, isha:17.5},
+    isna:     {name:"ISNA — North America",                     fajr:15,   isha:15},
+    gulf:     {name:"Gulf Region (UAE)",                        fajr:18.2, isha:18.2},
+    kuwait:   {name:"Kuwait",                                   fajr:18,   isha:17.5},
+    qatar:    {name:"Qatar",                                    fajr:18,   ishaMin:90},
+    singapore:{name:"Singapore / Malaysia / Indonesia",         fajr:20,   isha:18},
+    turkey:   {name:"Diyanet — Turkey",                         fajr:18,   isha:17}
+  };
+  const KAABA = {lat:21.422487, lng:39.826206};
+  const PR_RAD = Math.PI / 180;
+
+  function prSin(d){ return Math.sin(d * PR_RAD); }
+  function prCos(d){ return Math.cos(d * PR_RAD); }
+  function prTan(d){ return Math.tan(d * PR_RAD); }
+  function prAsin(x){ return Math.asin(x) / PR_RAD; }
+  function prAcos(x){ return Math.acos(x) / PR_RAD; }
+  function prAtan2(y, x){ return Math.atan2(y, x) / PR_RAD; }
+  function prAcot(x){ return Math.atan(1 / x) / PR_RAD; }
+  function prFixAngle(a){ a = a - 360 * Math.floor(a / 360); return a; }
+  function prFixHour(a){ a = a - 24 * Math.floor(a / 24); return a; }
+
+  function prJulian(y, m, d){
+    if(m <= 2){ y -= 1; m += 12; }
+    const A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4);
+    return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + B - 1524.5;
+  }
+  function prSun(jd){
+    const D = jd - 2451545.0;
+    const g = prFixAngle(357.529 + 0.98560028 * D);
+    const q = prFixAngle(280.459 + 0.98564736 * D);
+    const L = prFixAngle(q + 1.915 * prSin(g) + 0.020 * prSin(2 * g));
+    const e = 23.439 - 0.00000036 * D;
+    const RA = prFixHour(prAtan2(prCos(e) * prSin(L), prCos(L)) / 15);
+    return {decl: prAsin(prSin(e) * prSin(L)), eqt: q / 15 - RA};
+  }
+
+  // UTC offset (hours) of an IANA zone on a given calendar day
+  function prTzOffset(tz, y, m, d){
+    try{
+      const dt = new Date(Date.UTC(y, m - 1, d, 12));
+      const f = new Intl.DateTimeFormat("en-US", {timeZone: tz, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric"});
+      const p = {};
+      f.formatToParts(dt).forEach(function(x){ p[x.type] = x.value; });
+      return (Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour % 24, +p.minute) - dt.getTime()) / 3600000;
+    }catch(e){ return -new Date().getTimezoneOffset() / 60; }
+  }
+
+  // -> {fajr, sunrise, dhuhr, asr, sunset, maghrib, isha, midnight} as decimal local hours (NaN if it does not occur)
+  function prCompute(y, m, d, lat, lng, tz, opt){
+    const M = PRAYER_METHODS[opt.method] || PRAYER_METHODS.mwl;
+    const tzo = prTzOffset(tz, y, m, d);
+    const jd = prJulian(y, m, d) - lng / (15 * 24);
+    const asrFactor = opt.asr === "hanafi" ? 2 : 1;
+
+    function midDay(t){ return prFixHour(12 - prSun(jd + t).eqt); }
+    function angleTime(angle, t, ccw){
+      const decl = prSun(jd + t).decl;
+      const v = (-prSin(angle) - prSin(decl) * prSin(lat)) / (prCos(decl) * prCos(lat));
+      const tt = prAcos(v) / 15;                       // NaN when the sun never reaches that angle
+      return midDay(t) + (ccw ? -tt : tt);
+    }
+    function asrTime(t){
+      const decl = prSun(jd + t).decl;
+      return angleTime(-prAcot(asrFactor + prTan(Math.abs(lat - decl))), t, false);
+    }
+    let T = {fajr: 5, sunrise: 6, dhuhr: 12, asr: 13, sunset: 18, isha: 18};
+    for(let i = 0; i < 2; i++){                         // refine twice, as PrayTimes does
+      const t = {}; Object.keys(T).forEach(function(k){ t[k] = T[k] / 24; });
+      T = {
+        fajr:    angleTime(M.fajr, t.fajr, true),
+        sunrise: angleTime(0.833, t.sunrise, true),
+        dhuhr:   midDay(t.dhuhr),
+        asr:     asrTime(t.asr),
+        sunset:  angleTime(0.833, t.sunset, false),
+        isha:    M.ishaMin ? 0 : angleTime(M.isha, t.isha, false)
+      };
+    }
+    const shift = tzo - lng / 15;
+    const out = {};
+    Object.keys(T).forEach(function(k){ out[k] = T[k] + shift; });
+    out.maghrib = out.sunset;
+    if(M.ishaMin) out.isha = out.maghrib + M.ishaMin / 60;
+
+    // far-north / far-south: if Fajr or Isha do not occur, use the "angle-based" share of the night
+    function diff(a, b){ return prFixHour(b - a); }
+    if(isFinite(out.sunrise) && isFinite(out.sunset)){
+      const night = diff(out.sunset, out.sunrise);
+      if(!M.ishaMin){
+        const ip = (M.isha / 60) * night;
+        if(!isFinite(out.isha) || diff(out.sunset, out.isha) > ip) out.isha = out.sunset + ip;
+      }
+      const fp = (M.fajr / 60) * night;
+      if(!isFinite(out.fajr) || diff(out.fajr, out.sunrise) > fp) out.fajr = out.sunrise - fp;
+      out.midnight = out.sunset + night / 2;
+    }else{ out.midnight = NaN; }
+    return out;
+  }
+
+  // Direction of the Kaaba as a compass bearing (0-360, clockwise from true north)
+  function prQibla(lat, lng){
+    const dl = (KAABA.lng - lng);
+    const y = prSin(dl);
+    const x = prCos(lat) * prTan(KAABA.lat) - prSin(lat) * prCos(dl);
+    return prFixAngle(prAtan2(y, x));
+  }
+  function prDistanceKm(lat, lng){
+    const a = prSin((KAABA.lat - lat) / 2) * prSin((KAABA.lat - lat) / 2)
+            + prCos(lat) * prCos(KAABA.lat) * prSin((KAABA.lng - lng) / 2) * prSin((KAABA.lng - lng) / 2);
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  // ---------- zones ----------
+  // [id, label, latitude, longitude, IANA time zone]
+  const PR_CITIES = [
+    ["dhaka","Dhaka, Bangladesh",23.8103,90.4125,"Asia/Dhaka"],
+    ["chattogram","Chattogram, Bangladesh",22.3569,91.7832,"Asia/Dhaka"],
+    ["sylhet","Sylhet, Bangladesh",24.8949,91.8687,"Asia/Dhaka"],
+    ["rajshahi","Rajshahi, Bangladesh",24.3745,88.6042,"Asia/Dhaka"],
+    ["khulna","Khulna, Bangladesh",22.8456,89.5403,"Asia/Dhaka"],
+    ["barishal","Barishal, Bangladesh",22.7010,90.3535,"Asia/Dhaka"],
+    ["rangpur","Rangpur, Bangladesh",25.7439,89.2752,"Asia/Dhaka"],
+    ["mymensingh","Mymensingh, Bangladesh",24.7471,90.4203,"Asia/Dhaka"],
+    ["cumilla","Cumilla, Bangladesh",23.4607,91.1809,"Asia/Dhaka"],
+    ["coxsbazar","Cox's Bazar, Bangladesh",21.4272,92.0058,"Asia/Dhaka"],
+    ["makkah","Makkah, Saudi Arabia",21.4225,39.8262,"Asia/Riyadh"],
+    ["madinah","Madinah, Saudi Arabia",24.4672,39.6111,"Asia/Riyadh"],
+    ["riyadh","Riyadh, Saudi Arabia",24.7136,46.6753,"Asia/Riyadh"],
+    ["jeddah","Jeddah, Saudi Arabia",21.4858,39.1925,"Asia/Riyadh"],
+    ["dubai","Dubai, UAE",25.2048,55.2708,"Asia/Dubai"],
+    ["doha","Doha, Qatar",25.2854,51.5310,"Asia/Qatar"],
+    ["kuwait","Kuwait City, Kuwait",29.3759,47.9774,"Asia/Kuwait"],
+    ["muscat","Muscat, Oman",23.5880,58.3829,"Asia/Muscat"],
+    ["karachi","Karachi, Pakistan",24.8607,67.0011,"Asia/Karachi"],
+    ["lahore","Lahore, Pakistan",31.5204,74.3587,"Asia/Karachi"],
+    ["islamabad","Islamabad, Pakistan",33.6844,73.0479,"Asia/Karachi"],
+    ["delhi","Delhi, India",28.6139,77.2090,"Asia/Kolkata"],
+    ["mumbai","Mumbai, India",19.0760,72.8777,"Asia/Kolkata"],
+    ["kolkata","Kolkata, India",22.5726,88.3639,"Asia/Kolkata"],
+    ["hyderabad","Hyderabad, India",17.3850,78.4867,"Asia/Kolkata"],
+    ["kabul","Kabul, Afghanistan",34.5553,69.2075,"Asia/Kabul"],
+    ["colombo","Colombo, Sri Lanka",6.9271,79.8612,"Asia/Colombo"],
+    ["kathmandu","Kathmandu, Nepal",27.7172,85.3240,"Asia/Kathmandu"],
+    ["jakarta","Jakarta, Indonesia",-6.2088,106.8456,"Asia/Jakarta"],
+    ["kualalumpur","Kuala Lumpur, Malaysia",3.1390,101.6869,"Asia/Kuala_Lumpur"],
+    ["singapore","Singapore",1.3521,103.8198,"Asia/Singapore"],
+    ["istanbul","Istanbul, Türkiye",41.0082,28.9784,"Europe/Istanbul"],
+    ["ankara","Ankara, Türkiye",39.9334,32.8597,"Europe/Istanbul"],
+    ["tehran","Tehran, Iran",35.6892,51.3890,"Asia/Tehran"],
+    ["baghdad","Baghdad, Iraq",33.3152,44.3661,"Asia/Baghdad"],
+    ["amman","Amman, Jordan",31.9454,35.9284,"Asia/Amman"],
+    ["jerusalem","Jerusalem",31.7683,35.2137,"Asia/Jerusalem"],
+    ["damascus","Damascus, Syria",33.5138,36.2765,"Asia/Damascus"],
+    ["cairo","Cairo, Egypt",30.0444,31.2357,"Africa/Cairo"],
+    ["casablanca","Casablanca, Morocco",33.5731,-7.5898,"Africa/Casablanca"],
+    ["algiers","Algiers, Algeria",36.7538,3.0588,"Africa/Algiers"],
+    ["lagos","Lagos, Nigeria",6.5244,3.3792,"Africa/Lagos"],
+    ["nairobi","Nairobi, Kenya",-1.2921,36.8219,"Africa/Nairobi"],
+    ["johannesburg","Johannesburg, South Africa",-26.2041,28.0473,"Africa/Johannesburg"],
+    ["london","London, UK",51.5074,-0.1278,"Europe/London"],
+    ["paris","Paris, France",48.8566,2.3522,"Europe/Paris"],
+    ["berlin","Berlin, Germany",52.5200,13.4050,"Europe/Berlin"],
+    ["moscow","Moscow, Russia",55.7558,37.6173,"Europe/Moscow"],
+    ["newyork","New York, USA",40.7128,-74.0060,"America/New_York"],
+    ["chicago","Chicago, USA",41.8781,-87.6298,"America/Chicago"],
+    ["losangeles","Los Angeles, USA",34.0522,-118.2437,"America/Los_Angeles"],
+    ["toronto","Toronto, Canada",43.6532,-79.3832,"America/Toronto"],
+    ["sydney","Sydney, Australia",-33.8688,151.2093,"Australia/Sydney"],
+    ["melbourne","Melbourne, Australia",-37.8136,144.9631,"Australia/Melbourne"],
+    ["tokyo","Tokyo, Japan",35.6762,139.6503,"Asia/Tokyo"]
+  ];
+  // sensible calculation method / Asr rule for each region (can be overridden in Manual settings)
+  const PR_REGION = {
+    "Asia/Dhaka":["karachi","hanafi"],"Asia/Karachi":["karachi","hanafi"],"Asia/Kolkata":["karachi","hanafi"],"Asia/Calcutta":["karachi","hanafi"],
+    "Asia/Colombo":["karachi","hanafi"],"Asia/Kathmandu":["karachi","hanafi"],"Asia/Kabul":["karachi","hanafi"],
+    "Asia/Riyadh":["makkah","standard"],"Asia/Dubai":["gulf","standard"],"Asia/Muscat":["gulf","standard"],
+    "Asia/Qatar":["qatar","standard"],"Asia/Kuwait":["kuwait","standard"],
+    "Asia/Singapore":["singapore","standard"],"Asia/Jakarta":["singapore","standard"],"Asia/Kuala_Lumpur":["singapore","standard"],
+    "Asia/Makassar":["singapore","standard"],"Asia/Jayapura":["singapore","standard"],"Asia/Pontianak":["singapore","standard"],
+    "Europe/Istanbul":["turkey","standard"],"Africa/Cairo":["egypt","standard"],"Asia/Damascus":["egypt","standard"],
+    "Asia/Baghdad":["egypt","standard"],"Asia/Amman":["egypt","standard"],"Asia/Jerusalem":["egypt","standard"]
+  };
+  const PR_ORDER = ["fajr","sunrise","dhuhr","asr","maghrib","isha"];
+  const PR_NAMES = {fajr:["Fajr","الفجر"], sunrise:["Sunrise","الشروق"], dhuhr:["Dhuhr","الظهر"], asr:["Asr","العصر"], maghrib:["Maghrib","المغرب"], isha:["Isha","العشاء"]};
+  const LS_PRAYER = "noor_prayer_v1";
+
+  let prSt = null, prDay = 0, prTimer = null, prRows = null, prLastKey = "";
+
+  function prDeviceTz(){ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; }catch(e){ return "UTC"; } }
+  function prCityById(id){ for(let i = 0; i < PR_CITIES.length; i++){ if(PR_CITIES[i][0] === id) return PR_CITIES[i]; } return null; }
+
+  function prState(){
+    if(prSt) return prSt;
+    const s = loadJSON(LS_PRAYER, null) || {};
+    let place = s.place;
+    if(!place){
+      const tz = prDeviceTz();
+      let guess = "dhaka";
+      if(tz !== "Asia/Dhaka"){
+        guess = "makkah";
+        for(let i = 0; i < PR_CITIES.length; i++){ if(PR_CITIES[i][4] === tz){ guess = PR_CITIES[i][0]; break; } }
+      }
+      place = guess;
+    }
+    prSt = {
+      place: place, lat: +s.lat || 0, lng: +s.lng || 0, tz: s.tz || prDeviceTz(), label: s.label || "",
+      method: s.method || "auto", asr: s.asr || "auto", h24: !!s.h24, hijri: +s.hijri || 0,
+      adj: {fajr:0, sunrise:0, dhuhr:0, asr:0, maghrib:0, isha:0}
+    };
+    if(s.adj) PR_ORDER.forEach(function(k){ prSt.adj[k] = Math.max(-60, Math.min(60, +s.adj[k] || 0)); });
+    if(!prCityById(prSt.place) && prSt.place !== "gps" && prSt.place !== "custom") prSt.place = "dhaka";
+    return prSt;
+  }
+  function prSave(){ saveJSON(LS_PRAYER, prSt); }
+
+  function prPlace(){
+    const s = prState();
+    const c = prCityById(s.place);
+    if(c) return {label: c[1], lat: c[2], lng: c[3], tz: c[4]};
+    return {label: s.label || "My location", lat: s.lat, lng: s.lng, tz: s.tz};
+  }
+  function prOpts(p){
+    const s = prState(), reg = PR_REGION[p.tz] || [(p.tz.indexOf("America/") === 0 ? "isna" : "mwl"), "standard"];
+    return {method: s.method === "auto" ? reg[0] : s.method, asr: s.asr === "auto" ? reg[1] : s.asr};
+  }
+
+  function prNowIn(tz){
+    try{
+      const f = new Intl.DateTimeFormat("en-US", {timeZone: tz, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric"});
+      const p = {};
+      f.formatToParts(new Date()).forEach(function(x){ p[x.type] = x.value; });
+      return {y: +p.year, m: +p.month, d: +p.day, h: (+p.hour % 24) + (+p.minute) / 60 + (+p.second) / 3600};
+    }catch(e){
+      const n = new Date();
+      return {y: n.getFullYear(), m: n.getMonth() + 1, d: n.getDate(), h: n.getHours() + n.getMinutes() / 60 + n.getSeconds() / 3600};
+    }
+  }
+  function prAddDays(y, m, d, n){
+    const dt = new Date(Date.UTC(y, m - 1, d + n, 12));
+    return {y: dt.getUTCFullYear(), m: dt.getUTCMonth() + 1, d: dt.getUTCDate()};
+  }
+  function prFmt(h){
+    if(!isFinite(h)) return "—";
+    let mins = Math.floor(h * 60 + 0.5);
+    mins = ((mins % 1440) + 1440) % 1440;
+    const hh = Math.floor(mins / 60), mm = mins % 60;
+    if(prState().h24) return (hh < 10 ? "0" : "") + hh + ":" + (mm < 10 ? "0" : "") + mm;
+    const h12 = hh % 12 === 0 ? 12 : hh % 12;
+    return h12 + ":" + (mm < 10 ? "0" : "") + mm + " " + (hh < 12 ? "AM" : "PM");
+  }
+  function prDay2(y, m, d){
+    const p = prPlace(), s = prState();
+    const t = prCompute(y, m, d, p.lat, p.lng, p.tz, prOpts(p));
+    PR_ORDER.forEach(function(k){ t[k] = t[k] + s.adj[k] / 60; });
+    return t;
+  }
+  function prLocale(){
+    const l = (window.NoorI18n && window.NoorI18n.locale) ? window.NoorI18n.locale() : "en";
+    return l;
+  }
+
+  // ---------- render ----------
+  function prRender(){
+    const list = document.getElementById("prTimes");
+    if(!list) return;
+    const s = prState(), p = prPlace(), o = prOpts(p);
+    const now = prNowIn(p.tz);
+    const base = prAddDays(now.y, now.m, now.d, prDay);
+    const t = prDay2(base.y, base.m, base.d);
+    prRows = t;
+    prLastKey = now.y + "-" + now.m + "-" + now.d;
+
+    list.innerHTML = PR_ORDER.map(function(k){
+      return '<div class="pr-time" data-k="' + k + '"><span class="pr-n"><b>' + PR_NAMES[k][0] + '</b><i lang="ar">' + PR_NAMES[k][1] + '</i></span><span class="pr-t">' + prFmt(t[k]) + '</span></div>';
+    }).join("");
+
+    const dt = new Date(Date.UTC(base.y, base.m - 1, base.d, 12));
+    let dtxt = "";
+    try{ dtxt = new Intl.DateTimeFormat(prLocale(), {weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC"}).format(dt); }
+    catch(e){ dtxt = base.y + "-" + base.m + "-" + base.d; }
+    document.getElementById("prDate").textContent = dtxt;
+    let hj = "";
+    try{
+      const hd = new Date(Date.UTC(base.y, base.m - 1, base.d + s.hijri, 12));
+      const hfmt = new Intl.DateTimeFormat(prLocale() + "-u-ca-islamic-umalqura", {day: "numeric", month: "long", year: "numeric", timeZone: "UTC"});
+      const AH = {en: "AH", bn: "হিজরি", ar: "هـ", ur: "ہجری", hi: "हिजरी", id: "H", tr: "H"};
+      hj = hfmt.formatToParts(hd).filter(function(x){ return x.type !== "era"; }).map(function(x){ return x.value; }).join("").replace(/[\s,]+$/, "")
+         + " " + (AH[(window.NoorI18n && window.NoorI18n.lang()) || "en"] || "AH");
+    }catch(e){ hj = ""; }
+    document.getElementById("prHijri").textContent = hj;
+
+    const m = PRAYER_METHODS[o.method];
+    document.getElementById("prMeta").textContent =
+      p.label + " · UTC" + prOffsetText(p.tz, base) + " · " + Math.abs(p.lat).toFixed(2) + "°" + (p.lat >= 0 ? "N" : "S") + " " + Math.abs(p.lng).toFixed(2) + "°" + (p.lng >= 0 ? "E" : "W");
+    document.getElementById("prMethodNote").textContent = (m ? m.name : "") + " · " + (o.asr === "hanafi" ? "Hanafi Asr" : "Standard Asr");
+
+    const sel = document.getElementById("prCity");
+    if(sel && sel.value !== s.place) sel.value = s.place;
+    document.getElementById("prPrevDay").disabled = false;
+
+    // qibla
+    const q = prQibla(p.lat, p.lng);
+    prQiblaDeg = q;
+    document.getElementById("qDeg").textContent = q.toFixed(1) + "°";
+    document.getElementById("qDist").textContent = Math.round(prDistanceKm(p.lat, p.lng)).toLocaleString("en-US") + " km";
+    const marker = document.getElementById("qMarker");
+    if(marker) marker.setAttribute("transform", "rotate(" + q.toFixed(2) + ")");
+    prCompassUpdate();
+    prTick();
+  }
+
+  function prOffsetText(tz, b){
+    const off = prTzOffset(tz, b.y, b.m, b.d);
+    const sign = off < 0 ? "−" : "+";
+    const a = Math.abs(off), hh = Math.floor(a), mm = Math.round((a - hh) * 60);
+    return sign + hh + (mm ? ":" + (mm < 10 ? "0" : "") + mm : "");
+  }
+
+  // updates the countdown + highlights (cheap; runs every second while the page is open)
+  function prTick(){
+    const p = prPlace(), now = prNowIn(p.tz);
+    if(prLastKey !== now.y + "-" + now.m + "-" + now.d && prDay === 0){ prRender(); return; }
+    const today = (prDay === 0 && prRows) ? prRows : prDay2(now.y, now.m, now.d);
+    let nextKey = null, nextT = null, curKey = null;
+    for(let i = 0; i < PR_ORDER.length; i++){
+      const k = PR_ORDER[i];
+      if(isFinite(today[k]) && today[k] > now.h){ nextKey = k; nextT = today[k]; break; }
+      if(isFinite(today[k]) && k !== "sunrise") curKey = k;
+    }
+    if(!nextKey){
+      const tm = prAddDays(now.y, now.m, now.d, 1);
+      const t2 = prDay2(tm.y, tm.m, tm.d);
+      nextKey = "fajr"; nextT = t2.fajr + 24;
+    }
+    // sunrise ends the Fajr period: nothing is "current" between sunrise and Dhuhr
+    if(isFinite(today.sunrise) && now.h >= today.sunrise && isFinite(today.dhuhr) && now.h < today.dhuhr) curKey = null;
+    if(prDay === 0 && isFinite(today.fajr) && now.h < today.fajr) curKey = "isha";   // before Fajr: still Isha's night
+    document.querySelectorAll("#prTimes .pr-time").forEach(function(r){
+      r.classList.toggle("next", prDay === 0 && r.dataset.k === nextKey);
+      r.classList.toggle("cur", prDay === 0 && r.dataset.k === curKey);
+    });
+    const sec = Math.max(0, Math.round((nextT - now.h) * 3600));
+    const hh = Math.floor(sec / 3600), mm = Math.floor((sec % 3600) / 60), ss = sec % 60;
+    const pad = function(n){ return (n < 10 ? "0" : "") + n; };
+    document.getElementById("prCount").textContent = pad(hh) + ":" + pad(mm) + ":" + pad(ss);
+    const nm = document.getElementById("prNextName");
+    if(nm.dataset.k !== nextKey){ nm.dataset.k = nextKey; nm.textContent = PR_NAMES[nextKey][0]; }
+    document.getElementById("prNextAt").textContent = prFmt(nextT);
+  }
+
+  // ---------- Qibla compass ----------
+  let prQiblaDeg = 0, prHeading = null, prCompassOn = false, prCompassTimer = null, prLastOri = 0;
+
+  function prBuildCompass(){
+    const dial = document.getElementById("qTicks");
+    if(!dial || dial.firstChild) return;
+    let g = "";
+    for(let a = 0; a < 360; a += 5){
+      const major = a % 45 === 0, mid = a % 15 === 0;
+      const r1 = 96, r2 = major ? 84 : (mid ? 89 : 92);
+      const rad = a * Math.PI / 180, sx = Math.sin(rad), cy = -Math.cos(rad);
+      g += '<line x1="' + (sx * r1).toFixed(1) + '" y1="' + (cy * r1).toFixed(1) + '" x2="' + (sx * r2).toFixed(1) + '" y2="' + (cy * r2).toFixed(1) + '" class="' + (major ? "tk-m" : "tk") + '"/>';
+    }
+    [["N",0],["E",90],["S",180],["W",270]].forEach(function(l){
+      const rad = l[1] * Math.PI / 180;
+      g += '<text x="' + (Math.sin(rad) * 75).toFixed(1) + '" y="' + (-Math.cos(rad) * 75 + 5).toFixed(1) + '" class="' + (l[0] === "N" ? "tx-n" : "tx") + '" text-anchor="middle">' + l[0] + '</text>';
+    });
+    dial.innerHTML = g;
+  }
+
+  function prCompassUpdate(){
+    const dial = document.getElementById("qDial"), status = document.getElementById("qStatus");
+    if(!dial) return;
+    const wrap = document.getElementById("qWrap");
+    if(prHeading === null){
+      dial.setAttribute("transform", "rotate(0)");
+      wrap.classList.remove("aligned");
+      return;
+    }
+    dial.setAttribute("transform", "rotate(" + (-prHeading).toFixed(1) + ")");
+    let d = Math.abs(((prHeading - prQiblaDeg) % 360 + 540) % 360 - 180);   // 0..180
+    const ok = d <= 4;
+    wrap.classList.toggle("aligned", ok);
+    status.textContent = ok ? "You are facing the Qibla ✓" : "Turn until the Kaaba icon points straight up";
+  }
+
+  function prOnOrientation(e){
+    let h = null;
+    if(typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) h = e.webkitCompassHeading;
+    else if(e.absolute && typeof e.alpha === "number") h = 360 - e.alpha;
+    if(h === null) return;
+    const so = (screen.orientation && typeof screen.orientation.angle === "number") ? screen.orientation.angle : (window.orientation || 0);
+    h = ((h + so) % 360 + 360) % 360;
+    const nowMs = Date.now();
+    if(nowMs - prLastOri < 60) return;               // ~16 updates/second is plenty (easy on old phones)
+    prLastOri = nowMs;
+    if(prHeading === null){ prHeading = h; }
+    else{                                             // smooth, wrap-safe low-pass filter
+      let diff = ((h - prHeading + 540) % 360) - 180;
+      prHeading = ((prHeading + diff * 0.35) % 360 + 360) % 360;
+    }
+    clearTimeout(prCompassTimer);
+    prCompassUpdate();
+  }
+
+  function prCompassStart(){
+    const status = document.getElementById("qStatus"), btn = document.getElementById("qBtn");
+    function listen(){
+      prCompassOn = true;
+      window.addEventListener("deviceorientationabsolute", prOnOrientation, true);
+      window.addEventListener("deviceorientation", prOnOrientation, true);
+      btn.textContent = "■ Stop compass";
+      status.textContent = "Looking for compass…";
+      prCompassTimer = setTimeout(function(){
+        if(prHeading === null) status.textContent = "No compass sensor found on this device. Use the fixed bearing above with a physical compass.";
+      }, 3000);
+    }
+    if(typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function"){
+      DeviceOrientationEvent.requestPermission().then(function(r){
+        if(r === "granted") listen(); else status.textContent = "Compass permission was denied.";
+      }).catch(function(){ status.textContent = "Compass permission was denied."; });
+    }else{ listen(); }
+  }
+  function prCompassStop(){
+    prCompassOn = false;
+    window.removeEventListener("deviceorientationabsolute", prOnOrientation, true);
+    window.removeEventListener("deviceorientation", prOnOrientation, true);
+    clearTimeout(prCompassTimer);
+    prHeading = null;
+    const btn = document.getElementById("qBtn"), status = document.getElementById("qStatus");
+    if(btn) btn.textContent = "🧭 Start live compass";
+    if(status) status.textContent = "";
+    prCompassUpdate();
+  }
+
+  // ---------- page lifecycle ----------
+  function prayerEnter(){
+    if(!prTimer){ prTimer = setInterval(function(){ if(!document.hidden) prTick(); }, 1000); }
+    prRender();
+  }
+  function prayerLeave(){
+    if(prTimer){ clearInterval(prTimer); prTimer = null; }
+    if(prCompassOn) prCompassStop();
+  }
+
+  function prGeolocate(){
+    const msg = document.getElementById("prGpsMsg");
+    if(!navigator.geolocation){ msg.textContent = "Location is not available in this browser. Pick your city from the list."; return; }
+    msg.textContent = "Finding your location…";
+    navigator.geolocation.getCurrentPosition(function(pos){
+      const s = prState();
+      s.place = "gps"; s.lat = +pos.coords.latitude.toFixed(4); s.lng = +pos.coords.longitude.toFixed(4);
+      s.tz = prDeviceTz(); s.label = "My location";
+      prSave(); prFillSelect(); msg.textContent = ""; prDay = 0; prRender();
+    }, function(){
+      msg.textContent = "Couldn't get your location. Allow location access, or pick your city from the list.";
+    }, {enableHighAccuracy: false, timeout: 12000, maximumAge: 600000});
+  }
+
+  function prFillSelect(){
+    const sel = document.getElementById("prCity"), s = prState();
+    let html = "";
+    if(s.place === "gps") html += '<option value="gps">📍 ' + escapeHtml(s.label || "My location") + '</option>';
+    if(s.place === "custom") html += '<option value="custom">✎ ' + escapeHtml(s.label || "Custom location") + '</option>';
+    html += PR_CITIES.map(function(c){ return '<option value="' + c[0] + '">' + escapeHtml(c[1]) + '</option>'; }).join("");
+    sel.innerHTML = html;
+    sel.value = s.place;
+  }
+
+  function prSyncManual(){
+    const s = prState(), p = prPlace();
+    const g = function(id){ return document.getElementById(id); };
+    g("prMethod").value = s.method; g("prAsr").value = s.asr; g("prFmt").value = s.h24 ? "24" : "12"; g("prHijriAdj").value = String(s.hijri);
+    g("prLat").value = p.lat; g("prLng").value = p.lng; g("prTz").value = p.tz;
+    PR_ORDER.forEach(function(k){ const el = g("prAdj_" + k); if(el) el.value = s.adj[k]; });
+  }
+
+  function initPrayer(){
+    const root = document.getElementById("view-prayer");
+    if(!root) return;
+    prBuildCompass();
+    const g = function(id){ return document.getElementById(id); };
+    prFillSelect();
+
+    g("prMethod").innerHTML = '<option value="auto">Auto (best for this zone)</option>' + Object.keys(PRAYER_METHODS).map(function(k){ return '<option value="' + k + '">' + PRAYER_METHODS[k].name + '</option>'; }).join("");
+    g("prAdjGrid").innerHTML = PR_ORDER.map(function(k){
+      return '<label class="pr-adj"><span>' + PR_NAMES[k][0] + '</span><input type="number" id="prAdj_' + k + '" min="-60" max="60" step="1" inputmode="numeric"></label>';
+    }).join("");
+    try{
+      if(Intl.supportedValuesOf){ g("prTzList").innerHTML = Intl.supportedValuesOf("timeZone").map(function(z){ return '<option value="' + z + '">'; }).join(""); }
+    }catch(e){}
+    prSyncManual();
+
+    g("prCity").addEventListener("change", function(){
+      const s = prState(); s.place = this.value; prSave(); prDay = 0; prSyncManual(); prRender();
+    });
+    g("prGps").addEventListener("click", prGeolocate);
+    g("prPrevDay").addEventListener("click", function(){ prDay--; prRender(); });
+    g("prNextDay").addEventListener("click", function(){ prDay++; prRender(); });
+    g("prToday").addEventListener("click", function(){ prDay = 0; prRender(); });
+    g("qBtn").addEventListener("click", function(){ if(prCompassOn) prCompassStop(); else prCompassStart(); });
+
+    function settingChange(){
+      const s = prState();
+      s.method = g("prMethod").value; s.asr = g("prAsr").value; s.h24 = g("prFmt").value === "24"; s.hijri = +g("prHijriAdj").value || 0;
+      PR_ORDER.forEach(function(k){ s.adj[k] = Math.max(-60, Math.min(60, parseInt(g("prAdj_" + k).value, 10) || 0)); });
+      prSave(); prRender();
+    }
+    ["prMethod", "prAsr", "prFmt", "prHijriAdj"].forEach(function(id){ g(id).addEventListener("change", settingChange); });
+    PR_ORDER.forEach(function(k){ g("prAdj_" + k).addEventListener("input", settingChange); });
+    g("prAdjReset").addEventListener("click", function(){ PR_ORDER.forEach(function(k){ g("prAdj_" + k).value = 0; }); settingChange(); });
+
+    g("prApplyCoords").addEventListener("click", function(){
+      const lat = parseFloat(g("prLat").value), lng = parseFloat(g("prLng").value), tz = (g("prTz").value || "").trim();
+      const msg = g("prManualMsg");
+      if(!(lat >= -90 && lat <= 90) || !(lng >= -180 && lng <= 180)){ msg.textContent = "Latitude must be between -90 and 90, and longitude between -180 and 180."; return; }
+      try{ new Intl.DateTimeFormat("en-US", {timeZone: tz}); }catch(e){ msg.textContent = "Unknown time zone. Use a name like Asia/Dhaka."; return; }
+      const s = prState(); s.place = "custom"; s.lat = lat; s.lng = lng; s.tz = tz; s.label = "Custom location";
+      prSave(); msg.textContent = ""; prFillSelect(); prDay = 0; prRender();
+    });
+    prRender();
+  }
+
+  // ============================================================
+  //  PAGE TRANSLATOR  (interface language: 🌐 button in the header / menu)
+  //  Translates the site's own labels, buttons, messages and help text.
+  //  Quran / Hadith / Dua *content* keeps its own translation controls.
+  //  Dictionary below: English text -> {bn, ar, ur, hi, id, tr}.
+  //  Add a language by adding one more code to each entry and to I18N_LANGS.
+  // ============================================================
+  const LS_LANG = "noor_lang_v1";
+  const I18N_LANGS = [
+    {code:"en", name:"English",          locale:"en"},
+    {code:"bn", name:"বাংলা",             locale:"bn-BD"},
+    {code:"ar", name:"العربية",           locale:"ar"},
+    {code:"ur", name:"اردو",              locale:"ur-PK"},
+    {code:"hi", name:"हिन्दी",             locale:"hi-IN"},
+    {code:"id", name:"Bahasa Indonesia", locale:"id-ID"},
+    {code:"tr", name:"Türkçe",           locale:"tr-TR"}
+  ];
+  // other languages: opens Google Translate on the live website
+  const I18N_MORE = [["fr","Français"],["es","Español"],["de","Deutsch"],["ru","Русский"],["fa","فارسی"],["ms","Bahasa Melayu"],
+    ["sw","Kiswahili"],["pt","Português"],["it","Italiano"],["nl","Nederlands"],["zh-CN","中文"],["ja","日本語"],["ko","한국어"],
+    ["ta","தமிழ்"],["te","తెలుగు"],["pa","ਪੰਜਾਬੀ"],["ps","پښتو"],["so","Soomaali"],["ha","Hausa"],["uz","Oʻzbekcha"]];
+  const I18N_DICT = {"Home":{"bn":"হোম","ar":"الرئيسية","ur":"ہوم","hi":"होम","id":"Beranda","tr":"Ana Sayfa"},"All Surahs":{"bn":"সব সূরা","ar":"كل السور","ur":"تمام سورتیں","hi":"सभी सूरह","id":"Semua Surah","tr":"Tüm Sureler"},"Dua":{"bn":"দোয়া","ar":"الأدعية","ur":"دعائیں","hi":"दुआ","id":"Doa","tr":"Dua"},"Hadith":{"bn":"হাদীস","ar":"الحديث","ur":"حدیث","hi":"हदीस","id":"Hadis","tr":"Hadis"},"Prayer":{"bn":"নামাজ","ar":"الصلاة","ur":"نماز","hi":"नमाज़","id":"Salat","tr":"Namaz"},"Quiz":{"bn":"কুইজ","ar":"اختبار","ur":"کوئز","hi":"क्विज़","id":"Kuis","tr":"Bilgi Yarışması"},"My Notes":{"bn":"আমার নোট","ar":"ملاحظاتي","ur":"میرے نوٹس","hi":"मेरे नोट्स","id":"Catatan Saya","tr":"Notlarım"},"Bookmarks":{"bn":"বুকমার্ক","ar":"العلامات المرجعية","ur":"بک مارکس","hi":"बुकमार्क","id":"Markah","tr":"Yer İmleri"},"Admin":{"bn":"অ্যাডমিন","ar":"المشرف","ur":"ایڈمن","hi":"एडमिन","id":"Admin","tr":"Yönetici"},"Home · Qur'an":{"bn":"হোম · কুরআন","ar":"الرئيسية · القرآن","ur":"ہوم · قرآن","hi":"होम · क़ुरआन","id":"Beranda · Al-Qur'an","tr":"Ana Sayfa · Kur'an"},"Prayer & Qibla":{"bn":"নামাজ ও কিবলা","ar":"الصلاة والقبلة","ur":"نماز اور قبلہ","hi":"नमाज़ और क़िब्ला","id":"Salat & Kiblat","tr":"Namaz ve Kıble"},"Qur'an":{"bn":"কুরআন","ar":"القرآن","ur":"قرآن","hi":"क़ुरआन","id":"Al-Qur'an","tr":"Kur'an"},"⚡ Lite mode":{"bn":"⚡ লাইট মোড","ar":"⚡ الوضع الخفيف","ur":"⚡ لائٹ موڈ","hi":"⚡ लाइट मोड","id":"⚡ Mode Ringan","tr":"⚡ Hafif mod"},"⚡ Lite mode: On":{"bn":"⚡ লাইট মোড: চালু","ar":"⚡ الوضع الخفيف: مفعّل","ur":"⚡ لائٹ موڈ: آن","hi":"⚡ लाइट मोड: चालू","id":"⚡ Mode Ringan: Aktif","tr":"⚡ Hafif mod: Açık"},"⚡ Lite mode: Off":{"bn":"⚡ লাইট মোড: বন্ধ","ar":"⚡ الوضع الخفيف: معطّل","ur":"⚡ لائٹ موڈ: آف","hi":"⚡ लाइट मोड: बंद","id":"⚡ Mode Ringan: Nonaktif","tr":"⚡ Hafif mod: Kapalı"},"Qur'an, Dua, Hadith & Knowledge":{"bn":"কুরআন, দোয়া, হাদীস ও জ্ঞান","ar":"القرآن والأدعية والحديث والعلم","ur":"قرآن، دعائیں، حدیث اور علم","hi":"क़ुरआन, दुआ, हदीस और इल्म","id":"Al-Qur'an, Doa, Hadis & Ilmu","tr":"Kur'an, Dua, Hadis ve İlim"},"Sign Up / Log In":{"bn":"সাইন আপ / লগ ইন","ar":"تسجيل / دخول","ur":"سائن اپ / لاگ ان","hi":"साइन अप / लॉग इन","id":"Daftar / Masuk","tr":"Kaydol / Giriş"},"Log out":{"bn":"লগ আউট","ar":"تسجيل الخروج","ur":"لاگ آؤٹ","hi":"लॉग आउट","id":"Keluar","tr":"Çıkış"},"Search a surah or a verse (e.g. 'mercy', 'Yusuf')":{"bn":"সূরা বা আয়াত খুঁজুন (যেমন 'mercy', 'Yusuf')","ar":"ابحث عن سورة أو آية (مثل 'mercy'، 'Yusuf')","ur":"سورت یا آیت تلاش کریں (جیسے 'mercy'، 'Yusuf')","hi":"सूरह या आयत खोजें (जैसे 'mercy', 'Yusuf')","id":"Cari surah atau ayat (mis. 'mercy', 'Yusuf')","tr":"Sure veya ayet ara (örn. 'mercy', 'Yusuf')"},"Filter by name, number or meaning…":{"bn":"নাম, নম্বর বা অর্থ দিয়ে ছাঁকুন…","ar":"صفِّ حسب الاسم أو الرقم أو المعنى…","ur":"نام، نمبر یا معنی سے فلٹر کریں…","hi":"नाम, नंबर या मतलब से छाँटें…","id":"Saring menurut nama, nomor, atau arti…","tr":"Ad, numara veya anlama göre filtrele…"},"Search a dua (e.g. 'sleep', 'travel')":{"bn":"দোয়া খুঁজুন (যেমন 'sleep', 'travel')","ar":"ابحث عن دعاء (مثل 'sleep'، 'travel')","ur":"دعا تلاش کریں (جیسے 'sleep'، 'travel')","hi":"दुआ खोजें (जैसे 'sleep', 'travel')","id":"Cari doa (mis. 'sleep', 'travel')","tr":"Dua ara (örn. 'sleep', 'travel')"},"Go to #":{"bn":"নম্বরে যান","ar":"اذهب إلى #","ur":"نمبر پر جائیں","hi":"नंबर पर जाएँ","id":"Ke #","tr":"Git #"},"Search text (English, বাংলা or Arabic)":{"bn":"লেখা খুঁজুন (ইংরেজি, বাংলা বা আরবি)","ar":"ابحث في النص (إنجليزي، بنغالي أو عربي)","ur":"متن تلاش کریں (انگریزی، بنگالی یا عربی)","hi":"टेक्स्ट खोजें (अंग्रेज़ी, बांग्ला या अरबी)","id":"Cari teks (Inggris, Bengali, atau Arab)","tr":"Metin ara (İngilizce, Bengalce veya Arapça)"},"Search featured hadith (e.g. 'anger', 'knowledge')":{"bn":"নির্বাচিত হাদীস খুঁজুন (যেমন 'anger', 'knowledge')","ar":"ابحث في الأحاديث المختارة (مثل 'anger'، 'knowledge')","ur":"منتخب احادیث تلاش کریں (جیسے 'anger'، 'knowledge')","hi":"चुनिंदा हदीस खोजें (जैसे 'anger', 'knowledge')","id":"Cari hadis pilihan (mis. 'anger', 'knowledge')","tr":"Seçilmiş hadisleri ara (örn. 'anger', 'knowledge')"},"Latitude":{"bn":"অক্ষাংশ","ar":"خط العرض","ur":"عرض بلد","hi":"अक्षांश","id":"Lintang","tr":"Enlem"},"Longitude":{"bn":"দ্রাঘিমাংশ","ar":"خط الطول","ur":"طول بلد","hi":"देशांतर","id":"Bujur","tr":"Boylam"},"Time zone, e.g. Asia/Dhaka":{"bn":"টাইম জোন, যেমন Asia/Dhaka","ar":"المنطقة الزمنية، مثل Asia/Dhaka","ur":"ٹائم زون، جیسے Asia/Dhaka","hi":"टाइम ज़ोन, जैसे Asia/Dhaka","id":"Zona waktu, mis. Asia/Dhaka","tr":"Saat dilimi, örn. Asia/Dhaka"},"Read. Understand. Return, daily.":{"bn":"পড়ুন। বুঝুন। প্রতিদিন ফিরে আসুন।","ar":"اقرأ. افهم. عُد كل يوم.","ur":"پڑھیں۔ سمجھیں۔ روز لوٹ آئیں۔","hi":"पढ़ें। समझें। रोज़ लौटें।","id":"Baca. Pahami. Kembali setiap hari.","tr":"Oku. Anla. Her gün geri dön."},"A quiet place to read the Qur'an surah by surah, learn what each one is about, search any verse in your chosen language, explore daily duas, and test what you know — everything saved right in your browser.":{"bn":"কুরআন সূরা ধরে ধরে পড়ার, প্রতিটি সূরার বিষয় জানার, পছন্দের ভাষায় যেকোনো আয়াত খোঁজার, দৈনন্দিন দোয়া দেখার এবং নিজের জ্ঞান যাচাই করার একটি শান্ত জায়গা — সবকিছু আপনার ব্রাউজারেই সংরক্ষিত।","ar":"مكان هادئ لقراءة القرآن سورةً سورة، ومعرفة موضوع كل سورة، والبحث عن أي آية بلغتك المفضلة، واستكشاف الأدعية اليومية، واختبار معلوماتك — وكل شيء محفوظ في متصفحك.","ur":"قرآن کو سورت بہ سورت پڑھنے، ہر سورت کا موضوع جاننے، اپنی پسند کی زبان میں کوئی بھی آیت تلاش کرنے، روزمرہ دعائیں دیکھنے اور اپنا علم آزمانے کی ایک پُرسکون جگہ — سب کچھ آپ کے براؤزر میں محفوظ۔","hi":"क़ुरआन को सूरह-दर-सूरह पढ़ने, हर सूरह का विषय जानने, अपनी पसंद की भाषा में कोई भी आयत खोजने, रोज़मर्रा की दुआएँ देखने और अपना इल्म परखने की एक शांत जगह — सब कुछ आपके ब्राउज़र में सुरक्षित।","id":"Tempat yang tenang untuk membaca Al-Qur'an surah demi surah, mempelajari isi tiap surah, mencari ayat dalam bahasa pilihan Anda, menjelajahi doa harian, dan menguji pengetahuan — semuanya tersimpan di peramban Anda.","tr":"Kur'an'ı sure sure okuyabileceğiniz, her surenin konusunu öğrenebileceğiniz, istediğiniz dilde ayet arayabileceğiniz, günlük dualara göz atıp bilginizi sınayabileceğiniz sakin bir yer — her şey tarayıcınızda saklanır."},"Auto-detect (your device)":{"bn":"স্বয়ংক্রিয় (আপনার ডিভাইস)","ar":"تلقائي (جهازك)","ur":"خودکار (آپ کا آلہ)","hi":"ऑटो (आपका डिवाइस)","id":"Otomatis (perangkat Anda)","tr":"Otomatik (cihazınız)"},"Surahs":{"bn":"সূরা","ar":"سورة","ur":"سورتیں","hi":"सूरह","id":"Surah","tr":"Sure"},"Ayat":{"bn":"আয়াত","ar":"آية","ur":"آیات","hi":"आयतें","id":"Ayat","tr":"Ayet"},"Ajza'":{"bn":"পারা","ar":"أجزاء","ur":"پارے","hi":"पारे","id":"Juz","tr":"Cüz"},"Your Notes":{"bn":"আপনার নোট","ar":"ملاحظاتك","ur":"آپ کے نوٹس","hi":"आपके नोट्स","id":"Catatan Anda","tr":"Notlarınız"},"📖 Browse All Surahs":{"bn":"📖 সব সূরা দেখুন","ar":"📖 تصفّح كل السور","ur":"📖 تمام سورتیں دیکھیں","hi":"📖 सभी सूरह देखें","id":"📖 Jelajahi Semua Surah","tr":"📖 Tüm Sureleri Gez"},"🤲 Explore Daily Dua":{"bn":"🤲 দৈনন্দিন দোয়া দেখুন","ar":"🤲 استكشف الأدعية اليومية","ur":"🤲 روزمرہ دعائیں دیکھیں","hi":"🤲 रोज़ की दुआएँ देखें","id":"🤲 Jelajahi Doa Harian","tr":"🤲 Günlük Duaları Keşfet"},"📜 Read Hadith":{"bn":"📜 হাদীস পড়ুন","ar":"📜 اقرأ الحديث","ur":"📜 حدیث پڑھیں","hi":"📜 हदीस पढ़ें","id":"📜 Baca Hadis","tr":"📜 Hadis Oku"},"🕌 Prayer Times & Qibla":{"bn":"🕌 নামাজের সময় ও কিবলা","ar":"🕌 مواقيت الصلاة والقبلة","ur":"🕌 نماز کے اوقات اور قبلہ","hi":"🕌 नमाज़ के वक़्त और क़िब्ला","id":"🕌 Jadwal Salat & Kiblat","tr":"🕌 Namaz Vakitleri ve Kıble"},"🧠 Take the Qur'an Quiz":{"bn":"🧠 কুরআন কুইজ দিন","ar":"🧠 ابدأ اختبار القرآن","ur":"🧠 قرآن کوئز دیں","hi":"🧠 क़ुरआन क्विज़ दें","id":"🧠 Ikuti Kuis Al-Qur'an","tr":"🧠 Kur'an Testini Çöz"},"Continue reading":{"bn":"পড়া চালিয়ে যান","ar":"تابع القراءة","ur":"پڑھنا جاری رکھیں","hi":"पढ़ना जारी रखें","id":"Lanjutkan membaca","tr":"Okumaya devam et"},"▶ Featured Video":{"bn":"▶ নির্বাচিত ভিডিও","ar":"▶ فيديو مميز","ur":"▶ نمایاں ویڈیو","hi":"▶ चुनिंदा वीडियो","id":"▶ Video Pilihan","tr":"▶ Öne Çıkan Video"},"☰ Browse Surahs":{"bn":"☰ সূরা তালিকা","ar":"☰ تصفّح السور","ur":"☰ سورتیں دیکھیں","hi":"☰ सूरह देखें","id":"☰ Telusuri Surah","tr":"☰ Sureleri Gez"},"Translation":{"bn":"অনুবাদ","ar":"الترجمة","ur":"ترجمہ","hi":"अनुवाद","id":"Terjemahan","tr":"Meal"},"⌕ Search verse text for this too →":{"bn":"⌕ এটির জন্য আয়াতের লেখাতেও খুঁজুন →","ar":"⌕ ابحث في نص الآيات عن هذا أيضًا →","ur":"⌕ آیات کے متن میں بھی تلاش کریں →","hi":"⌕ आयतों के पाठ में भी खोजें →","id":"⌕ Cari juga di teks ayat →","tr":"⌕ Ayet metninde de ara →"},"Could not load the surah list. Check your internet connection and reload.":{"bn":"সূরার তালিকা লোড করা যায়নি। ইন্টারনেট সংযোগ দেখে আবার লোড করুন।","ar":"تعذّر تحميل قائمة السور. تحقق من اتصالك بالإنترنت وأعد التحميل.","ur":"سورتوں کی فہرست لوڈ نہ ہو سکی۔ انٹرنیٹ کنکشن دیکھیں اور دوبارہ لوڈ کریں۔","hi":"सूरह की सूची लोड नहीं हो सकी। इंटरनेट कनेक्शन जाँचें और दोबारा लोड करें।","id":"Daftar surah tidak dapat dimuat. Periksa koneksi internet lalu muat ulang.","tr":"Sure listesi yüklenemedi. İnternet bağlantınızı kontrol edip yeniden yükleyin."},"Retry":{"bn":"আবার চেষ্টা করুন","ar":"أعد المحاولة","ur":"دوبارہ کوشش کریں","hi":"फिर कोशिश करें","id":"Coba lagi","tr":"Yeniden dene"},"Try again":{"bn":"আবার চেষ্টা করুন","ar":"حاول مرة أخرى","ur":"دوبارہ کوشش کریں","hi":"फिर से कोशिश करें","id":"Coba lagi","tr":"Tekrar dene"},"↻ Try again":{"bn":"↻ আবার চেষ্টা করুন","ar":"↻ حاول مرة أخرى","ur":"↻ دوبارہ کوشش کریں","hi":"↻ फिर से कोशिश करें","id":"↻ Coba lagi","tr":"↻ Tekrar dene"},"Choose a surah to begin":{"bn":"শুরু করতে একটি সূরা বেছে নিন","ar":"اختر سورة لتبدأ","ur":"شروع کرنے کے لیے سورت منتخب کریں","hi":"शुरू करने के लिए सूरह चुनें","id":"Pilih surah untuk memulai","tr":"Başlamak için bir sure seçin"},"Pick one from the list, or search above for a word or theme.":{"bn":"তালিকা থেকে একটি বেছে নিন, অথবা উপরে কোনো শব্দ বা বিষয় খুঁজুন।","ar":"اختر من القائمة، أو ابحث أعلاه عن كلمة أو موضوع.","ur":"فہرست میں سے ایک چنیں، یا اوپر کوئی لفظ یا موضوع تلاش کریں۔","hi":"सूची से चुनें, या ऊपर कोई शब्द या विषय खोजें।","id":"Pilih dari daftar, atau cari kata atau tema di atas.","tr":"Listeden birini seçin ya da yukarıda bir kelime veya konu arayın."},"All 114 Surahs":{"bn":"১১৪টি সূরা","ar":"السور الـ114","ur":"تمام 114 سورتیں","hi":"सभी 114 सूरह","id":"Semua 114 Surah","tr":"114 Sûrenin Tamamı"},"Tap any surah to open it — jump straight to the reader.":{"bn":"যেকোনো সূরায় ট্যাপ করুন — সরাসরি পড়ার পাতায় যান।","ar":"اضغط على أي سورة لفتحها — وانتقل مباشرة إلى القارئ.","ur":"کسی بھی سورت پر ٹیپ کریں — سیدھا ریڈر میں جائیں۔","hi":"किसी भी सूरह पर टैप करें — सीधे रीडर में जाएँ।","id":"Ketuk surah mana pun untuk membukanya — langsung ke pembaca.","tr":"Açmak için herhangi bir sureye dokunun — doğrudan okuyucuya geçin."},"Loading surah list…":{"bn":"সূরার তালিকা লোড হচ্ছে…","ar":"جارٍ تحميل قائمة السور…","ur":"سورتوں کی فہرست لوڈ ہو رہی ہے…","hi":"सूरह की सूची लोड हो रही है…","id":"Memuat daftar surah…","tr":"Sure listesi yükleniyor…"},"★ Bookmarked":{"bn":"★ বুকমার্ক করা","ar":"★ تمت الإضافة","ur":"★ بک مارک ہو گیا","hi":"★ बुकमार्क हो गया","id":"★ Ditandai","tr":"★ Yer İmi Eklendi"},"☆ Bookmark":{"bn":"☆ বুকমার্ক","ar":"☆ إضافة علامة","ur":"☆ بک مارک","hi":"☆ बुकमार्क","id":"☆ Tandai","tr":"☆ Yer İmi"},"✎ Edit note":{"bn":"✎ নোট সম্পাদনা","ar":"✎ تعديل الملاحظة","ur":"✎ نوٹ ایڈٹ کریں","hi":"✎ नोट बदलें","id":"✎ Ubah catatan","tr":"✎ Notu düzenle"},"✎ Add note":{"bn":"✎ নোট যোগ করুন","ar":"✎ إضافة ملاحظة","ur":"✎ نوٹ شامل کریں","hi":"✎ नोट जोड़ें","id":"✎ Tambah catatan","tr":"✎ Not ekle"},"📖 Tafsir":{"bn":"📖 তাফসীর","ar":"📖 التفسير","ur":"📖 تفسیر","hi":"📖 तफ़सीर","id":"📖 Tafsir","tr":"📖 Tefsir"},"Cancel":{"bn":"বাতিল","ar":"إلغاء","ur":"منسوخ کریں","hi":"रद्द करें","id":"Batal","tr":"İptal"},"Save note":{"bn":"নোট সংরক্ষণ","ar":"حفظ الملاحظة","ur":"نوٹ محفوظ کریں","hi":"नोट सहेजें","id":"Simpan catatan","tr":"Notu kaydet"},"▶ Listen (Al-Afasy)":{"bn":"▶ শুনুন (আল-আফাসি)","ar":"▶ استمع (العفاسي)","ur":"▶ سنیں (العفاسی)","hi":"▶ सुनें (अल-अफ़ासी)","id":"▶ Dengarkan (Al-Afasy)","tr":"▶ Dinle (Al-Afasy)"},"↑ Top":{"bn":"↑ উপরে","ar":"↑ للأعلى","ur":"↑ اوپر","hi":"↑ ऊपर","id":"↑ Atas","tr":"↑ Yukarı"},"Loading tafsir…":{"bn":"তাফসীর লোড হচ্ছে…","ar":"جارٍ تحميل التفسير…","ur":"تفسیر لوڈ ہو رہی ہے…","hi":"तफ़सीर लोड हो रही है…","id":"Memuat tafsir…","tr":"Tefsir yükleniyor…"},"No tafsir has been added for this ayah yet.":{"bn":"এই আয়াতের জন্য এখনো কোনো তাফসীর যোগ করা হয়নি।","ar":"لم تُضف أي تفسير لهذه الآية بعد.","ur":"اس آیت کی کوئی تفسیر ابھی شامل نہیں کی گئی۔","hi":"इस आयत की कोई तफ़सीर अभी जोड़ी नहीं गई है।","id":"Belum ada tafsir untuk ayat ini.","tr":"Bu ayet için henüz tefsir eklenmedi."},"Meccan":{"bn":"মাক্কী","ar":"مكية","ur":"مکی","hi":"मक्की","id":"Makkiyah","tr":"Mekki"},"Medinan":{"bn":"মাদানী","ar":"مدنية","ur":"مدنی","hi":"मदनी","id":"Madaniyah","tr":"Medeni"},"\"{0}\" · {1} ayat · Revealed in {2}":{"bn":"\"{0}\" · {1}টি আয়াত · {2}","ar":"\"{0}\" · {1} آية · {2}","ur":"\"{0}\" · {1} آیات · {2}","hi":"\"{0}\" · {1} आयतें · {2}","id":"\"{0}\" · {1} ayat · {2}","tr":"\"{0}\" · {1} ayet · {2}"},"{0} · {1} ayat · {2}":{"bn":"{0} · {1}টি আয়াত · {2}","ar":"{0} · {1} آية · {2}","ur":"{0} · {1} آیات · {2}","hi":"{0} · {1} आयतें · {2}","id":"{0} · {1} ayat · {2}","tr":"{0} · {1} ayet · {2}"},"Daily Duas":{"bn":"দৈনন্দিন দোয়া","ar":"الأدعية اليومية","ur":"روزمرہ کی دعائیں","hi":"रोज़ की दुआएँ","id":"Doa Harian","tr":"Günlük Dualar"},"Short, authentic supplications for everyday moments — for waking, seeking knowledge, travelling, and rest — with Arabic, transliteration and translation.":{"bn":"দৈনন্দিন মুহূর্তের জন্য সংক্ষিপ্ত, প্রামাণ্য দোয়া — ঘুম থেকে ওঠা, জ্ঞান অর্জন, সফর ও বিশ্রামের জন্য — আরবি, উচ্চারণ ও অনুবাদসহ।","ar":"أدعية قصيرة صحيحة للحظات اليوم — عند الاستيقاظ وطلب العلم والسفر والنوم — مع النص العربي والنقل الصوتي والترجمة.","ur":"روزمرہ لمحات کے لیے مختصر مستند دعائیں — جاگنے، علم طلب کرنے، سفر اور آرام کے وقت — عربی متن، تلفظ اور ترجمہ کے ساتھ۔","hi":"रोज़मर्रा के पलों के लिए छोटी, प्रामाणिक दुआएँ — जागने, इल्म हासिल करने, सफ़र और आराम के लिए — अरबी, उच्चारण और अनुवाद के साथ।","id":"Doa-doa singkat yang sahih untuk momen sehari-hari — saat bangun, menuntut ilmu, bepergian, dan beristirahat — lengkap dengan teks Arab, transliterasi, dan terjemahan.","tr":"Günlük anlar için kısa, sahih dualar — uyanırken, ilim ararken, yolculukta ve dinlenirken — Arapça metin, okunuş ve meal ile."},"Showing {0} of {1}":{"bn":"{1}টির মধ্যে {0}টি দেখানো হচ্ছে","ar":"عرض {0} من {1}","ur":"{1} میں سے {0} دکھائے جا رہے ہیں","hi":"{1} में से {0} दिखाए जा रहे हैं","id":"Menampilkan {0} dari {1}","tr":"{1} içinden {0} gösteriliyor"},"Read Sahih al-Bukhari book by book in Arabic with English and বাংলা, search it, or jump to any hadith number. It loads one small part at a time, so it stays fast on older phones.":{"bn":"সহীহ বুখারী কিতাব ধরে ধরে আরবি, ইংরেজি ও বাংলায় পড়ুন, খুঁজুন, অথবা যেকোনো হাদীস নম্বরে যান। এটি একবারে অল্প অংশ লোড করে, তাই পুরনো ফোনেও দ্রুত চলে।","ar":"اقرأ صحيح البخاري كتابًا كتابًا بالعربية مع الترجمة الإنجليزية والبنغالية، وابحث فيه أو انتقل إلى أي رقم حديث. يُحمَّل جزء صغير في كل مرة، فيبقى سريعًا على الهواتف القديمة.","ur":"صحیح بخاری کو کتاب بہ کتاب عربی کے ساتھ انگریزی اور بنگالی میں پڑھیں، اس میں تلاش کریں یا کسی بھی حدیث نمبر پر جائیں۔ یہ ایک وقت میں چھوٹا سا حصہ لوڈ کرتا ہے، اس لیے پرانے فونز پر بھی تیز رہتا ہے۔","hi":"सहीह बुख़ारी को किताब-दर-किताब अरबी के साथ अंग्रेज़ी और बांग्ला में पढ़ें, उसमें खोजें, या किसी भी हदीस नंबर पर जाएँ। यह एक बार में छोटा हिस्सा लोड करता है, इसलिए पुराने फ़ोन पर भी तेज़ चलता है।","id":"Baca Sahih al-Bukhari kitab demi kitab dalam bahasa Arab beserta terjemahan Inggris dan Bengali, cari, atau langsung ke nomor hadis mana pun. Dimuat sedikit demi sedikit sehingga tetap cepat di ponsel lama.","tr":"Sahih-i Buhârî'yi kitap kitap Arapça metin ile İngilizce ve Bengalce olarak okuyun, içinde arama yapın veya herhangi bir hadis numarasına gidin. Her seferinde küçük bir bölüm yüklenir, bu yüzden eski telefonlarda da hızlı kalır."},"Featured":{"bn":"নির্বাচিত","ar":"مختارة","ur":"منتخب","hi":"चुनिंदा","id":"Pilihan","tr":"Öne Çıkanlar"},"Go":{"bn":"যান","ar":"اذهب","ur":"جائیں","hi":"जाएँ","id":"Pergi","tr":"Git"},"All books":{"bn":"সব কিতাব","ar":"كل الكتب","ur":"تمام کتابیں","hi":"सभी किताबें","id":"Semua kitab","tr":"Tüm kitaplar"},"Search":{"bn":"খুঁজুন","ar":"بحث","ur":"تلاش","hi":"खोजें","id":"Cari","tr":"Ara"},"Stop":{"bn":"থামান","ar":"إيقاف","ur":"روکیں","hi":"रोकें","id":"Berhenti","tr":"Durdur"},"Loading Sahih al-Bukhari…":{"bn":"সহীহ বুখারী লোড হচ্ছে…","ar":"جارٍ تحميل صحيح البخاري…","ur":"صحیح بخاری لوڈ ہو رہی ہے…","hi":"सहीह बुख़ारी लोड हो रही है…","id":"Memuat Sahih al-Bukhari…","tr":"Sahih-i Buhârî yükleniyor…"},"Loading…":{"bn":"লোড হচ্ছে…","ar":"جارٍ التحميل…","ur":"لوڈ ہو رہا ہے…","hi":"लोड हो रहा है…","id":"Memuat…","tr":"Yükleniyor…"},"‹ Prev":{"bn":"‹ আগে","ar":"‹ السابق","ur":"‹ پچھلا","hi":"‹ पिछला","id":"‹ Sebelumnya","tr":"‹ Önceki"},"Next ›":{"bn":"পরে ›","ar":"التالي ›","ur":"اگلا ›","hi":"अगला ›","id":"Berikutnya ›","tr":"Sonraki ›"},"Page {0} / {1}":{"bn":"পৃষ্ঠা {0} / {1}","ar":"صفحة {0} / {1}","ur":"صفحہ {0} / {1}","hi":"पृष्ठ {0} / {1}","id":"Halaman {0} / {1}","tr":"Sayfa {0} / {1}"},"Load more ({0} left)":{"bn":"আরও দেখুন ({0}টি বাকি)","ar":"عرض المزيد (متبقٍ {0})","ur":"مزید دیکھیں ({0} باقی)","hi":"और देखें ({0} बाकी)","id":"Muat lebih banyak (sisa {0})","tr":"Daha fazla yükle ({0} kaldı)"},"Load more":{"bn":"আরও দেখুন","ar":"عرض المزيد","ur":"مزید دیکھیں","hi":"और देखें","id":"Muat lebih banyak","tr":"Daha fazla yükle"},"Couldn’t load this part. Please check your connection.":{"bn":"এই অংশ লোড করা যায়নি। আপনার সংযোগ পরীক্ষা করুন।","ar":"تعذّر تحميل هذا الجزء. تحقق من اتصالك.","ur":"یہ حصہ لوڈ نہ ہو سکا۔ اپنا کنکشن چیک کریں۔","hi":"यह हिस्सा लोड नहीं हो सका। अपना कनेक्शन जाँचें।","id":"Bagian ini tidak dapat dimuat. Periksa koneksi Anda.","tr":"Bu bölüm yüklenemedi. Bağlantınızı kontrol edin."},"No hadith match your search.":{"bn":"আপনার অনুসন্ধানের সাথে কোনো হাদীস মেলেনি।","ar":"لا توجد أحاديث مطابقة لبحثك.","ur":"آپ کی تلاش سے کوئی حدیث نہیں ملی۔","hi":"आपकी खोज से कोई हदीस नहीं मिली।","id":"Tidak ada hadis yang cocok dengan pencarian Anda.","tr":"Aramanızla eşleşen hadis bulunamadı."},"Arabic text and translations come from open hadith datasets and may differ slightly from printed editions. Please verify wording and numbering against sunnah.com before quoting.":{"bn":"আরবি পাঠ ও অনুবাদ উন্মুক্ত হাদীস ডেটাসেট থেকে নেওয়া এবং ছাপা সংস্করণ থেকে সামান্য ভিন্ন হতে পারে। উদ্ধৃত করার আগে অনুগ্রহ করে sunnah.com-এর সাথে শব্দ ও নম্বর মিলিয়ে নিন।","ar":"النصوص العربية والترجمات مأخوذة من قواعد بيانات حديثية مفتوحة وقد تختلف قليلًا عن الطبعات المطبوعة. يُرجى التحقق من الألفاظ والترقيم في sunnah.com قبل الاقتباس.","ur":"عربی متن اور تراجم کھلے حدیثی ڈیٹاسیٹس سے لیے گئے ہیں اور چھپے ہوئے ایڈیشنز سے کچھ مختلف ہو سکتے ہیں۔ نقل کرنے سے پہلے الفاظ اور نمبر sunnah.com سے ضرور ملا لیں۔","hi":"अरबी पाठ और अनुवाद खुले हदीस डेटासेट से लिए गए हैं और छपे संस्करणों से थोड़े अलग हो सकते हैं। उद्धृत करने से पहले शब्द और क्रमांक sunnah.com से ज़रूर मिला लें।","id":"Teks Arab dan terjemahan berasal dari dataset hadis terbuka dan dapat sedikit berbeda dari edisi cetak. Mohon periksa redaksi dan penomoran di sunnah.com sebelum mengutip.","tr":"Arapça metin ve çeviriler açık hadis veri setlerinden alınmıştır ve basılı baskılardan biraz farklı olabilir. Alıntı yapmadan önce lafızları ve numaraları lütfen sunnah.com üzerinden doğrulayın."},"{0} matches":{"bn":"{0}টি ফলাফল","ar":"{0} نتيجة","ur":"{0} نتائج","hi":"{0} परिणाम","id":"{0} hasil","tr":"{0} sonuç"},"Book {0}: {1} · hadith {2}–{3} ({4} in this book)":{"bn":"কিতাব {0}: {1} · হাদীস {2}–{3} (এই কিতাবে {4}টি)","ar":"الكتاب {0}: {1} · الأحاديث {2}–{3} (في هذا الكتاب {4})","ur":"کتاب {0}: {1} · احادیث {2}–{3} (اس کتاب میں {4})","hi":"किताब {0}: {1} · हदीस {2}–{3} (इस किताब में {4})","id":"Kitab {0}: {1} · hadis {2}–{3} ({4} dalam kitab ini)","tr":"Kitap {0}: {1} · hadis {2}–{3} (bu kitapta {4})"},"Sahih al-Bukhari {0} · Book {1}: {2}":{"bn":"সহীহ বুখারী {0} · কিতাব {1}: {2}","ar":"صحيح البخاري {0} · الكتاب {1}: {2}","ur":"صحیح بخاری {0} · کتاب {1}: {2}","hi":"सहीह बुख़ारी {0} · किताब {1}: {2}","id":"Sahih al-Bukhari {0} · Kitab {1}: {2}","tr":"Sahih-i Buhârî {0} · Kitap {1}: {2}"},"Book {0} · {1}":{"bn":"কিতাব {0} · {1}","ar":"الكتاب {0} · {1}","ur":"کتاب {0} · {1}","hi":"किताब {0} · {1}","id":"Kitab {0} · {1}","tr":"Kitap {0} · {1}"},"Qur'an Knowledge Quiz":{"bn":"কুরআন জ্ঞান কুইজ","ar":"اختبار معرفة القرآن","ur":"قرآنی معلومات کوئز","hi":"क़ुरआन ज्ञान क्विज़","id":"Kuis Pengetahuan Al-Qur'an","tr":"Kur'an Bilgi Yarışması"},"A short set of questions to test what you know about the Qur'an — its surahs, structure and history.":{"bn":"কুরআন সম্পর্কে আপনার জ্ঞান যাচাইয়ের জন্য কিছু সংক্ষিপ্ত প্রশ্ন — এর সূরা, গঠন ও ইতিহাস নিয়ে।","ar":"مجموعة قصيرة من الأسئلة لاختبار معرفتك بالقرآن — سوره وبنيته وتاريخه.","ur":"قرآن کے بارے میں آپ کی معلومات جانچنے کے لیے مختصر سوالات — اس کی سورتیں، ترتیب اور تاریخ۔","hi":"क़ुरआन के बारे में आपकी जानकारी परखने के लिए कुछ छोटे सवाल — इसकी सूरतें, बनावट और इतिहास।","id":"Beberapa pertanyaan singkat untuk menguji pengetahuan Anda tentang Al-Qur'an — surah, struktur, dan sejarahnya.","tr":"Kur'an hakkındaki bilginizi sınamak için kısa sorular — sureleri, yapısı ve tarihi."},"Question {0} of {1}":{"bn":"প্রশ্ন {0} / {1}","ar":"السؤال {0} من {1}","ur":"سوال {0} / {1}","hi":"प्रश्न {0} / {1}","id":"Pertanyaan {0} dari {1}","tr":"Soru {0} / {1}"},"Score {0}":{"bn":"স্কোর {0}","ar":"النتيجة {0}","ur":"اسکور {0}","hi":"स्कोर {0}","id":"Skor {0}","tr":"Puan {0}"},"Next question →":{"bn":"পরের প্রশ্ন →","ar":"السؤال التالي →","ur":"اگلا سوال →","hi":"अगला सवाल →","id":"Pertanyaan berikutnya →","tr":"Sonraki soru →"},"Well done!":{"bn":"চমৎকার!","ar":"أحسنت!","ur":"شاباش!","hi":"शाबाश!","id":"Bagus sekali!","tr":"Tebrikler!"},"Perfect score — MashaAllah!":{"bn":"পূর্ণ স্কোর — মাশাআল্লাহ!","ar":"درجة كاملة — ما شاء الله!","ur":"مکمل اسکور — ماشاء اللہ!","hi":"पूरे अंक — माशा अल्लाह!","id":"Skor sempurna — MasyaAllah!","tr":"Tam puan — Maşallah!"},"Great work — you know your Qur'an well.":{"bn":"দারুণ — আপনি কুরআন ভালোই জানেন।","ar":"عمل رائع — أنت تعرف القرآن جيدًا.","ur":"بہت خوب — آپ قرآن کو اچھی طرح جانتے ہیں۔","hi":"बहुत बढ़िया — आप क़ुरआन को अच्छी तरह जानते हैं।","id":"Kerja bagus — Anda memahami Al-Qur'an dengan baik.","tr":"Harika — Kur'an'ı iyi biliyorsunuz."},"Good effort — a little more reading will help.":{"bn":"ভালো চেষ্টা — আরেকটু পড়লে আরও ভালো হবে।","ar":"جهد طيب — مزيد من القراءة سيفيدك.","ur":"اچھی کوشش — تھوڑا اور پڑھنے سے فائدہ ہوگا۔","hi":"अच्छी कोशिश — थोड़ा और पढ़ने से मदद मिलेगी।","id":"Usaha bagus — sedikit membaca lagi akan membantu.","tr":"Güzel çaba — biraz daha okumak yardımcı olur."},"A good starting point — try reading a few surahs and take it again.":{"bn":"এটি একটি ভালো শুরু — কয়েকটি সূরা পড়ে আবার চেষ্টা করুন।","ar":"بداية جيدة — اقرأ بعض السور ثم أعد الاختبار.","ur":"اچھی شروعات — چند سورتیں پڑھ کر دوبارہ کوشش کریں۔","hi":"अच्छी शुरुआत — कुछ सूरह पढ़कर फिर से कोशिश करें।","id":"Awal yang baik — coba baca beberapa surah lalu ikuti lagi.","tr":"İyi bir başlangıç — birkaç sure okuyup tekrar deneyin."},"Correct":{"bn":"সঠিক","ar":"صحيح","ur":"درست","hi":"सही","id":"Benar","tr":"Doğru"},"Create your account":{"bn":"আপনার অ্যাকাউন্ট তৈরি করুন","ar":"أنشئ حسابك","ur":"اپنا اکاؤنٹ بنائیں","hi":"अपना अकाउंट बनाएँ","id":"Buat akun Anda","tr":"Hesabınızı oluşturun"},"Sign up to save your profile on this device. Register as admin to manage duas, quotes and quiz questions.":{"bn":"এই ডিভাইসে আপনার প্রোফাইল সংরক্ষণ করতে সাইন আপ করুন। দোয়া, উক্তি ও কুইজ প্রশ্ন পরিচালনা করতে অ্যাডমিন হিসেবে নিবন্ধন করুন।","ar":"سجّل لحفظ ملفك الشخصي على هذا الجهاز. سجّل كمشرف لإدارة الأدعية والاقتباسات وأسئلة الاختبار.","ur":"اس آلے پر اپنا پروفائل محفوظ کرنے کے لیے سائن اپ کریں۔ دعائیں، اقتباسات اور کوئز سوالات سنبھالنے کے لیے ایڈمن کے طور پر رجسٹر کریں۔","hi":"इस डिवाइस पर अपनी प्रोफ़ाइल सहेजने के लिए साइन अप करें। दुआएँ, उद्धरण और क्विज़ सवाल सँभालने के लिए एडमिन के रूप में रजिस्टर करें।","id":"Daftar untuk menyimpan profil Anda di perangkat ini. Daftar sebagai admin untuk mengelola doa, kutipan, dan soal kuis.","tr":"Profilinizi bu cihazda kaydetmek için kaydolun. Dua, söz ve test sorularını yönetmek için yönetici olarak kaydolun."},"Username":{"bn":"ব্যবহারকারীর নাম","ar":"اسم المستخدم","ur":"صارف نام","hi":"यूज़रनेम","id":"Nama pengguna","tr":"Kullanıcı adı"},"Password":{"bn":"পাসওয়ার্ড","ar":"كلمة المرور","ur":"پاس ورڈ","hi":"पासवर्ड","id":"Kata sandi","tr":"Parola"},"Register as site admin (manage content)":{"bn":"সাইট অ্যাডমিন হিসেবে নিবন্ধন (কনটেন্ট পরিচালনা)","ar":"سجّل كمشرف للموقع (إدارة المحتوى)","ur":"سائٹ ایڈمن کے طور پر رجسٹر کریں (مواد کا انتظام)","hi":"साइट एडमिन के रूप में रजिस्टर करें (सामग्री प्रबंधन)","id":"Daftar sebagai admin situs (kelola konten)","tr":"Site yöneticisi olarak kaydol (içerik yönetimi)"},"Sign Up":{"bn":"সাইন আপ","ar":"تسجيل","ur":"سائن اپ","hi":"साइन अप","id":"Daftar","tr":"Kaydol"},"Already have an account?":{"bn":"ইতিমধ্যে অ্যাকাউন্ট আছে?","ar":"لديك حساب بالفعل؟","ur":"پہلے سے اکاؤنٹ ہے؟","hi":"पहले से अकाउंट है?","id":"Sudah punya akun?","tr":"Zaten hesabınız var mı?"},"Log in":{"bn":"লগ ইন","ar":"تسجيل الدخول","ur":"لاگ ان کریں","hi":"लॉग इन करें","id":"Masuk","tr":"Giriş yap"},"Log In":{"bn":"লগ ইন","ar":"دخول","ur":"لاگ ان","hi":"लॉग इन","id":"Masuk","tr":"Giriş"},"New here?":{"bn":"নতুন?","ar":"جديد هنا؟","ur":"نئے ہیں؟","hi":"नए हैं?","id":"Baru di sini?","tr":"Burada yeni misiniz?"},"Sign up":{"bn":"সাইন আপ করুন","ar":"سجّل","ur":"سائن اپ کریں","hi":"साइन अप करें","id":"Daftar","tr":"Kaydolun"},"Incorrect username or password.":{"bn":"ব্যবহারকারীর নাম বা পাসওয়ার্ড ভুল।","ar":"اسم المستخدم أو كلمة المرور غير صحيحة.","ur":"صارف نام یا پاس ورڈ غلط ہے۔","hi":"यूज़रनेम या पासवर्ड गलत है।","id":"Nama pengguna atau kata sandi salah.","tr":"Kullanıcı adı veya parola hatalı."},"Please enter a username and password.":{"bn":"অনুগ্রহ করে ব্যবহারকারীর নাম ও পাসওয়ার্ড দিন।","ar":"يرجى إدخال اسم المستخدم وكلمة المرور.","ur":"براہ کرم صارف نام اور پاس ورڈ درج کریں۔","hi":"कृपया यूज़रनेम और पासवर्ड डालें।","id":"Masukkan nama pengguna dan kata sandi.","tr":"Lütfen kullanıcı adı ve parola girin."},"That username is already taken.":{"bn":"এই ব্যবহারকারীর নামটি আগেই নেওয়া হয়েছে।","ar":"اسم المستخدم هذا مستخدم بالفعل.","ur":"یہ صارف نام پہلے سے لیا جا چکا ہے۔","hi":"यह यूज़रनेम पहले से लिया जा चुका है।","id":"Nama pengguna itu sudah dipakai.","tr":"Bu kullanıcı adı zaten alınmış."},"No notes yet. Open a surah and tap \"Add note\" on any verse.":{"bn":"এখনো কোনো নোট নেই। কোনো সূরা খুলে যেকোনো আয়াতে \"নোট যোগ করুন\" ট্যাপ করুন।","ar":"لا توجد ملاحظات بعد. افتح سورة واضغط \"إضافة ملاحظة\" على أي آية.","ur":"ابھی کوئی نوٹ نہیں۔ کوئی سورت کھولیں اور کسی بھی آیت پر \"نوٹ شامل کریں\" ٹیپ کریں۔","hi":"अभी कोई नोट नहीं है। कोई सूरह खोलें और किसी भी आयत पर \"नोट जोड़ें\" टैप करें।","id":"Belum ada catatan. Buka surah dan ketuk \"Tambah catatan\" pada ayat mana pun.","tr":"Henüz not yok. Bir sure açıp herhangi bir ayette \"Not ekle\"ye dokunun."},"No bookmarks yet. Tap the ☆ next to any verse to save it here.":{"bn":"এখনো কোনো বুকমার্ক নেই। এখানে সংরক্ষণ করতে যেকোনো আয়াতের পাশের ☆ ট্যাপ করুন।","ar":"لا توجد علامات مرجعية بعد. اضغط ☆ بجانب أي آية لحفظها هنا.","ur":"ابھی کوئی بک مارک نہیں۔ کسی بھی آیت کے ساتھ ☆ ٹیپ کریں تاکہ وہ یہاں محفوظ ہو۔","hi":"अभी कोई बुकमार्क नहीं है। यहाँ सहेजने के लिए किसी भी आयत के पास ☆ टैप करें।","id":"Belum ada markah. Ketuk ☆ di samping ayat mana pun untuk menyimpannya di sini.","tr":"Henüz yer imi yok. Buraya kaydetmek için herhangi bir ayetin yanındaki ☆ simgesine dokunun."},"\"My Lord, increase me in knowledge.\" — Surah Ta-Ha, 20:114":{"bn":"\"হে আমার রব, আমার জ্ঞান বাড়িয়ে দিন।\" — সূরা ত্বা-হা, ২০:১১৪","ar":"\"رَبِّ زِدْنِي عِلْمًا\" — سورة طه، 20:114","ur":"\"اے میرے رب، میرے علم میں اضافہ فرما۔\" — سورۂ طٰہٰ، 20:114","hi":"\"ऐ मेरे रब, मेरा इल्म बढ़ा दे।\" — सूरह ता-हा, 20:114","id":"\"Ya Tuhanku, tambahkanlah ilmu kepadaku.\" — Surah Ta-Ha, 20:114","tr":"\"Rabbim, ilmimi artır.\" — Tâhâ Suresi, 20:114"},"Qur'an text and translations served via the public alquran.cloud API. Built for quiet, personal study.":{"bn":"কুরআনের পাঠ ও অনুবাদ পাবলিক alquran.cloud API থেকে নেওয়া। শান্ত, ব্যক্তিগত অধ্যয়নের জন্য তৈরি।","ar":"نص القرآن وترجماته من واجهة alquran.cloud العامة. صُنع للدراسة الشخصية الهادئة.","ur":"قرآن کا متن اور تراجم عوامی alquran.cloud API سے لیے گئے ہیں۔ پُرسکون، ذاتی مطالعے کے لیے بنایا گیا۔","hi":"क़ुरआन का पाठ और अनुवाद सार्वजनिक alquran.cloud API से लिए गए हैं। शांत, निजी अध्ययन के लिए बनाया गया।","id":"Teks dan terjemahan Al-Qur'an berasal dari API publik alquran.cloud. Dibuat untuk belajar pribadi yang tenang.","tr":"Kur'an metni ve meâlleri herkese açık alquran.cloud API'sinden alınır. Sakin, kişisel çalışma için hazırlandı."},"Design":{"bn":"ডিজাইন","ar":"التصميم","ur":"ڈیزائن","hi":"डिज़ाइन","id":"Desain","tr":"Tasarım"},"Colors":{"bn":"রং","ar":"الألوان","ur":"رنگ","hi":"रंग","id":"Warna","tr":"Renkler"},"Background":{"bn":"ব্যাকগ্রাউন্ড","ar":"الخلفية","ur":"بیک گراؤنڈ","hi":"बैकग्राउंड","id":"Latar","tr":"Arka Plan"},"Logo":{"bn":"লোগো","ar":"الشعار","ur":"لوگو","hi":"लोगो","id":"Logo","tr":"Logo"},"Ready-made themes":{"bn":"তৈরি থিম","ar":"سمات جاهزة","ur":"تیار تھیمز","hi":"तैयार थीम","id":"Tema siap pakai","tr":"Hazır temalar"},"Night Aurora":{"bn":"নাইট অরোরা","ar":"شفق الليل","ur":"نائٹ اورورا","hi":"नाइट अरोरा","id":"Aurora Malam","tr":"Gece Aurorası"},"Deep Space":{"bn":"গভীর মহাকাশ","ar":"الفضاء العميق","ur":"گہرا خلا","hi":"गहरा अंतरिक्ष","id":"Luar Angkasa","tr":"Derin Uzay"},"Emerald Dusk":{"bn":"পান্না গোধূলি","ar":"غسق الزمرد","ur":"زمردی شام","hi":"पन्ना गोधूलि","id":"Senja Zamrud","tr":"Zümrüt Alacakaranlık"},"Golden Sand":{"bn":"সোনালি বালি","ar":"الرمل الذهبي","ur":"سنہری ریت","hi":"सुनहरी रेत","id":"Pasir Emas","tr":"Altın Kum"},"Minimal Dark":{"bn":"মিনিমাল ডার্ক","ar":"داكن بسيط","ur":"سادہ ڈارک","hi":"मिनिमल डार्क","id":"Gelap Minimal","tr":"Sade Karanlık"},"Your own colors":{"bn":"নিজের রং","ar":"ألوانك الخاصة","ur":"اپنے رنگ","hi":"अपने रंग","id":"Warna Anda sendiri","tr":"Kendi renkleriniz"},"Accent":{"bn":"অ্যাকসেন্ট","ar":"اللون المميز","ur":"نمایاں رنگ","hi":"एक्सेंट","id":"Aksen","tr":"Vurgu"},"Auto":{"bn":"অটো","ar":"تلقائي","ur":"خودکار","hi":"ऑटो","id":"Otomatis","tr":"Otomatik"},"Dark shades work best. Light ones are darkened automatically so text stays readable.":{"bn":"গাঢ় রংই সবচেয়ে ভালো কাজ করে। হালকা রং স্বয়ংক্রিয়ভাবে গাঢ় করা হয়, যাতে লেখা পড়া যায়।","ar":"الألوان الداكنة هي الأفضل. تُغمَّق الألوان الفاتحة تلقائيًا ليبقى النص مقروءًا.","ur":"گہرے رنگ بہترین رہتے ہیں۔ ہلکے رنگ خود بخود گہرے کر دیے جاتے ہیں تاکہ متن پڑھا جا سکے۔","hi":"गहरे रंग सबसे अच्छे रहते हैं। हल्के रंग अपने-आप गहरे कर दिए जाते हैं ताकि लिखावट पढ़ी जा सके।","id":"Warna gelap paling cocok. Warna terang otomatis digelapkan agar teks tetap terbaca.","tr":"Koyu tonlar en iyisidir. Açık renkler, yazı okunabilir kalsın diye otomatik olarak koyulaştırılır."},"Pattern":{"bn":"প্যাটার্ন","ar":"النقش","ur":"پیٹرن","hi":"पैटर्न","id":"Pola","tr":"Desen"},"None":{"bn":"নেই","ar":"بدون","ur":"کوئی نہیں","hi":"कोई नहीं","id":"Tidak ada","tr":"Yok"},"Islamic star":{"bn":"ইসলামি তারা","ar":"نجمة إسلامية","ur":"اسلامی ستارہ","hi":"इस्लामी सितारा","id":"Bintang Islami","tr":"İslami yıldız"},"Honeycomb":{"bn":"মৌচাক","ar":"خلية النحل","ur":"شہد کا چھتہ","hi":"मधुमक्खी का छत्ता","id":"Sarang lebah","tr":"Petek"},"Overlapping circles":{"bn":"ওভারল্যাপিং বৃত্ত","ar":"دوائر متداخلة","ur":"باہم ملے دائرے","hi":"एक-दूसरे पर चढ़े गोले","id":"Lingkaran tumpang tindih","tr":"Kesişen daireler"},"Lattice":{"bn":"জালি","ar":"شبكة","ur":"جالی","hi":"जाली","id":"Kisi-kisi","tr":"Kafes"},"Crescents":{"bn":"অর্ধচন্দ্র","ar":"أهلّة","ur":"ہلال","hi":"अर्धचंद्र","id":"Bulan sabit","tr":"Hilaller"},"Dots":{"bn":"বিন্দু","ar":"نقاط","ur":"نقطے","hi":"बिंदु","id":"Titik","tr":"Noktalar"},"Triangles":{"bn":"ত্রিভুজ","ar":"مثلثات","ur":"تکون","hi":"त्रिभुज","id":"Segitiga","tr":"Üçgenler"},"Visibility":{"bn":"দৃশ্যমানতা","ar":"الظهور","ur":"نمائی","hi":"दृश्यता","id":"Visibilitas","tr":"Görünürlük"},"Size":{"bn":"আকার","ar":"الحجم","ur":"سائز","hi":"आकार","id":"Ukuran","tr":"Boyut"},"Color":{"bn":"রং","ar":"اللون","ur":"رنگ","hi":"रंग","id":"Warna","tr":"Renk"},"Gold":{"bn":"সোনালি","ar":"ذهبي","ur":"سنہری","hi":"सुनहरा","id":"Emas","tr":"Altın"},"Green":{"bn":"সবুজ","ar":"أخضر","ur":"سبز","hi":"हरा","id":"Hijau","tr":"Yeşil"},"White":{"bn":"সাদা","ar":"أبيض","ur":"سفید","hi":"सफ़ेद","id":"Putih","tr":"Beyaz"},"Effects":{"bn":"ইফেক্ট","ar":"المؤثرات","ur":"ایفیکٹس","hi":"इफ़ेक्ट","id":"Efek","tr":"Efektler"},"Aurora glow":{"bn":"অরোরা আভা","ar":"وهج الشفق","ur":"اورورا چمک","hi":"अरोरा की चमक","id":"Cahaya aurora","tr":"Aurora parıltısı"},"Twinkling stars":{"bn":"মিটমিটে তারা","ar":"نجوم متلألئة","ur":"ٹمٹماتے ستارے","hi":"टिमटिमाते तारे","id":"Bintang berkelip","tr":"Parıldayan yıldızlar"},"Soft grain texture":{"bn":"হালকা দানাদার টেক্সচার","ar":"نسيج حبيبي ناعم","ur":"ہلکی دانے دار ساخت","hi":"हल्की दानेदार बनावट","id":"Tekstur butiran lembut","tr":"Yumuşak tanecik dokusu"},"Turning effects off makes the site lighter on older phones.":{"bn":"ইফেক্ট বন্ধ করলে পুরনো ফোনে সাইট হালকা চলে।","ar":"إيقاف المؤثرات يجعل الموقع أخف على الهواتف القديمة.","ur":"ایفیکٹس بند کرنے سے سائٹ پرانے فونز پر ہلکی چلتی ہے۔","hi":"इफ़ेक्ट बंद करने से साइट पुराने फ़ोन पर हल्की चलती है।","id":"Mematikan efek membuat situs lebih ringan di ponsel lama.","tr":"Efektleri kapatmak siteyi eski telefonlarda hafifletir."},"Logo style":{"bn":"লোগোর ধরন","ar":"شكل الشعار","ur":"لوگو کا انداز","hi":"लोगो की शैली","id":"Gaya logo","tr":"Logo stili"},"Minaret":{"bn":"মিনার","ar":"مئذنة","ur":"مینار","hi":"मीनार","id":"Menara","tr":"Minare"},"Crescent":{"bn":"অর্ধচন্দ্র","ar":"هلال","ur":"ہلال","hi":"अर्धचंद्र","id":"Bulan sabit","tr":"Hilal"},"Star":{"bn":"তারা","ar":"نجمة","ur":"ستارہ","hi":"सितारा","id":"Bintang","tr":"Yıldız"},"Book":{"bn":"বই","ar":"كتاب","ur":"کتاب","hi":"किताब","id":"Buku","tr":"Kitap"},"Mosque":{"bn":"মসজিদ","ar":"مسجد","ur":"مسجد","hi":"मस्जिद","id":"Masjid","tr":"Cami"},"Lantern":{"bn":"ফানুস","ar":"فانوس","ur":"فانوس","hi":"फ़ानूस","id":"Lentera","tr":"Fener"},"Frame":{"bn":"ফ্রেম","ar":"الإطار","ur":"فریم","hi":"फ़्रेम","id":"Bingkai","tr":"Çerçeve"},"Circle":{"bn":"বৃত্ত","ar":"دائرة","ur":"دائرہ","hi":"गोला","id":"Lingkaran","tr":"Daire"},"Rounded":{"bn":"গোলাকার","ar":"مستدير","ur":"گول","hi":"गोल कोनों वाला","id":"Membulat","tr":"Yuvarlak"},"Name & tagline":{"bn":"নাম ও ট্যাগলাইন","ar":"الاسم والشعار النصي","ur":"نام اور ٹیگ لائن","hi":"नाम और टैगलाइन","id":"Nama & slogan","tr":"Ad ve slogan"},"Name":{"bn":"নাম","ar":"الاسم","ur":"نام","hi":"नाम","id":"Nama","tr":"Ad"},"Tagline":{"bn":"ট্যাগলাইন","ar":"الشعار النصي","ur":"ٹیگ لائن","hi":"टैगलाइन","id":"Slogan","tr":"Slogan"},"Show tagline":{"bn":"ট্যাগলাইন দেখান","ar":"إظهار الشعار النصي","ur":"ٹیگ لائن دکھائیں","hi":"टैगलाइन दिखाएँ","id":"Tampilkan slogan","tr":"Sloganı göster"},"Reset all design changes":{"bn":"সব ডিজাইন পরিবর্তন রিসেট করুন","ar":"إعادة ضبط كل تغييرات التصميم","ur":"تمام ڈیزائن تبدیلیاں ری سیٹ کریں","hi":"सभी डिज़ाइन बदलाव रीसेट करें","id":"Setel ulang semua perubahan desain","tr":"Tüm tasarım değişikliklerini sıfırla"},"Arabic font":{"bn":"আরবি ফন্ট","ar":"الخط العربي","ur":"عربی فونٹ","hi":"अरबी फ़ॉन्ट","id":"Font Arab","tr":"Arapça yazı tipi"},"Applies to Quran, Hadith and Dua text.":{"bn":"কুরআন, হাদীস ও দোয়ার লেখায় প্রযোজ্য।","ar":"ينطبق على نصوص القرآن والحديث والدعاء.","ur":"قرآن، حدیث اور دعا کے متن پر لاگو ہوتا ہے۔","hi":"क़ुरआन, हदीस और दुआ के पाठ पर लागू।","id":"Berlaku untuk teks Al-Qur'an, Hadis, dan Doa.","tr":"Kur'an, Hadis ve Dua metinlerine uygulanır."},"Salah times for your zone and the direction of the Qibla. Everything is calculated on your device, so it keeps working without internet once the page has loaded.":{"bn":"আপনার এলাকার নামাজের সময় ও কিবলার দিক। সবকিছু আপনার ডিভাইসেই হিসাব করা হয়, তাই পেজ একবার লোড হলে ইন্টারনেট ছাড়াও কাজ করে।","ar":"مواقيت الصلاة في منطقتك واتجاه القبلة. تُحسب كل المعلومات على جهازك، لذا تعمل دون إنترنت بعد تحميل الصفحة.","ur":"آپ کے علاقے کے نماز کے اوقات اور قبلے کی سمت۔ سب کچھ آپ کے آلے پر ہی شمار ہوتا ہے، اس لیے صفحہ لوڈ ہونے کے بعد انٹرنیٹ کے بغیر بھی چلتا ہے۔","hi":"आपके इलाक़े की नमाज़ के वक़्त और क़िब्ले की दिशा। सब कुछ आपके डिवाइस पर ही गणना होता है, इसलिए पेज लोड होने के बाद इंटरनेट के बिना भी चलता है।","id":"Jadwal salat untuk zona Anda dan arah kiblat. Semua dihitung di perangkat Anda, sehingga tetap berfungsi tanpa internet setelah halaman dimuat.","tr":"Bölgeniz için namaz vakitleri ve kıble yönü. Her şey cihazınızda hesaplanır; sayfa yüklendikten sonra internet olmadan da çalışır."},"Zone":{"bn":"এলাকা","ar":"المنطقة","ur":"علاقہ","hi":"इलाक़ा","id":"Zona","tr":"Bölge"},"📍 Use my location":{"bn":"📍 আমার অবস্থান ব্যবহার করুন","ar":"📍 استخدم موقعي","ur":"📍 میرا مقام استعمال کریں","hi":"📍 मेरी लोकेशन इस्तेमाल करें","id":"📍 Gunakan lokasi saya","tr":"📍 Konumumu kullan"},"Next prayer":{"bn":"পরবর্তী নামাজ","ar":"الصلاة القادمة","ur":"اگلی نماز","hi":"अगली नमाज़","id":"Salat berikutnya","tr":"Sonraki namaz"},"Today":{"bn":"আজ","ar":"اليوم","ur":"آج","hi":"आज","id":"Hari ini","tr":"Bugün"},"Qibla direction":{"bn":"কিবলার দিক","ar":"اتجاه القبلة","ur":"قبلے کی سمت","hi":"क़िब्ले की दिशा","id":"Arah kiblat","tr":"Kıble yönü"},"from North, clockwise":{"bn":"উত্তর থেকে ঘড়ির কাঁটার দিকে","ar":"من الشمال باتجاه عقارب الساعة","ur":"شمال سے گھڑی کی سمت میں","hi":"उत्तर से घड़ी की दिशा में","id":"dari Utara, searah jarum jam","tr":"Kuzeyden saat yönünde"},"to the Kaaba":{"bn":"কাবা পর্যন্ত","ar":"إلى الكعبة","ur":"کعبہ تک","hi":"काबा तक","id":"ke Ka'bah","tr":"Kâbe'ye"},"{0} km":{"bn":"{0} কিমি","ar":"{0} كم","ur":"{0} کلومیٹر","hi":"{0} किमी","id":"{0} km","tr":"{0} km"},"🧭 Start live compass":{"bn":"🧭 লাইভ কম্পাস চালু করুন","ar":"🧭 تشغيل البوصلة المباشرة","ur":"🧭 لائیو کمپاس شروع کریں","hi":"🧭 लाइव कम्पास शुरू करें","id":"🧭 Mulai kompas langsung","tr":"🧭 Canlı pusulayı başlat"},"■ Stop compass":{"bn":"■ কম্পাস বন্ধ করুন","ar":"■ إيقاف البوصلة","ur":"■ کمپاس بند کریں","hi":"■ कम्पास बंद करें","id":"■ Hentikan kompas","tr":"■ Pusulayı durdur"},"Hold your phone flat and away from magnets or metal. If the needle drifts, move the phone in a figure 8 to calibrate it.":{"bn":"ফোনটি সমতলভাবে ধরুন এবং চুম্বক বা ধাতু থেকে দূরে রাখুন। কাঁটা সরে গেলে ক্যালিব্রেট করতে ফোনটি ৮-এর মতো করে ঘোরান।","ar":"أمسك هاتفك بشكل مسطح وبعيدًا عن المغناطيس أو المعادن. إذا انحرفت الإبرة فحرّك الهاتف على شكل 8 للمعايرة.","ur":"اپنا فون سیدھا اور مقناطیس یا دھات سے دور رکھیں۔ اگر سوئی بھٹکے تو کیلیبریٹ کرنے کے لیے فون کو 8 کی شکل میں گھمائیں۔","hi":"अपना फ़ोन सीधा और चुंबक या धातु से दूर पकड़ें। अगर सुई भटके तो कैलिब्रेट करने के लिए फ़ोन को 8 की शक्ल में घुमाएँ।","id":"Pegang ponsel secara datar dan jauhkan dari magnet atau logam. Jika jarum melenceng, gerakkan ponsel membentuk angka 8 untuk kalibrasi.","tr":"Telefonunuzu düz tutun ve mıknatıs veya metalden uzak tutun. İbre şaşarsa kalibre etmek için telefonu 8 şeklinde hareket ettirin."},"You are facing the Qibla ✓":{"bn":"আপনি কিবলার দিকে মুখ করে আছেন ✓","ar":"أنت تواجه القبلة ✓","ur":"آپ قبلے کی طرف رخ کیے ہوئے ہیں ✓","hi":"आप क़िब्ले की ओर मुँह किए हैं ✓","id":"Anda menghadap kiblat ✓","tr":"Kıbleye dönüksünüz ✓"},"Turn until the Kaaba icon points straight up":{"bn":"কাবার আইকন সোজা উপরে না আসা পর্যন্ত ঘুরুন","ar":"استدر حتى تشير أيقونة الكعبة إلى الأعلى مباشرة","ur":"اس وقت تک گھومیں جب تک کعبہ کا نشان سیدھا اوپر نہ ہو جائے","hi":"तब तक घूमें जब तक काबा का आइकन सीधा ऊपर न हो जाए","id":"Putar hingga ikon Ka'bah menunjuk lurus ke atas","tr":"Kâbe simgesi tam yukarıyı gösterene kadar dönün"},"Looking for compass…":{"bn":"কম্পাস খোঁজা হচ্ছে…","ar":"جارٍ البحث عن البوصلة…","ur":"کمپاس تلاش کیا جا رہا ہے…","hi":"कम्पास खोजा जा रहा है…","id":"Mencari kompas…","tr":"Pusula aranıyor…"},"No compass sensor found on this device. Use the fixed bearing above with a physical compass.":{"bn":"এই ডিভাইসে কম্পাস সেন্সর পাওয়া যায়নি। ওপরের নির্দিষ্ট দিকটি একটি সাধারণ কম্পাসের সাথে ব্যবহার করুন।","ar":"لم يُعثر على مستشعر بوصلة في هذا الجهاز. استخدم الاتجاه الثابت أعلاه مع بوصلة فعلية.","ur":"اس آلے میں کمپاس سینسر نہیں ملا۔ اوپر دی گئی مقررہ سمت کو اصل کمپاس کے ساتھ استعمال کریں۔","hi":"इस डिवाइस में कम्पास सेंसर नहीं मिला। ऊपर दी गई तय दिशा को असली कम्पास के साथ इस्तेमाल करें।","id":"Sensor kompas tidak ditemukan di perangkat ini. Gunakan arah tetap di atas dengan kompas fisik.","tr":"Bu cihazda pusula sensörü bulunamadı. Yukarıdaki sabit yönü gerçek bir pusulayla kullanın."},"Compass permission was denied.":{"bn":"কম্পাসের অনুমতি দেওয়া হয়নি।","ar":"تم رفض إذن البوصلة.","ur":"کمپاس کی اجازت مسترد کر دی گئی۔","hi":"कम्पास की अनुमति नहीं दी गई।","id":"Izin kompas ditolak.","tr":"Pusula izni reddedildi."},"Manual settings":{"bn":"ম্যানুয়াল সেটিংস","ar":"إعدادات يدوية","ur":"دستی سیٹنگز","hi":"मैन्युअल सेटिंग्स","id":"Pengaturan manual","tr":"Manuel ayarlar"},"Method":{"bn":"পদ্ধতি","ar":"الطريقة","ur":"طریقہ","hi":"विधि","id":"Metode","tr":"Yöntem"},"Asr time":{"bn":"আসরের সময়","ar":"وقت العصر","ur":"عصر کا وقت","hi":"असर का वक़्त","id":"Waktu Asar","tr":"İkindi vakti"},"Auto (best for this zone)":{"bn":"অটো (এই এলাকার জন্য সেরা)","ar":"تلقائي (الأنسب لهذه المنطقة)","ur":"خودکار (اس علاقے کے لیے بہترین)","hi":"ऑटो (इस इलाक़े के लिए सबसे अच्छा)","id":"Otomatis (terbaik untuk zona ini)","tr":"Otomatik (bu bölge için en uygunu)"},"Standard (Shafi, Maliki, Hanbali)":{"bn":"সাধারণ (শাফিয়ী, মালিকী, হাম্বলী)","ar":"القياسي (الشافعي والمالكي والحنبلي)","ur":"معیاری (شافعی، مالکی، حنبلی)","hi":"मानक (शाफ़ई, मालिकी, हंबली)","id":"Standar (Syafi'i, Maliki, Hanbali)","tr":"Standart (Şafii, Maliki, Hanbeli)"},"Hanafi":{"bn":"হানাফি","ar":"الحنفي","ur":"حنفی","hi":"हनफ़ी","id":"Hanafi","tr":"Hanefi"},"Clock":{"bn":"ঘড়ি","ar":"الساعة","ur":"گھڑی","hi":"घड़ी","id":"Jam","tr":"Saat"},"12-hour":{"bn":"১২ ঘণ্টা","ar":"12 ساعة","ur":"12 گھنٹے","hi":"12 घंटे","id":"12 jam","tr":"12 saat"},"24-hour":{"bn":"২৪ ঘণ্টা","ar":"24 ساعة","ur":"24 گھنٹے","hi":"24 घंटे","id":"24 jam","tr":"24 saat"},"Hijri date":{"bn":"হিজরি তারিখ","ar":"التاريخ الهجري","ur":"ہجری تاریخ","hi":"हिजरी तारीख़","id":"Tanggal Hijriah","tr":"Hicri tarih"},"−1 day":{"bn":"−১ দিন","ar":"−1 يوم","ur":"−1 دن","hi":"−1 दिन","id":"−1 hari","tr":"−1 gün"},"No change":{"bn":"পরিবর্তন নেই","ar":"بدون تغيير","ur":"کوئی تبدیلی نہیں","hi":"कोई बदलाव नहीं","id":"Tanpa perubahan","tr":"Değişiklik yok"},"+1 day":{"bn":"+১ দিন","ar":"+1 يوم","ur":"+1 دن","hi":"+1 दिन","id":"+1 hari","tr":"+1 gün"},"Adjust minutes":{"bn":"মিনিট সমন্বয়","ar":"ضبط الدقائق","ur":"منٹ ایڈجسٹ کریں","hi":"मिनट एडजस्ट करें","id":"Sesuaikan menit","tr":"Dakika ayarı"},"Reset adjustments":{"bn":"সমন্বয় রিসেট","ar":"إعادة ضبط التعديلات","ur":"ایڈجسٹمنٹ ری سیٹ کریں","hi":"एडजस्टमेंट रीसेट करें","id":"Setel ulang penyesuaian","tr":"Ayarları sıfırla"},"Custom coordinates":{"bn":"নিজস্ব স্থানাঙ্ক","ar":"إحداثيات مخصصة","ur":"اپنے کوآرڈینیٹس","hi":"कस्टम निर्देशांक","id":"Koordinat kustom","tr":"Özel koordinatlar"},"Use these coordinates":{"bn":"এই স্থানাঙ্ক ব্যবহার করুন","ar":"استخدم هذه الإحداثيات","ur":"یہ کوآرڈینیٹس استعمال کریں","hi":"ये निर्देशांक इस्तेमाल करें","id":"Gunakan koordinat ini","tr":"Bu koordinatları kullan"},"Times are calculated from the sun's position and can differ by a few minutes from your local mosque or timetable. Use the adjust-minutes boxes to match your local timetable.":{"bn":"সময় সূর্যের অবস্থান থেকে হিসাব করা হয়েছে এবং আপনার স্থানীয় মসজিদ বা সময়সূচি থেকে কয়েক মিনিট আলাদা হতে পারে। স্থানীয় সময়সূচির সাথে মেলাতে মিনিট সমন্বয়ের ঘরগুলো ব্যবহার করুন।","ar":"تُحسب الأوقات من موضع الشمس وقد تختلف ببضع دقائق عن مسجدك المحلي أو جدولك. استخدم خانات ضبط الدقائق لمطابقة جدولك المحلي.","ur":"اوقات سورج کی پوزیشن سے شمار کیے جاتے ہیں اور آپ کی مقامی مسجد یا ٹائم ٹیبل سے چند منٹ مختلف ہو سکتے ہیں۔ مقامی ٹائم ٹیبل سے ملانے کے لیے منٹ ایڈجسٹ کرنے والے خانے استعمال کریں۔","hi":"वक़्त सूरज की स्थिति से निकाले जाते हैं और आपकी स्थानीय मस्जिद या टाइमटेबल से कुछ मिनट अलग हो सकते हैं। स्थानीय टाइमटेबल से मिलाने के लिए मिनट एडजस्ट वाले ख़ाने इस्तेमाल करें।","id":"Waktu dihitung dari posisi matahari dan bisa berbeda beberapa menit dari masjid atau jadwal setempat. Gunakan kotak penyesuaian menit agar sesuai dengan jadwal setempat.","tr":"Vakitler güneşin konumundan hesaplanır ve yerel camiinizden ya da takviminizden birkaç dakika farklı olabilir. Yerel takvimle eşleştirmek için dakika ayarı kutularını kullanın."},"Fajr":{"bn":"ফজর","ar":"الفجر","ur":"فجر","hi":"फ़ज्र","id":"Subuh","tr":"Sabah"},"Sunrise":{"bn":"সূর্যোদয়","ar":"الشروق","ur":"طلوعِ آفتاب","hi":"सूर्योदय","id":"Terbit","tr":"Güneş"},"Dhuhr":{"bn":"যোহর","ar":"الظهر","ur":"ظہر","hi":"ज़ुहर","id":"Zuhur","tr":"Öğle"},"Asr":{"bn":"আসর","ar":"العصر","ur":"عصر","hi":"असर","id":"Asar","tr":"İkindi"},"Maghrib":{"bn":"মাগরিব","ar":"المغرب","ur":"مغرب","hi":"मग़रिब","id":"Magrib","tr":"Akşam"},"Isha":{"bn":"এশা","ar":"العشاء","ur":"عشاء","hi":"इशा","id":"Isya","tr":"Yatsı"},"Finding your location…":{"bn":"আপনার অবস্থান খোঁজা হচ্ছে…","ar":"جارٍ تحديد موقعك…","ur":"آپ کا مقام تلاش کیا جا رہا ہے…","hi":"आपकी लोकेशन खोजी जा रही है…","id":"Mencari lokasi Anda…","tr":"Konumunuz bulunuyor…"},"Location is not available in this browser. Pick your city from the list.":{"bn":"এই ব্রাউজারে লোকেশন সুবিধা নেই। তালিকা থেকে আপনার শহর বেছে নিন।","ar":"الموقع غير متاح في هذا المتصفح. اختر مدينتك من القائمة.","ur":"اس براؤزر میں لوکیشن دستیاب نہیں۔ فہرست سے اپنا شہر چنیں۔","hi":"इस ब्राउज़र में लोकेशन उपलब्ध नहीं है। सूची से अपना शहर चुनें।","id":"Lokasi tidak tersedia di peramban ini. Pilih kota Anda dari daftar.","tr":"Bu tarayıcıda konum kullanılamıyor. Listeden şehrinizi seçin."},"Couldn't get your location. Allow location access, or pick your city from the list.":{"bn":"আপনার অবস্থান পাওয়া যায়নি। লোকেশনের অনুমতি দিন, অথবা তালিকা থেকে শহর বেছে নিন।","ar":"تعذّر الحصول على موقعك. اسمح بالوصول إلى الموقع أو اختر مدينتك من القائمة.","ur":"آپ کا مقام معلوم نہ ہو سکا۔ لوکیشن کی اجازت دیں یا فہرست سے شہر چنیں۔","hi":"आपकी लोकेशन नहीं मिल सकी। लोकेशन की अनुमति दें, या सूची से शहर चुनें।","id":"Tidak bisa mendapatkan lokasi Anda. Izinkan akses lokasi, atau pilih kota dari daftar.","tr":"Konumunuz alınamadı. Konum erişimine izin verin veya listeden şehrinizi seçin."},"Latitude must be between -90 and 90, and longitude between -180 and 180.":{"bn":"অক্ষাংশ -৯০ থেকে ৯০ এবং দ্রাঘিমাংশ -১৮০ থেকে ১৮০-এর মধ্যে হতে হবে।","ar":"يجب أن يكون خط العرض بين -90 و90 وخط الطول بين -180 و180.","ur":"عرض بلد -90 سے 90 اور طول بلد -180 سے 180 کے درمیان ہونا چاہیے۔","hi":"अक्षांश -90 से 90 और देशांतर -180 से 180 के बीच होना चाहिए।","id":"Lintang harus antara -90 dan 90, dan bujur antara -180 dan 180.","tr":"Enlem -90 ile 90, boylam -180 ile 180 arasında olmalıdır."},"Unknown time zone. Use a name like Asia/Dhaka.":{"bn":"অজানা টাইম জোন। Asia/Dhaka-এর মতো নাম ব্যবহার করুন।","ar":"منطقة زمنية غير معروفة. استخدم اسمًا مثل Asia/Dhaka.","ur":"نامعلوم ٹائم زون۔ Asia/Dhaka جیسا نام استعمال کریں۔","hi":"अज्ञात टाइम ज़ोन। Asia/Dhaka जैसा नाम इस्तेमाल करें।","id":"Zona waktu tidak dikenal. Gunakan nama seperti Asia/Dhaka.","tr":"Bilinmeyen saat dilimi. Asia/Dhaka gibi bir ad kullanın."},"Language":{"bn":"ভাষা","ar":"اللغة","ur":"زبان","hi":"भाषा","id":"Bahasa","tr":"Dil"},"More languages (opens Google Translate)":{"bn":"আরও ভাষা (Google Translate-এ খুলবে)","ar":"لغات أخرى (يفتح Google Translate)","ur":"مزید زبانیں (Google Translate میں کھلے گا)","hi":"और भाषाएँ (Google Translate में खुलेगा)","id":"Bahasa lain (membuka Google Translate)","tr":"Diğer diller (Google Çeviri'de açılır)"},"Page language":{"bn":"পেজের ভাষা","ar":"لغة الصفحة","ur":"صفحے کی زبان","hi":"पेज की भाषा","id":"Bahasa halaman","tr":"Sayfa dili"},"🌐 Language":{"bn":"🌐 ভাষা","ar":"🌐 اللغة","ur":"🌐 زبان","hi":"🌐 भाषा","id":"🌐 Bahasa","tr":"🌐 Dil"},"Google Translate only works on your live website (not on localhost or a local file).":{"bn":"Google Translate শুধু আপনার লাইভ ওয়েবসাইটে কাজ করে (লোকালহোস্ট বা লোকাল ফাইলে নয়)।","ar":"يعمل Google Translate فقط على موقعك المنشور (وليس على localhost أو ملف محلي).","ur":"Google Translate صرف آپ کی لائیو ویب سائٹ پر چلتا ہے (localhost یا مقامی فائل پر نہیں)۔","hi":"Google Translate सिर्फ़ आपकी लाइव वेबसाइट पर काम करता है (localhost या लोकल फ़ाइल पर नहीं)।","id":"Google Translate hanya berfungsi di situs langsung Anda (bukan di localhost atau berkas lokal).","tr":"Google Çeviri yalnızca yayındaki web sitenizde çalışır (localhost veya yerel dosyada çalışmaz)."}};
+
+  let i18nLang = "en", i18nMap = {}, i18nPats = [], i18nObs = null;
+  let i18nNodes = [], i18nEls = [];
+  const i18nRec = (typeof WeakMap !== "undefined") ? new WeakMap() : null;
+  const I18N_ATTRS = ["placeholder", "title", "aria-label"];
+
+  function i18nBuild(code){
+    i18nMap = {}; i18nPats = [];
+    Object.keys(I18N_DICT).forEach(function(k){
+      const t = I18N_DICT[k][code];
+      if(!t) return;
+      if(k.indexOf("{") === -1){ i18nMap[k] = t; return; }
+      const pieces = k.split(/\{\d\}/), nums = (k.match(/\{(\d)\}/g) || []);
+      const src = pieces.map(function(p){ return p.replace(/[.*+?^$()|[\]\\]/g, "\\$&"); }).join("(.+?)");
+      i18nPats.push({re: new RegExp("^" + src + "$"), tpl: t, order: nums.map(function(x){ return +x.charAt(1); }), len: k.length});
+    });
+    i18nPats.sort(function(a, b){ return b.len - a.len; });
+  }
+
+  function i18nLookup(k){
+    if(Object.prototype.hasOwnProperty.call(i18nMap, k)) return i18nMap[k];
+    if(k.length > 400 || i18nPats.length === 0) return null;
+    for(let i = 0; i < i18nPats.length; i++){
+      const p = i18nPats[i], m = p.re.exec(k);
+      if(!m) continue;
+      const params = {};
+      p.order.forEach(function(n, idx){ params[n] = m[idx + 1]; });
+      return p.tpl.replace(/\{(\d)\}/g, function(_, n){
+        const v = params[+n];
+        return v === undefined ? "" : (Object.prototype.hasOwnProperty.call(i18nMap, v) ? i18nMap[v] : v);
+      });
+    }
+    return null;
+  }
+
+  function i18nSkip(el){
+    return !!(el && el.closest && el.closest(".arabic-text, .translation, [data-notr], textarea, script, style"));
+  }
+
+  function i18nText(n){
+    if(!i18nRec) return;
+    const val = n.nodeValue;
+    if(!val) return;
+    const rec = i18nRec.get(n);
+    if(rec && val === rec.out) return;                       // our own output
+    const key = val.replace(/\s+/g, " ").trim();
+    if(key.length < 2){ if(rec) i18nRec.delete(n); return; }
+    const tr = i18nLookup(key);
+    if(tr === null || i18nSkip(n.parentElement)){ if(rec) i18nRec.delete(n); return; }
+    const out = val.match(/^\s*/)[0] + tr + val.match(/\s*$/)[0];
+    if(!rec) i18nNodes.push(n);
+    i18nRec.set(n, {src: val, out: out});
+    n.nodeValue = out;
+  }
+
+  function i18nAttr(el, a){
+    const val = el.getAttribute(a);
+    if(!val) return;
+    const store = el.__noorI18n || (el.__noorI18n = {});
+    const rec = store[a];
+    if(rec && val === rec.out) return;
+    const tr = i18nLookup(val.replace(/\s+/g, " ").trim());
+    if(tr === null || i18nSkip(el)){ if(rec) delete store[a]; return; }
+    if(!rec && i18nEls.indexOf(el) === -1) i18nEls.push(el);
+    store[a] = {src: val, out: tr};
+    el.setAttribute(a, tr);
+  }
+  function i18nAttrs(el){ I18N_ATTRS.forEach(function(a){ if(el.hasAttribute && el.hasAttribute(a)) i18nAttr(el, a); }); }
+
+  function i18nScan(root){
+    if(i18nLang === "en" || !root) return;
+    if(root.nodeType === 3){ i18nText(root); return; }
+    if(root.nodeType !== 1 || root.tagName === "SCRIPT" || root.tagName === "STYLE") return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    let n;
+    while((n = w.nextNode())){ i18nText(n); }
+    i18nAttrs(root);
+    const withAttr = root.querySelectorAll("[placeholder],[title],[aria-label]");
+    for(let i = 0; i < withAttr.length; i++) i18nAttrs(withAttr[i]);
+  }
+
+  function i18nRestore(){
+    i18nNodes.forEach(function(n){
+      const rec = i18nRec.get(n);
+      if(rec && n.nodeValue === rec.out) n.nodeValue = rec.src;
+      i18nRec.delete(n);
+    });
+    i18nEls.forEach(function(el){
+      const store = el.__noorI18n;
+      if(!store) return;
+      Object.keys(store).forEach(function(a){
+        if(el.getAttribute(a) === store[a].out) el.setAttribute(a, store[a].src);
+      });
+      el.__noorI18n = null;
+    });
+    i18nNodes = []; i18nEls = [];
+  }
+
+  function i18nLocale(){
+    for(let i = 0; i < I18N_LANGS.length; i++){ if(I18N_LANGS[i].code === i18nLang) return I18N_LANGS[i].locale; }
+    return "en";
+  }
+  window.NoorI18n = {locale: i18nLocale, lang: function(){ return i18nLang; }};
+
+  function i18nSet(code, skipSave){
+    if(!I18N_LANGS.some(function(l){ return l.code === code; })) code = "en";
+    i18nRestore();
+    i18nLang = code;
+    document.documentElement.lang = code;
+    if(code !== "en"){ i18nBuild(code); i18nScan(document.body); }
+    else{ i18nMap = {}; i18nPats = []; }
+    if(!skipSave) saveJSON(LS_LANG, code);
+    document.querySelectorAll("#langList button").forEach(function(b){ b.classList.toggle("active", b.dataset.lang === code); });
+    const lbl = document.getElementById("langBtnCode");
+    if(lbl) lbl.textContent = code.toUpperCase();
+    // pieces that format dates/numbers by language
+    const pv = document.getElementById("view-prayer");
+    if(pv && pv.classList.contains("active") && typeof prRender === "function") prRender();
+  }
+
+  function initI18n(){
+    const list = document.getElementById("langList"), pop = document.getElementById("langPop"), btn = document.getElementById("langBtn");
+    if(!list || !pop || !btn) return;
+    list.innerHTML = I18N_LANGS.map(function(l){
+      return '<button type="button" data-lang="' + l.code + '" lang="' + l.code + '">' + l.name + '</button>';
+    }).join("");
+    const more = document.getElementById("langMore");
+    more.innerHTML = '<option value="">—</option>' + I18N_MORE.map(function(m){ return '<option value="' + m[0] + '">' + m[1] + '</option>'; }).join("");
+
+    function open(){ pop.classList.add("open"); }
+    function close(){ pop.classList.remove("open"); }
+    btn.addEventListener("click", function(e){ e.stopPropagation(); pop.classList.toggle("open"); });
+    const drawerBtn = document.getElementById("langDrawerBtn");
+    if(drawerBtn) drawerBtn.addEventListener("click", function(e){ e.stopPropagation(); closeEverything(); open(); });
+    document.addEventListener("click", function(e){ if(!e.target.closest("#langPop") && !e.target.closest("#langBtn")) close(); });
+    document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
+    list.addEventListener("click", function(e){
+      const b = e.target.closest("button[data-lang]");
+      if(!b) return;
+      i18nSet(b.dataset.lang);
+      close();
+    });
+    more.addEventListener("change", function(){
+      const tl = more.value;
+      if(!tl) return;
+      const note = document.getElementById("langMoreNote");
+      const host = location.hostname;
+      if(location.protocol === "file:" || host === "localhost" || host === "127.0.0.1"){
+        note.textContent = "Google Translate only works on your live website (not on localhost or a local file).";
+      }else{
+        note.textContent = "";
+        window.open("https://translate.google.com/translate?sl=auto&tl=" + encodeURIComponent(tl) + "&u=" + encodeURIComponent(location.href), "_blank", "noopener");
+      }
+      more.value = "";
+    });
+
+    // translate everything that appears later (cards, messages, modals…)
+    if(typeof MutationObserver !== "undefined"){
+      i18nObs = new MutationObserver(function(muts){
+        if(i18nLang === "en") return;
+        for(let i = 0; i < muts.length; i++){
+          const m = muts[i];
+          if(m.type === "childList"){ for(let j = 0; j < m.addedNodes.length; j++) i18nScan(m.addedNodes[j]); }
+          else if(m.type === "characterData"){ i18nText(m.target); }
+          else if(m.type === "attributes"){ i18nAttr(m.target, m.attributeName); }
+        }
+      });
+      i18nObs.observe(document.body, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: I18N_ATTRS});
+    }
+    const saved = loadJSON(LS_LANG, "en");
+    i18nSet(saved === "en" ? "en" : saved, true);
+  }
+
   function initThemePicker(){
     const panel = document.getElementById("themePanel");
     const fab = document.getElementById("themeFab");
@@ -2420,7 +3333,7 @@ html.no-grain .grain{display:none !important;}
     const now = new Date();
     try{
       const timeStr = new Intl.DateTimeFormat(undefined, {timeZone:tz, hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:true}).format(now);
-      const dateStr = new Intl.DateTimeFormat(undefined, {timeZone:tz, weekday:"short", year:"numeric", month:"short", day:"numeric"}).format(now);
+      const dateStr = new Intl.DateTimeFormat((window.NoorI18n && window.NoorI18n.lang() !== "en") ? window.NoorI18n.locale() : undefined, {timeZone:tz, weekday:"short", year:"numeric", month:"short", day:"numeric"}).format(now);
       timeEl.textContent = timeStr;
       dateEl.textContent = dateStr + " · " + (sel.value==="auto" ? tz : tz.split("/").pop().replace("_"," "));
     }catch(e){
@@ -3168,6 +4081,7 @@ html.no-grain .grain{display:none !important;}
     if(view === "quiz" && !quizStarted){ startQuiz(); }
     if(view === "admin"){ renderAdminView(); }
     if(view === "hadith"){ ensureBukhari(); }
+    if(view === "prayer"){ prayerEnter(); } else { prayerLeave(); }
   }
 
   function initViewNav(){
@@ -4847,6 +5761,8 @@ html.no-grain .grain{display:none !important;}
     safeCall(buildStars, "buildStars");
     safeCall(initThemePicker, "initThemePicker");
     safeCall(initArabicFont, "initArabicFont");
+    safeCall(initPrayer, "initPrayer");
+    safeCall(initI18n, "initI18n");
     safeCall(initViewNav, "initViewNav");
     safeCall(initNav, "initNav");
     safeCall(initAuth, "initAuth");
