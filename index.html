@@ -8,7 +8,8 @@
 <script>
 /* Lite mode: set before first paint. Auto-on for low-memory / low-core / Save-Data devices. */
 (function(){try{var v=localStorage.getItem("noor_lite_v1");
-var low=(navigator.deviceMemory&&navigator.deviceMemory<=2)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=2)||(navigator.connection&&navigator.connection.saveData);
+var c=navigator.connection||{};
+var low=(navigator.deviceMemory&&navigator.deviceMemory<=2)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=2)||c.saveData||/(^|-)2g$/.test(c.effectiveType||"")||(window.matchMedia&&matchMedia("(prefers-reduced-data: reduce)").matches);
 if(v==="on"||(v!=="off"&&low))document.documentElement.classList.add("lite");}catch(e){}})();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -575,14 +576,14 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
    pushing content around in a cramped column. */
 @media (max-width:640px){
   .tafsir-box{
-    position:fixed;left:0;right:0;bottom:0;z-index:80;
+    position:fixed;left:0;right:0;bottom:0;z-index:92;
     max-height:60vh;max-height:60dvh;overflow-y:auto;
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
     border-radius:16px 16px 0 0;
     background:var(--teal);
     box-shadow:var(--shadow-lg);
-    padding:18px 18px 26px;
+    padding:18px 18px calc(26px + env(safe-area-inset-bottom, 0px));
     animation:tafsirSheetIn .22s ease-out;
   }
   .tafsir-box::before{
@@ -720,30 +721,6 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 .hd-tabs{display:flex;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(201,162,39,.35);border-radius:999px;padding:4px;}
 .hd-tabs button{background:none;border:none;color:var(--parchment-dim);padding:8px 16px;border-radius:999px;font-size:.82rem;font-weight:600;min-height:38px;}
 .hd-tabs button.active{background:var(--gold);color:var(--night);}
-
-/* ---- New Multi-Collection Hadith UI ---- */
-.hd-collection-tabs{display:flex;gap:4px;background:rgba(255,255,255,.04);border:1px solid rgba(201,162,39,.35);border-radius:999px;padding:4px;flex-wrap:wrap;justify-content:center;}
-.hd-collection-tabs button{background:none;border:none;color:var(--parchment-dim);padding:8px 12px;border-radius:999px;font-size:.75rem;font-weight:600;min-height:38px;display:flex;flex-direction:column;gap:2px;align-items:center;}
-.hd-collection-tabs button .coll-name{font-size:.72rem;line-height:1.2;}
-.hd-collection-tabs button .coll-ar{font-family:var(--font-arabic);font-size:.7rem;color:var(--gold-light);opacity:.7;}
-.hd-collection-tabs button:hover{color:var(--gold-light);background:rgba(201,162,39,.1);}
-.hd-collection-tabs button.active{background:var(--gold);color:var(--night);}
-.hd-collection-tabs button.active .coll-ar{color:var(--night);opacity:1;}
-
-.hd-collection-panel{display:none;}
-.hd-collection-panel.active{display:block;animation:viewIn .35s ease both;}
-
-.hadith-unified-search{max-width:900px;margin:16px auto 0;padding:0 22px;}
-.hd-search-scope{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;font-size:.78rem;color:var(--parchment-dim);}
-.hd-search-scope label{display:flex;align-items:center;gap:6px;cursor:pointer;}
-.hd-search-scope input{width:16px;height:16px;accent-color:var(--gold);}
-.hd-search-status{color:var(--emerald-light);font-size:.7rem;min-height:1em;}
-
-@media (max-width:600px){
-  .hd-collection-tabs button{padding:6px 8px;font-size:.68rem;}
-  .hd-collection-tabs button .coll-name{font-size:.65rem;}
-  .hd-collection-tabs button .coll-ar{font-size:.6rem;}
-}
 .bk-controls{max-width:900px;margin:12px auto 0;padding:0 22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .bk-select{flex:1;min-width:200px;min-height:44px;padding:10px 16px;border-radius:999px;border:1px solid rgba(201,162,39,.4);background:var(--night-2);color:var(--parchment);font-size:.9rem;font-family:var(--font-ui);}
 .bk-select option{background:var(--night-2);color:var(--parchment);}
@@ -761,8 +738,7 @@ select.translator-select:focus, select.lang-select:focus{border-color:var(--gold
 .bk-card .hd-num{padding:0 10px;border-radius:999px;}
 .bk-card .hd-title{font-size:1.02rem;}
 .bk-card .hd-narrator.muted{color:var(--slate);}
-.bk-card{content-visibility:auto;contain-intrinsic-size:auto 420px;}
-html.lite .bk-card{content-visibility:visible;}
+.bk-card{content-visibility:visible;contain-intrinsic-size:none;}   /* 10 cards/page: no gain, and skipped cards made jump-to-hadith and pagination shift the scrollbar */
 
 /* ============================================================
    LITE MODE — for low-end / low-memory devices
@@ -1514,6 +1490,76 @@ html.no-grain .grain{display:none !important;}
     opacity:.65;
   }
 }
+
+/* ============================================================
+   v2 ADDITIONS: inline status, ayah tools, mobile ergonomics,
+   offline badge, backup UI, reading progress
+   ============================================================ */
+.inline-status{display:inline-block;margin-inline-start:10px;font-size:.8rem;line-height:1.4;vertical-align:middle;}
+.inline-status.err{color:var(--danger);}
+.inline-status.ok{color:var(--ok);}
+.inline-status:empty{display:none;}
+.field-flag{outline:2px solid var(--danger);outline-offset:1px;}
+
+.ayah.ayah-flash{animation:ayahFlash 1.6s ease both;}
+@keyframes ayahFlash{0%,60%{background:rgba(201,162,39,.22);border-color:rgba(201,162,39,.7);}100%{background:transparent;border-color:transparent;}}
+html.lite .ayah, html.lite .surah-card{animation:none !important;}
+.ayah{scroll-margin-top:calc(var(--header-h) + 14px);}
+
+.jump-ayah{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.jump-ayah label{font-size:.75rem;color:var(--slate);text-transform:uppercase;letter-spacing:.06em;}
+.jump-ayah input{width:92px;padding:9px 10px;border-radius:8px;border:1px solid rgba(201,162,39,.3);background:rgba(0,0,0,.2);color:var(--parchment);font-size:.88rem;min-height:40px;}
+.sh-badge{display:inline-block;margin-inline-start:8px;padding:2px 9px;border-radius:999px;font-size:.68rem;font-family:var(--font-ui);letter-spacing:.03em;vertical-align:middle;border:1px solid rgba(201,162,39,.4);color:var(--gold-light);background:rgba(201,162,39,.1);}
+.sh-badge.warn{border-color:rgba(201,106,74,.55);color:#f0a98f;background:rgba(201,106,74,.12);}
+.ayah-more{display:flex;justify-content:center;padding:14px 0 6px;}
+
+/* surah list: notes/bookmark markers + reading progress */
+.mk{flex:none;display:inline-flex;gap:6px;font-size:.66rem;color:var(--gold-light);white-space:nowrap;}
+.mk:empty{display:none;}
+.mk i{font-style:normal;opacity:.9;}
+.continue-card .txt .cprog{display:block;margin-top:6px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden;min-width:120px;}
+.continue-card .txt .cprog b{display:block;height:100%;background:var(--gold);width:0;}
+
+/* offline pill */
+#netPill{position:fixed;left:50%;top:calc(env(safe-area-inset-top, 0px) + 8px);transform:translateX(-50%);z-index:99;padding:7px 14px;border-radius:999px;font-size:.78rem;background:rgba(201,106,74,.95);color:#fff;box-shadow:var(--shadow-sm);display:none;max-width:calc(100vw - 24px);text-align:center;}
+#netPill.show{display:block;}
+
+/* backup / restore panel inside drawers */
+.drawer-foot{padding:12px 18px calc(14px + env(safe-area-inset-bottom, 0px));border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px;}
+.drawer-foot .row{display:flex;gap:8px;flex-wrap:wrap;}
+.drawer-foot button{flex:1;min-height:42px;padding:9px 12px;border-radius:10px;border:1px solid rgba(201,162,39,.4);background:rgba(201,162,39,.1);color:var(--gold-light);font-size:.8rem;}
+.drawer-foot button:hover{background:rgba(201,162,39,.2);}
+.drawer-foot .bk-status{font-size:.78rem;color:var(--slate);min-height:1.1em;}
+.drawer-foot .bk-status.err{color:var(--danger);}
+.drawer-foot .bk-status.ok{color:var(--ok);}
+
+/* ---- scroll containment on every scrollable surface ---- */
+.drawer-body, .sidebar, .surah-list, .lang-pop, .arfont-panel, .theme-panel, .modal-box, .search-results, .tafsir-box{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.surah-list{overflow-y:auto;}
+.drawer{height:100vh;height:100dvh;}
+.sidebar{max-height:calc(100vh - var(--header-h) - 40px);max-height:calc(100dvh - var(--header-h) - 40px);}
+@media (max-width:900px){.sidebar{max-height:none;height:100vh;height:100dvh;}}
+
+/* ---- comfortable touch targets (coarse pointers only) ---- */
+@media (pointer:coarse){
+  .icon-btn, .tool-btn, .bk-btn, .tafsir-retry, .note-box .actions button, .quiz-next-btn, .quiz-retry-btn,
+  .admin-submit-btn, .del-btn, .auth-btn, .hd-toggle button, .lang-btn, .mobile-browse-btn, .shortcut-btn,
+  .pr-datenav button, .ds-chip, .logo-opt, .pat-opt, .tf-ayah-btn, .drawer-foot button{min-height:44px;}
+  .icon-btn{padding:8px 6px;}
+  .tool-btn, .del-btn{padding-top:10px;padding-bottom:10px;}
+  .surah-list li, .drawer-item, .search-result-item, .arfont-opt, .sm-list li{min-height:44px;}
+  .menu-toggle, .modal-close, .drawer-head button, .qs-nav, .is-nav{min-width:44px;min-height:44px;}
+  .qs-nav{padding:10px 12px;}
+  .is-dot{position:relative;}
+  .is-dot::after{content:"";position:absolute;inset:-14px -6px;}
+  .tf-ayah-btn{min-width:44px;}
+}
+html.lite .ayah.ayah-flash{background:rgba(201,162,39,.2);}
+.fv-frame > .fv-load{position:absolute;inset:0;margin:auto;width:max-content;height:max-content;}
+@media (prefers-reduced-motion: reduce){
+  .ayah, .surah-card, .view-section.active{animation:none !important;}
+  .ayah.ayah-flash{animation:none !important;background:rgba(201,162,39,.18);}
+}
 </style>
 </head>
 <body>
@@ -1528,6 +1574,7 @@ html.no-grain .grain{display:none !important;}
   <div class="grain"></div>
 </div>
 <div class="overlay" id="overlay"></div>
+<div id="netPill" role="status" aria-live="polite"></div>
 
 <!-- Mobile nav drawer -->
 <aside class="nav-drawer" id="navDrawer">
@@ -1561,7 +1608,7 @@ html.no-grain .grain{display:none !important;}
     </div>
     <div class="search-wrap" id="quranSearchWrap">
       <span class="search-icon">⌕</span>
-      <input id="globalSearch" type="text" placeholder="Search a surah or a verse (e.g. 'mercy', 'Yusuf')" autocomplete="off">
+      <input id="globalSearch" type="text" placeholder="Search a surah or a verse (e.g. 'mercy', 'Yusuf')" autocomplete="off" aria-keyshortcuts="/">
       <div class="search-results hidden" id="searchResults"></div>
     </div>
     <nav class="nav" id="mainNav">
@@ -1641,7 +1688,7 @@ html.no-grain .grain{display:none !important;}
       </div>
 
       <div class="continue-card hidden" id="continueCard">
-        <div class="txt"><small>Continue reading</small><strong id="continueLabel">—</strong></div>
+        <div class="txt"><small>Continue reading</small><strong id="continueLabel">—</strong><span class="cprog" id="continueProg" hidden><b></b></span></div>
         <div class="go">→</div>
       </div>
 
@@ -1738,35 +1785,13 @@ html.no-grain .grain{display:none !important;}
     <div class="hadith-hero">
       <div class="glyph">قَالَ رَسُولُ اللَّهِ ﷺ</div>
       <h1>Hadith</h1>
-      <p>Read authentic hadith collections in Arabic with English and বাংলা. Browse by book, search across all collections, or jump to any hadith number.</p>
+      <p>Read Sahih al-Bukhari book by book in Arabic with English and বাংলা, search it, or jump to any hadith number. It loads one small part at a time, so it stays fast on older phones.</p>
     </div>
 
     <div class="hadith-toolbar">
-      <div class="hd-collection-tabs" id="hdCollectionTabs" role="tablist" aria-label="Hadith collections">
-        <button data-collection="bukhari" class="active" role="tab" aria-selected="true">
-          <span class="coll-name">Sahih al-Bukhari</span>
-          <span class="coll-ar">صحيح البخاري</span>
-        </button>
-        <button data-collection="muslim" role="tab" aria-selected="false">
-          <span class="coll-name">Sahih Muslim</span>
-          <span class="coll-ar">صحيح مسلم</span>
-        </button>
-        <button data-collection="abudawud" role="tab" aria-selected="false">
-          <span class="coll-name">Sunan Abu Dawood</span>
-          <span class="coll-ar">سنن أبي داود</span>
-        </button>
-        <button data-collection="tirmidhi" role="tab" aria-selected="false">
-          <span class="coll-name">Jami' at-Tirmidhi</span>
-          <span class="coll-ar">جامع الترمذي</span>
-        </button>
-        <button data-collection="nasai" role="tab" aria-selected="false">
-          <span class="coll-name">Sunan an-Nasa'i</span>
-          <span class="coll-ar">سنن النسائي</span>
-        </button>
-        <button data-collection="featured" role="tab" aria-selected="false">
-          <span class="coll-name">Featured</span>
-          <span class="coll-ar">مختارات</span>
-        </button>
+      <div class="hd-tabs" id="hdTabs" role="tablist" aria-label="Hadith collections">
+        <button data-hdtab="bukhari" class="active" role="tab" aria-selected="true">Sahih al-Bukhari</button>
+        <button data-hdtab="featured" role="tab" aria-selected="false">Featured</button>
       </div>
       <div class="hd-toggle" id="hadithLangToggle" role="group" aria-label="Hadith translation language">
         <button data-lang="both" class="active">EN + বাংলা</button>
@@ -1775,27 +1800,8 @@ html.no-grain .grain{display:none !important;}
       </div>
     </div>
 
-    <!-- Unified search across all collections -->
-    <div class="hadith-unified-search" id="hdUnifiedSearch" style="display:none;">
-      <div class="hadith-search">
-        <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
-        <input id="hdUnifiedSearchInput" type="text" placeholder="Search across ALL collections (English, বাংলা or Arabic)" autocomplete="off" aria-label="Search all hadith collections">
-      </div>
-      <div class="hd-search-scope">
-        <label><input type="checkbox" id="hdSearchAll" checked> Search all collections</label>
-        <span id="hdSearchStatus" class="hd-search-status"></span>
-      </div>
-      <div class="hadith-count" id="hdUnifiedCount" aria-live="polite"></div>
-      <div class="hadith-list" id="hdUnifiedList"><div class="dua-empty">Enter a search term to search across all collections</div></div>
-      <div class="bk-pager" id="hdUnifiedPager" style="display:none;">
-        <button class="bk-btn" id="hdUnifiedPrev" type="button" aria-label="Previous page">‹ Prev</button>
-        <span id="hdUnifiedPageInfo"></span>
-        <button class="bk-btn" id="hdUnifiedNext" type="button" aria-label="Next page">Next ›</button>
-      </div>
-    </div>
-
-    <!-- Collection-specific panels (loaded lazily) -->
-    <div id="hdPanelBukhari" class="hd-collection-panel active">
+    <!-- Full Sahih al-Bukhari (data loaded lazily from hadith/bukhari/) -->
+    <div id="hdPanelBukhari">
       <div class="bk-controls">
         <select id="bkBook" class="bk-select" aria-label="Choose a book"></select>
         <div class="bk-jump">
@@ -1820,108 +1826,8 @@ html.no-grain .grain{display:none !important;}
       </div>
     </div>
 
-    <div id="hdPanelMuslim" class="hd-collection-panel" hidden>
-      <div class="bk-controls">
-        <select id="msBook" class="bk-select" aria-label="Choose a book"></select>
-        <div class="bk-jump">
-          <input id="msJump" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Go to #" aria-label="Go to hadith number" autocomplete="off">
-          <button class="bk-btn" id="msJumpBtn" type="button">Go</button>
-        </div>
-      </div>
-      <div class="bk-controls">
-        <div class="hadith-search">
-          <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
-          <input id="msSearch" type="text" placeholder="Search text (English, বাংলা or Arabic)" autocomplete="off" aria-label="Search Sahih Muslim">
-        </div>
-        <label class="bk-all"><input type="checkbox" id="msAll"> All books</label>
-        <button class="bk-btn" id="msSearchBtn" type="button">Search</button>
-      </div>
-      <div class="hadith-count" id="msCount" aria-live="polite"></div>
-      <div class="hadith-list" id="msList"><div class="dua-empty">Loading Sahih Muslim…</div></div>
-      <div class="bk-pager">
-        <button class="bk-btn" id="msPrev" type="button" aria-label="Previous page">‹ Prev</button>
-        <span id="msPageInfo"></span>
-        <button class="bk-btn" id="msNext" type="button" aria-label="Next page">Next ›</button>
-      </div>
-    </div>
-
-    <div id="hdPanelAbuDawud" class="hd-collection-panel" hidden>
-      <div class="bk-controls">
-        <select id="adBook" class="bk-select" aria-label="Choose a book"></select>
-        <div class="bk-jump">
-          <input id="adJump" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Go to #" aria-label="Go to hadith number" autocomplete="off">
-          <button class="bk-btn" id="adJumpBtn" type="button">Go</button>
-        </div>
-      </div>
-      <div class="bk-controls">
-        <div class="hadith-search">
-          <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
-          <input id="adSearch" type="text" placeholder="Search text (English, বাংলা or Arabic)" autocomplete="off" aria-label="Search Sunan Abu Dawood">
-        </div>
-        <label class="bk-all"><input type="checkbox" id="adAll"> All books</label>
-        <button class="bk-btn" id="adSearchBtn" type="button">Search</button>
-      </div>
-      <div class="hadith-count" id="adCount" aria-live="polite"></div>
-      <div class="hadith-list" id="adList"><div class="dua-empty">Loading Sunan Abu Dawood…</div></div>
-      <div class="bk-pager">
-        <button class="bk-btn" id="adPrev" type="button" aria-label="Previous page">‹ Prev</button>
-        <span id="adPageInfo"></span>
-        <button class="bk-btn" id="adNext" type="button" aria-label="Next page">Next ›</button>
-      </div>
-    </div>
-
-    <div id="hdPanelTirmidhi" class="hd-collection-panel" hidden>
-      <div class="bk-controls">
-        <select id="trBook" class="bk-select" aria-label="Choose a book"></select>
-        <div class="bk-jump">
-          <input id="trJump" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Go to #" aria-label="Go to hadith number" autocomplete="off">
-          <button class="bk-btn" id="trJumpBtn" type="button">Go</button>
-        </div>
-      </div>
-      <div class="bk-controls">
-        <div class="hadith-search">
-          <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
-          <input id="trSearch" type="text" placeholder="Search text (English, বাংলা or Arabic)" autocomplete="off" aria-label="Search Jami' at-Tirmidhi">
-        </div>
-        <label class="bk-all"><input type="checkbox" id="trAll"> All books</label>
-        <button class="bk-btn" id="trSearchBtn" type="button">Search</button>
-      </div>
-      <div class="hadith-count" id="trCount" aria-live="polite"></div>
-      <div class="hadith-list" id="trList"><div class="dua-empty">Loading Jami' at-Tirmidhi…</div></div>
-      <div class="bk-pager">
-        <button class="bk-btn" id="trPrev" type="button" aria-label="Previous page">‹ Prev</button>
-        <span id="trPageInfo"></span>
-        <button class="bk-btn" id="trNext" type="button" aria-label="Next page">Next ›</button>
-      </div>
-    </div>
-
-    <div id="hdPanelNasai" class="hd-collection-panel" hidden>
-      <div class="bk-controls">
-        <select id="nsBook" class="bk-select" aria-label="Choose a book"></select>
-        <div class="bk-jump">
-          <input id="nsJump" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Go to #" aria-label="Go to hadith number" autocomplete="off">
-          <button class="bk-btn" id="nsJumpBtn" type="button">Go</button>
-        </div>
-      </div>
-      <div class="bk-controls">
-        <div class="hadith-search">
-          <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
-          <input id="nsSearch" type="text" placeholder="Search text (English, বাংলা or Arabic)" autocomplete="off" aria-label="Search Sunan an-Nasa'i">
-        </div>
-        <label class="bk-all"><input type="checkbox" id="nsAll"> All books</label>
-        <button class="bk-btn" id="nsSearchBtn" type="button">Search</button>
-      </div>
-      <div class="hadith-count" id="nsCount" aria-live="polite"></div>
-      <div class="hadith-list" id="nsList"><div class="dua-empty">Loading Sunan an-Nasa'i…</div></div>
-      <div class="bk-pager">
-        <button class="bk-btn" id="nsPrev" type="button" aria-label="Previous page">‹ Prev</button>
-        <span id="nsPageInfo"></span>
-        <button class="bk-btn" id="nsNext" type="button" aria-label="Next page">Next ›</button>
-      </div>
-    </div>
-
     <!-- Hand-picked featured hadith (always available, works offline) -->
-    <div id="hdPanelFeatured" class="hd-collection-panel" hidden>
+    <div id="hdPanelFeatured" hidden>
       <div class="hadith-toolbar" style="margin-top:12px;">
         <div class="hadith-search">
           <span class="search-icon" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);">⌕</span>
@@ -1935,7 +1841,6 @@ html.no-grain .grain{display:none !important;}
 
     <p class="hadith-note">Arabic text and translations come from open hadith datasets and may differ slightly from printed editions. Please verify wording and numbering against sunnah.com before quoting.</p>
   </section>
-
 
   <!-- ============ PRAYER TIMES & QIBLA VIEW ============ -->
   <section class="view-section" id="view-prayer">
@@ -2059,12 +1964,20 @@ html.no-grain .grain{display:none !important;}
 <aside class="drawer" id="notesDrawer">
   <div class="drawer-head"><h3>My Notes</h3><button data-close-drawer aria-label="Close">✕</button></div>
   <div class="drawer-body" id="notesDrawerBody"></div>
+  <div class="drawer-foot">
+    <div class="row"><button type="button" data-backup-export>⬇ Export backup</button><button type="button" data-backup-import>⬆ Import backup</button></div>
+    <div class="bk-status" data-backup-status role="status" aria-live="polite"></div>
+  </div>
 </aside>
 
 <!-- Bookmarks drawer -->
 <aside class="drawer" id="bookmarksDrawer">
   <div class="drawer-head"><h3>Bookmarks</h3><button data-close-drawer aria-label="Close">✕</button></div>
   <div class="drawer-body" id="bookmarksDrawerBody"></div>
+  <div class="drawer-foot">
+    <div class="row"><button type="button" data-backup-export>⬇ Export backup</button><button type="button" data-backup-import>⬆ Import backup</button></div>
+    <div class="bk-status" data-backup-status role="status" aria-live="polite"></div>
+  </div>
 </aside>
 
 <!-- Theme picker -->
@@ -2207,6 +2120,157 @@ html.no-grain .grain{display:none !important;}
   }
 
   // ============================================================
+  //  SHARED HELPERS (v2)
+  // ============================================================
+  function byId(id){ return document.getElementById(id); }
+  const mqReduce = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  function reducedMotion(){ return !!(mqReduce && mqReduce.matches); }
+  function isLite(){ return document.documentElement.classList.contains("lite"); }
+  function saveDataOn(){ return !!(navigator.connection && navigator.connection.saveData); }
+  function smoothOK(){ return !(isLite() || reducedMotion()); }
+  function setText(el, t){ if(el && el.textContent !== t) el.textContent = t; }   // skip no-op DOM writes
+
+  // <html> has scroll-behavior:smooth, so a bare scrollTo() animates. Restoring a saved
+  // offset (or snapping to the top on a view change) has to be instant, otherwise the
+  // animation fights whatever scroll happens next.
+  function jumpScroll(y){
+    const root = document.documentElement, prev = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    window.scrollTo(0, y);
+    root.style.scrollBehavior = prev;
+  }
+
+  // Only http(s) (or the page's own scheme for relative paths) may reach an href / iframe src.
+  function safeUrl(u){
+    if(!u) return "";
+    try{
+      const x = new URL(String(u).trim(), location.href);
+      const ok = x.protocol === "http:" || x.protocol === "https:" || (x.protocol === location.protocol && x.protocol !== "javascript:");
+      return ok ? x.href : "";
+    }catch(e){ return ""; }
+  }
+
+  // Non-blocking replacement for alert(): a small live-region message next to the control.
+  function showStatus(anchor, msg, kind){
+    if(!anchor || !anchor.parentNode) return;
+    let el = anchor.__status;
+    if(!el || !el.isConnected){
+      el = document.createElement("span");
+      anchor.insertAdjacentElement("afterend", el);
+      anchor.__status = el;
+    }
+    el.className = "inline-status " + (kind || "");
+    el.setAttribute("role", kind === "err" ? "alert" : "status");
+    el.textContent = msg;
+    clearTimeout(el.__t);
+    el.__t = setTimeout(function(){ el.textContent = ""; }, kind === "err" ? 6000 : 3000);
+  }
+
+  // ---------- persistent API cache (Cache Storage) + in-memory LRU ----------
+  // Qur'an text never changes, so cached copies are used first: instant re-opens,
+  // zero mobile data, and saved surahs keep working offline. Every cache call is
+  // guarded - on file:// or very old browsers it quietly falls back to the network.
+  const PCACHE = "noor-api-v1", PCACHE_MAX = 60;
+  function pcacheGet(url){
+    try{
+      if(!window.caches) return Promise.resolve(null);
+      return caches.open(PCACHE).then(function(c){ return c.match(url); })
+        .then(function(r){ return r ? r.json() : null; })
+        .catch(function(){ return null; });
+    }catch(e){ return Promise.resolve(null); }
+  }
+  function pcachePut(url, json){
+    try{
+      if(!window.caches) return;
+      caches.open(PCACHE).then(function(c){
+        return c.put(url, new Response(JSON.stringify(json), {headers:{"Content-Type":"application/json"}}))
+          .then(function(){ return c.keys(); })
+          .then(function(keys){
+            if(keys.length <= PCACHE_MAX) return;
+            return Promise.all(keys.slice(0, keys.length - PCACHE_MAX).map(function(k){ return c.delete(k); }));
+          });
+      }).catch(function(){});
+    }catch(e){}
+  }
+
+  const surahMem = new Map();          // "number:edition" -> slim surah (insertion order = LRU order)
+  const surahInflight = {};
+  function surahMemMax(){ return isLite() ? 4 : 10; }
+  function memGet(k){
+    if(!surahMem.has(k)) return null;
+    const v = surahMem.get(k);
+    surahMem.delete(k); surahMem.set(k, v);          // mark as most recently used
+    return v;
+  }
+  function memSet(k, v){
+    surahMem.delete(k); surahMem.set(k, v);
+    while(surahMem.size > surahMemMax()) surahMem.delete(surahMem.keys().next().value);
+  }
+
+  // Some API editions prepend the bismillah to ayah 1 of every surah except Al-Fatiha / At-Tawbah;
+  // the reader already draws it as its own block, so strip it to avoid showing it twice.
+  const AR_MARKS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
+  const BISM_WORDS = ["بسم", "الله", "الرحمن", "الرحيم"];
+  function arNorm(w){ return w.replace(AR_MARKS, "").replace(/[\u0622\u0623\u0625\u0671]/g, "\u0627"); }
+  function stripBismillah(text){
+    const words = String(text).split(" ");
+    if(words.length <= 4) return text;
+    for(let i = 0; i < 4; i++){ if(arNorm(words[i]) !== BISM_WORDS[i]) return text; }
+    return words.slice(4).join(" ");
+  }
+  function slimMeta(s){
+    return {number:s.number, name:s.name, englishName:s.englishName, englishNameTranslation:s.englishNameTranslation,
+            numberOfAyahs:s.numberOfAyahs, revelationType:s.revelationType};
+  }
+  function slimSurah(d, isArabic){
+    const o = slimMeta(d);
+    o.ayahs = d.ayahs.map(function(a, i){
+      let text = a.text;
+      if(isArabic && i === 0 && d.number !== 1 && d.number !== 9) text = stripBismillah(text);
+      return {numberInSurah:a.numberInSurah, text:text};
+    });
+    return o;
+  }
+
+  // Resolves {data, from:"memory"|"saved"|"network"}.
+  function getSurahEdition(number, edition){
+    const key = number + ":" + edition, hit = memGet(key);
+    if(hit) return Promise.resolve({data:hit, from:"memory"});
+    if(surahInflight[key]) return surahInflight[key];
+    const url = API + "/surah/" + number + "/" + edition;
+    const isAr = edition === ARABIC_EDITION;
+    const p = pcacheGet(url).then(function(cached){
+      if(cached && cached.data && cached.data.ayahs && cached.data.ayahs.length){
+        memSet(key, cached.data);
+        return {data:cached.data, from:"saved"};
+      }
+      return fetchJSON(url).then(function(j){
+        if(!j || !j.data || !j.data.ayahs) throw new Error("bad data");
+        const slim = slimSurah(j.data, isAr);
+        pcachePut(url, {data:slim});
+        memSet(key, slim);
+        return {data:slim, from:"network"};
+      });
+    }).then(function(r){ delete surahInflight[key]; return r; },
+            function(e){ delete surahInflight[key]; throw e; });
+    surahInflight[key] = p;
+    return p;
+  }
+
+  function getSurahIndex(){
+    const url = API + "/surah";
+    return pcacheGet(url).then(function(c){
+      if(c && c.data && c.data.length) return {list:c.data, from:"saved"};
+      return fetchJSON(url).then(function(j){
+        const list = (j && j.data) ? j.data.map(slimMeta) : [];
+        if(!list.length) throw new Error("empty");
+        pcachePut(url, {data:list});
+        return {list:list, from:"network"};
+      });
+    });
+  }
+
+  // ============================================================
   //  TAFSIR — stored on-device (same model as duas/quotes/etc.),
   //  edited from the Admin panel, shown instantly for every ayah.
   // ============================================================
@@ -2295,6 +2359,8 @@ html.no-grain .grain{display:none !important;}
   const LS_ADMIN_VIDEO = "noor_admin_video_v1";
   const LS_ADMIN_SLIDER = "noor_admin_slider_v1";
   const LS_ADMIN_SURAH_OVERRIDES = "noor_admin_surah_overrides_v1";
+  const LS_PROGRESS = "noor_progress_v1";
+  const LS_QUIZ_BEST = "noor_quiz_best_v1";
 
   function loadJSON(key, fallback){
     try{
@@ -2323,6 +2389,9 @@ html.no-grain .grain{display:none !important;}
 
   let surahIndex = [];
   let currentSurah = null;
+  let progress = loadJSON(LS_PROGRESS, {});     // last ayah reached, per surah
+  if(!progress || typeof progress !== "object" || Array.isArray(progress)) progress = {};
+  let marksCache = computeMarks();               // which surahs have notes / bookmarks
 
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, function(c){
@@ -2338,67 +2407,72 @@ html.no-grain .grain{display:none !important;}
   // redrawn on a slow interval instead of every frame, gives the same
   // twinkling starfield for a fraction of the work.
   let starCanvasCtx = null, starPoints = [], starRAFHandle = null, starLastDraw = 0;
+  let starsReady = false, starsRunning = false, starCanvas = null, starLayer = null, starDpr = 1;
+
+  function starsResize(){
+    if(!starCanvas || !starLayer) return;
+    const w = starLayer.clientWidth || window.innerWidth;
+    const h = starLayer.clientHeight || window.innerHeight;
+    starCanvas.width = Math.round(w * starDpr);
+    starCanvas.height = Math.round(h * starDpr);
+    const count = w < 600 ? 50 : 100;
+    starPoints = [];
+    for(let i=0;i<count;i++){
+      starPoints.push({x:Math.random()*w, y:Math.random()*h, r:Math.random()*0.8+0.6, phase:Math.random()*Math.PI*2});
+    }
+    starsDraw(0);
+  }
+
+  function starsDraw(t){
+    if(!starCanvas) return;
+    if(!starCanvasCtx) starCanvasCtx = starCanvas.getContext("2d");
+    const ctx = starCanvasCtx;
+    if(!ctx) return;
+    const still = reducedMotion();
+    ctx.setTransform(starDpr,0,0,starDpr,0,0);
+    ctx.clearRect(0,0,starCanvas.width,starCanvas.height);
+    ctx.fillStyle = "#f6eedd";
+    for(let i=0;i<starPoints.length;i++){
+      const s = starPoints[i];
+      const twinkle = still ? 0.4 : 0.5 + Math.sin(t/1200 + s.phase)*0.4;
+      ctx.globalAlpha = Math.max(0.1, twinkle);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function starsLoop(t){
+    if(!starsRunning) return;
+    // ~8fps is plenty for a twinkle and keeps the main thread idle in between
+    if(t - starLastDraw > 120 && !document.documentElement.classList.contains("no-stars")){
+      starLastDraw = t;
+      starsDraw(t);
+    }
+    starRAFHandle = requestAnimationFrame(starsLoop);
+  }
+  function starsStart(){
+    if(!starsReady || starsRunning || isLite() || document.hidden || reducedMotion()) return;
+    starsRunning = true;
+    starRAFHandle = requestAnimationFrame(starsLoop);
+  }
+  function starsStop(){
+    starsRunning = false;
+    if(starRAFHandle){ cancelAnimationFrame(starRAFHandle); starRAFHandle = null; }
+  }
+  // Safe to call repeatedly (boot, leaving Lite mode...). Never starts a second loop.
   function buildStars(){
-    if(document.documentElement.classList.contains("lite")) return;
-    const canvas = document.getElementById("starCanvas");
-    const layer = document.getElementById("bgLayer");
-    if(!canvas || !layer) return;
-
-    const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    function resize(){
-      const w = layer.clientWidth || window.innerWidth;
-      const h = layer.clientHeight || window.innerHeight;
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      const count = w < 600 ? 50 : 100;
-      starPoints = [];
-      for(let i=0;i<count;i++){
-        starPoints.push({
-          x: Math.random()*w,
-          y: Math.random()*h,
-          r: Math.random()*0.8+0.6,
-          phase: Math.random()*Math.PI*2
-        });
-      }
-      drawStars(0);
+    if(isLite()) return;
+    if(!starsReady){
+      starCanvas = byId("starCanvas"); starLayer = byId("bgLayer");
+      if(!starCanvas || !starLayer) return;
+      starDpr = Math.min(window.devicePixelRatio || 1, 2);
+      starsReady = true;
+      starsResize();
+      window.addEventListener("resize", debounce(function(){ if(!isLite()) starsResize(); }, 250));
     }
-
-    function drawStars(t){
-      if(!starCanvasCtx) starCanvasCtx = canvas.getContext("2d");
-      const ctx = starCanvasCtx;
-      if(!ctx) return;
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      for(let i=0;i<starPoints.length;i++){
-        const s = starPoints[i];
-        const twinkle = reducedMotion ? 0.4 : 0.5 + Math.sin(t/1200 + s.phase)*0.4;
-        ctx.globalAlpha = Math.max(0.1, twinkle);
-        ctx.fillStyle = "#f6eedd";
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    function loop(t){
-      // Throttle to ~10fps — a twinkling starfield doesn't need 60fps,
-      // and this keeps the main thread nearly idle between frames.
-      if(t - starLastDraw > 100 && !document.documentElement.classList.contains("no-stars")){
-        starLastDraw = t;
-        drawStars(t);
-      }
-      starRAFHandle = requestAnimationFrame(loop);
-    }
-
-    resize();
-    window.addEventListener("resize", debounce(resize, 200));
-    if(!reducedMotion){
-      if(starRAFHandle) cancelAnimationFrame(starRAFHandle);
-      starRAFHandle = requestAnimationFrame(loop);
-    }
+    starsStart();
   }
 
   // ---------- theme picker (dynamic background) ----------
@@ -3315,6 +3389,7 @@ html.no-grain .grain{display:none !important;}
     document.documentElement.lang = code;
     if(code !== "en"){ i18nBuild(code); i18nScan(document.body); }
     else{ i18nMap = {}; i18nPats = []; }
+    i18nObserve(code !== "en");
     if(!skipSave) saveJSON(LS_LANG, code);
     document.querySelectorAll("#langList button").forEach(function(b){ b.classList.toggle("active", b.dataset.lang === code); });
     const lbl = document.getElementById("langBtnCode");
@@ -3322,6 +3397,53 @@ html.no-grain .grain{display:none !important;}
     // pieces that format dates/numbers by language
     const pv = document.getElementById("view-prayer");
     if(pv && pv.classList.contains("active") && typeof prRender === "function") prRender();
+  }
+
+  // Batched translation of late-arriving DOM. Instead of translating inside every
+  // MutationObserver callback, records are queued and handled once per frame (still
+  // before paint, so no flash of English); elements that change every second are skipped.
+  const I18N_HOT = {prCount:1, prNextAt:1, clockTime:1, clockDate:1};
+  let i18nQ = [], i18nRaf = 0;
+  function i18nHot(n){
+    const el = n && (n.nodeType === 1 ? n : n.parentNode);
+    return !!(el && el.id && I18N_HOT[el.id]);
+  }
+  function i18nEnqueue(muts){
+    for(let i = 0; i < muts.length; i++){ if(!i18nHot(muts[i].target)) i18nQ.push(muts[i]); }
+    if(i18nQ.length && !i18nRaf){
+      i18nRaf = window.requestAnimationFrame ? requestAnimationFrame(i18nFlush) : setTimeout(i18nFlush, 16);
+    }
+  }
+  function i18nFlush(){
+    i18nRaf = 0;
+    const q = i18nQ; i18nQ = [];
+    if(i18nLang === "en" || !q.length) return;
+    const seen = new Set();
+    for(let i = 0; i < q.length; i++){
+      const m = q[i], t = m.target;
+      if(!t || !t.isConnected) continue;
+      if(m.type === "childList"){
+        for(let j = 0; j < m.addedNodes.length; j++){
+          const n = m.addedNodes[j];
+          if(n.isConnected && !seen.has(n)){ seen.add(n); i18nScan(n); }
+        }
+      }else if(m.type === "characterData"){
+        if(!seen.has(t)){ seen.add(t); i18nText(t); }
+      }else if(m.type === "attributes"){
+        i18nAttr(t, m.attributeName);
+      }
+    }
+    if(i18nObs) i18nObs.takeRecords();      // drop the records caused by our own writes
+  }
+  function i18nObserve(on){
+    if(typeof MutationObserver === "undefined") return;
+    if(!i18nObs) i18nObs = new MutationObserver(i18nEnqueue);
+    i18nObs.disconnect();
+    if(on){
+      i18nObs.observe(document.body, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:I18N_ATTRS});
+    }else{
+      i18nQ = [];
+    }
   }
 
   function initI18n(){
@@ -3360,19 +3482,8 @@ html.no-grain .grain{display:none !important;}
       more.value = "";
     });
 
-    // translate everything that appears later (cards, messages, modals…)
-    if(typeof MutationObserver !== "undefined"){
-      i18nObs = new MutationObserver(function(muts){
-        if(i18nLang === "en") return;
-        for(let i = 0; i < muts.length; i++){
-          const m = muts[i];
-          if(m.type === "childList"){ for(let j = 0; j < m.addedNodes.length; j++) i18nScan(m.addedNodes[j]); }
-          else if(m.type === "characterData"){ i18nText(m.target); }
-          else if(m.type === "attributes"){ i18nAttr(m.target, m.attributeName); }
-        }
-      });
-      i18nObs.observe(document.body, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: I18N_ATTRS});
-    }
+    // late-arriving DOM is translated by i18nObserve() (batched; only active when the language is not English)
+
     const saved = loadJSON(LS_LANG, "en");
     i18nSet(saved === "en" ? "en" : saved, true);
   }
@@ -3488,28 +3599,44 @@ html.no-grain .grain{display:none !important;}
     {tz:"Africa/Cairo", label:"Cairo, Egypt"},
     {tz:"Australia/Sydney", label:"Sydney, Australia"}
   ];
-  let clockTimer = null;
+  let clockTimer = null, currentView = "home", autoTz = null;
+  const fmtCache = {};
+  function fmt(key, loc, opts){ return fmtCache[key] || (fmtCache[key] = new Intl.DateTimeFormat(loc, opts)); }
+
+  // The home view hosts the clock, quote strip and slider: they only run while it is
+  // on screen AND the tab is visible.
+  function homeActive(){ return currentView === "home" && !document.hidden; }
 
   function tickClock(){
-    const sel = document.getElementById("regionSelect");
-    const timeEl = document.getElementById("clockTime");
-    const dateEl = document.getElementById("clockDate");
+    const sel = byId("regionSelect"), timeEl = byId("clockTime"), dateEl = byId("clockDate");
     if(!sel || !timeEl || !dateEl) return;
-    const tz = sel.value === "auto" ? Intl.DateTimeFormat().resolvedOptions().timeZone : sel.value;
+    if(sel.value === "auto" && !autoTz) autoTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tz = sel.value === "auto" ? autoTz : sel.value;
     const now = new Date();
     try{
-      const timeStr = new Intl.DateTimeFormat(undefined, {timeZone:tz, hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:true}).format(now);
-      const dateStr = new Intl.DateTimeFormat((window.NoorI18n && window.NoorI18n.lang() !== "en") ? window.NoorI18n.locale() : undefined, {timeZone:tz, weekday:"short", year:"numeric", month:"short", day:"numeric"}).format(now);
-      timeEl.textContent = timeStr;
-      dateEl.textContent = dateStr + " · " + (sel.value==="auto" ? tz : tz.split("/").pop().replace("_"," "));
+      const loc = (window.NoorI18n && window.NoorI18n.lang() !== "en") ? window.NoorI18n.locale() : undefined;
+      const timeStr = fmt("t|" + tz, undefined, {timeZone:tz, hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:true}).format(now);
+      const dateStr = fmt("d|" + tz + "|" + (loc || ""), loc, {timeZone:tz, weekday:"short", year:"numeric", month:"short", day:"numeric"}).format(now);
+      setText(timeEl, timeStr);
+      setText(dateEl, dateStr + " · " + (sel.value === "auto" ? tz : tz.split("/").pop().replace("_"," ")));
     }catch(e){
-      timeEl.textContent = now.toLocaleTimeString();
-      dateEl.textContent = now.toDateString();
+      setText(timeEl, now.toLocaleTimeString());
+      setText(dateEl, now.toDateString());
     }
   }
 
+  // Chained timeouts aligned to the second boundary (no drift, nothing queued while hidden).
+  function clockLoop(){
+    clockTimer = null;
+    if(!homeActive()) return;
+    tickClock();
+    clockTimer = setTimeout(clockLoop, 1000 - (Date.now() % 1000) + 8);
+  }
+  function startClock(){ if(!clockTimer && homeActive()) clockLoop(); }
+  function stopClock(){ if(clockTimer){ clearTimeout(clockTimer); clockTimer = null; } }
+
   function initClock(){
-    const sel = document.getElementById("regionSelect");
+    const sel = byId("regionSelect");
     if(!sel) return;
     sel.innerHTML = REGIONS.map(function(r){
       return '<option value="'+r.tz+'">'+escapeHtml(r.label)+'</option>';
@@ -3520,8 +3647,7 @@ html.no-grain .grain{display:none !important;}
       tickClock();
     });
     tickClock();
-    if(clockTimer) clearInterval(clockTimer);
-    clockTimer = setInterval(tickClock, 1000);
+    startClock();
   }
 
   // ---------- dynamic quotes ----------
@@ -3542,27 +3668,42 @@ html.no-grain .grain{display:none !important;}
 
   function allQuotes(){ return QUOTES.concat(adminQuotes); }
 
+  // Fade without forcing layout: Web Animations API (no class toggle, no offsetWidth read).
+  function quoteFade(strip){
+    if(!strip || !smoothOK() || !homeActive()) return;
+    if(strip.animate){
+      try{ strip.animate([{opacity:0},{opacity:1}], {duration:400, easing:"ease"}); return; }catch(e){}
+    }
+    strip.classList.remove("fade");
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ strip.classList.add("fade"); }); });
+  }
+
   function renderQuote(){
     const list = allQuotes();
     if(!list.length) return;
     quoteIndex = (quoteIndex + list.length) % list.length;
     const q = list[quoteIndex];
-    const strip = document.getElementById("quoteStrip");
-    strip.classList.remove("fade"); void strip.offsetWidth; strip.classList.add("fade");
-    document.getElementById("quoteArabic").textContent = q.arabic || "";
-    document.getElementById("quoteText").textContent = q.text || "";
-    document.getElementById("quoteSource").textContent = q.source || "";
+    quoteFade(byId("quoteStrip"));
+    setText(byId("quoteArabic"), q.arabic || "");
+    setText(byId("quoteText"), q.text || "");
+    setText(byId("quoteSource"), q.source || "");
   }
 
   function initQuotes(){
     renderQuote();
-    document.getElementById("quotePrev").addEventListener("click", function(){ quoteIndex--; renderQuote(); resetQuoteTimer(); });
-    document.getElementById("quoteNext").addEventListener("click", function(){ quoteIndex++; renderQuote(); resetQuoteTimer(); });
+    const prev = byId("quotePrev"), next = byId("quoteNext");
+    if(prev) prev.addEventListener("click", function(){ quoteIndex--; renderQuote(); resetQuoteTimer(); });
+    if(next) next.addEventListener("click", function(){ quoteIndex++; renderQuote(); resetQuoteTimer(); });
     resetQuoteTimer();
   }
+  function stopQuoteTimer(){ if(quoteTimer){ clearInterval(quoteTimer); quoteTimer = null; } }
   function resetQuoteTimer(){
-    if(quoteTimer) clearInterval(quoteTimer);
-    quoteTimer = setInterval(function(){ quoteIndex++; renderQuote(); }, 12000);
+    stopQuoteTimer();
+    if(!homeActive()) return;
+    quoteTimer = setInterval(function(){
+      if(!homeActive()) return;
+      quoteIndex++; renderQuote();
+    }, 12000);
   }
 
   // ---------- auth (sign up / login / admin) ----------
@@ -3601,7 +3742,7 @@ html.no-grain .grain{display:none !important;}
   function openAuthModal(mode){
     const body = document.getElementById("authModalBody");
     document.getElementById("authModal").classList.add("open");
-    lockScroll();
+    lockScroll("modal");
     if(mode === "signup"){
       body.innerHTML = ''
         + '<h3>Create your account</h3>'
@@ -3649,7 +3790,7 @@ html.no-grain .grain{display:none !important;}
       });
     }
   }
-  function closeAuthModal(){ document.getElementById("authModal").classList.remove("open"); unlockScroll(); }
+  function closeAuthModal(){ document.getElementById("authModal").classList.remove("open"); unlockScroll("modal"); }
 
   function initAuth(){
     renderAuthArea();
@@ -3787,8 +3928,9 @@ html.no-grain .grain{display:none !important;}
         bn: document.getElementById("adBn").value.trim(),
         tags: document.getElementById("adTags").value.trim()
       };
-      if(!d.title || !d.arabic || !d.en){ alert("Please fill in at least the title, Arabic text, and English translation."); return; }
+      if(!d.title || !d.arabic || !d.en){ showStatus(this, "Please fill in at least the title, Arabic text, and English translation.", "err"); return; }
       adminDuas.push(d);
+      showStatus(this, "Dua added ✓", "ok");
       saveJSON(LS_ADMIN_DUAS, adminDuas);
       renderAdminDuaList();
       renderDuaGrid(document.getElementById("duaSearch") ? document.getElementById("duaSearch").value : "");
@@ -3801,8 +3943,9 @@ html.no-grain .grain{display:none !important;}
         text: document.getElementById("aqText").value.trim(),
         source: document.getElementById("aqSource").value.trim()
       };
-      if(!q.text){ alert("Please enter the quote text."); return; }
+      if(!q.text){ showStatus(this, "Please enter the quote text.", "err"); return; }
       adminQuotes.push(q);
+      showStatus(this, "Quote added ✓", "ok");
       saveJSON(LS_ADMIN_QUOTES, adminQuotes);
       renderAdminQuoteList();
       ["aqArabic","aqText","aqSource"].forEach(function(id){ document.getElementById(id).value=""; });
@@ -3816,8 +3959,9 @@ html.no-grain .grain{display:none !important;}
         document.getElementById("aqzC").value.trim(),
         document.getElementById("aqzD").value.trim()
       ];
-      if(!qText || opts.some(function(o){return !o;})){ alert("Please fill in the question and all four options."); return; }
+      if(!qText || opts.some(function(o){return !o;})){ showStatus(this, "Please fill in the question and all four options.", "err"); return; }
       adminQuiz.push({q:qText, options:opts, answer:0});
+      showStatus(this, "Question added ✓", "ok");
       saveJSON(LS_ADMIN_QUIZ, adminQuiz);
       renderAdminQuizList();
       ["aqzQ","aqzA","aqzB","aqzC","aqzD"].forEach(function(id){ document.getElementById(id).value=""; });
@@ -3825,7 +3969,9 @@ html.no-grain .grain{display:none !important;}
 
     document.getElementById("abSubmit").addEventListener("click", function(){
       const text = document.getElementById("abText").value.trim();
-      if(!text){ alert("Please enter banner text."); return; }
+      if(!text){ showStatus(this, "Please enter banner text.", "err"); return; }
+      const abLink = document.getElementById("abLinkUrl").value.trim();
+      if(abLink && !safeUrl(abLink)){ showStatus(this, "The link must start with http:// or https://.", "err"); return; }
       adminBanner = {
         text: text,
         linkText: document.getElementById("abLinkText").value.trim(),
@@ -3834,6 +3980,7 @@ html.no-grain .grain{display:none !important;}
       saveJSON(LS_ADMIN_BANNER, adminBanner);
       renderAnnounceBanner();
       renderAdminBannerStatus();
+      showStatus(this, "Banner published ✓", "ok");
     });
     document.getElementById("abDelete").addEventListener("click", function(){
       adminBanner = null;
@@ -3846,7 +3993,7 @@ html.no-grain .grain{display:none !important;}
     document.getElementById("fvSubmit").addEventListener("click", function(){
       const url = document.getElementById("fvUrlInput").value.trim();
       const title = document.getElementById("fvTitleInput").value.trim();
-      if(!url || !title){ alert("Please enter a title and a video URL."); return; }
+      if(!url || !title || !safeUrl(videoEmbedUrl(url))){ showStatus(this, "Please enter a title and a valid http(s) video URL.", "err"); return; }
       adminVideo = {
         title: title,
         url: url,
@@ -3855,6 +4002,7 @@ html.no-grain .grain{display:none !important;}
       saveJSON(LS_ADMIN_VIDEO, adminVideo);
       renderFeaturedVideo();
       renderAdminVideoStatus();
+      showStatus(this, "Video published ✓", "ok");
     });
     document.getElementById("fvDelete").addEventListener("click", function(){
       adminVideo = null;
@@ -3866,7 +4014,7 @@ html.no-grain .grain{display:none !important;}
 
     document.getElementById("isSubmit").addEventListener("click", function(){
       const url = document.getElementById("isUrl").value.trim();
-      if(!url){ alert("Please enter an image URL."); return; }
+      if(!safeUrl(url)){ showStatus(this, "Please enter a valid image URL (http:// or https://).", "err"); return; }
       adminSlides.push({
         url: url,
         caption: document.getElementById("isCaption").value.trim(),
@@ -3875,6 +4023,7 @@ html.no-grain .grain{display:none !important;}
       saveJSON(LS_ADMIN_SLIDER, adminSlides);
       renderAdminSliderList();
       renderImgSlider();
+      showStatus(this, "Slide added ✓", "ok");
       ["isUrl","isCaption","isLink"].forEach(function(id){ document.getElementById(id).value=""; });
     });
 
@@ -3986,7 +4135,7 @@ html.no-grain .grain{display:none !important;}
       const name = document.getElementById("smArabicName").value.trim();
       const englishNameTranslation = document.getElementById("smMeaning").value.trim();
       const revelationType = document.getElementById("smRevelation").value;
-      if(!englishName || !name || !englishNameTranslation){ alert("Please fill in the English name, Arabic name, and meaning."); return; }
+      if(!englishName || !name || !englishNameTranslation){ showStatus(this, "Please fill in the English name, Arabic name, and meaning.", "err"); return; }
       adminSurahOverrides[smSelectedNumber] = {
         englishName: englishName,
         name: name,
@@ -4128,7 +4277,7 @@ html.no-grain .grain{display:none !important;}
 
     document.getElementById("tfSave").addEventListener("click", function(){
       const text = document.getElementById("tfText").value.trim();
-      if(!text){ alert("Please enter the tafsir text before saving."); return; }
+      if(!text){ showStatus(this, "Please enter the tafsir text before saving.", "err"); return; }
       saveTafsirEntry(tfSelectedSurahNum, tfSelectedAyah, text);
       renderTfEditor();
       renderTfSurahListEl(document.getElementById("tfSearch").value);
@@ -4240,10 +4389,16 @@ html.no-grain .grain{display:none !important;}
     document.querySelectorAll(".drawer-nav-btn[data-view]").forEach(function(b){
       b.classList.toggle("active", b.dataset.view === view);
     });
-    const searchWrap = document.getElementById("quranSearchWrap");
+    const searchWrap = byId("quranSearchWrap");
     if(searchWrap) searchWrap.style.display = (view === "home") ? "" : "none";
-    closeEverything();
-    window.scrollTo({top:0, behavior:"smooth"});
+    if(view !== "home") hideSearchResults();
+    // Close drawers/modals WITHOUT restoring the old offset, then snap to the top instantly.
+    // (Restoring + smooth-scrolling in the same tick is what made the two fight.)
+    closeEverything({keepScroll:true});
+    jumpScroll(0);
+    currentView = view;
+    syncTimers();
+    if(view !== "home") parkVideo();
     if(view === "quiz" && !quizStarted){ startQuiz(); }
     if(view === "admin"){ renderAdminView(); }
     if(view === "hadith"){ ensureBukhari(); }
@@ -4266,16 +4421,25 @@ html.no-grain .grain{display:none !important;}
   // rubber-band the page behind an open sheet; that means we have to
   // remember and restore the scroll offset manually, or the page would
   // silently jump to the top every time a drawer opens.
+  // Scroll lock with named reasons (drawer, modal...): the page stays locked until the
+  // LAST reason is released, and the saved offset is restored exactly once, instantly.
+  const scrollLocks = new Set();
   let lockedScrollY = 0;
-  function lockScroll(){
-    lockedScrollY = window.scrollY || window.pageYOffset || 0;
-    document.body.style.top = (-lockedScrollY) + "px";
-    document.body.classList.add("scroll-locked");
+  function lockScroll(reason){
+    reason = (typeof reason === "string") ? reason : "drawer";
+    if(!scrollLocks.size){
+      lockedScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+      document.body.style.top = (-lockedScrollY) + "px";
+      document.body.classList.add("scroll-locked");
+    }
+    scrollLocks.add(reason);
   }
-  function unlockScroll(){
+  function unlockScroll(reason, restore){
+    reason = (typeof reason === "string") ? reason : "drawer";
+    if(!scrollLocks.delete(reason) || scrollLocks.size) return;   // not locked by us / still locked by another reason
     document.body.classList.remove("scroll-locked");
     document.body.style.top = "";
-    window.scrollTo(0, lockedScrollY);
+    if(restore !== false) jumpScroll(lockedScrollY);
   }
 
   function initNav(){
@@ -4316,12 +4480,12 @@ html.no-grain .grain{display:none !important;}
     });
   }
 
-  function closeEverything(){
+  function closeEverything(opts){
     ["sidebar","navDrawer","notesDrawer","bookmarksDrawer","overlay"].forEach(function(id){
-      const el = document.getElementById(id);
+      const el = byId(id);
       if(el) el.classList.remove("open");
     });
-    unlockScroll();
+    unlockScroll("drawer", !(opts && opts.keepScroll === true));
   }
 
   // ---------- translator ----------
@@ -4334,7 +4498,7 @@ html.no-grain .grain{display:none !important;}
     sel.addEventListener("change", function(){
       currentEdition = sel.value;
       saveJSON(LS_TRANSLATION, currentEdition);
-      if(currentSurah){ openSurah(currentSurah, true); }
+      if(currentSurah){ openSurah(currentSurah, true, ayahAtReadingLine()); }
     });
   }
 
@@ -4348,9 +4512,9 @@ html.no-grain .grain{display:none !important;}
   function fetchSurahList(){
     const listEl = document.getElementById("surahList");
     if(!listEl) return;
-    fetchJSON(API + "/surah")
-      .then(data => {
-        surahIndex = (data && data.data) ? data.data : [];
+    getSurahIndex()
+      .then(r => {
+        surahIndex = r.list;
         renderSurahList(surahIndex);
         renderSurahGrid(surahIndex);
       })
@@ -4379,6 +4543,7 @@ html.no-grain .grain{display:none !important;}
         + '<span class="num">'+s.number+'</span>'
         + '<span class="info"><span class="en">'+escapeHtml(s.englishName)+'</span>'
         + '<span class="meta">'+escapeHtml(s.englishNameTranslation)+' · '+s.numberOfAyahs+' ayat · '+escapeHtml(s.revelationType)+'</span></span>'
+        + '<span class="mk">'+marksHtml(s.number)+'</span>'
         + '<span class="ar">'+s.name+'</span>'
         + '</li>';
     }).join("");
@@ -4402,6 +4567,7 @@ html.no-grain .grain{display:none !important;}
         + '<span class="sc-num">'+s.number+'</span>'
         + '<span class="sc-info"><span class="en">'+escapeHtml(s.englishName)+'</span>'
         + '<span class="meta">'+escapeHtml(s.englishNameTranslation)+' · '+s.numberOfAyahs+' ayat · '+escapeHtml(s.revelationType)+'</span></span>'
+        + '<span class="mk">'+marksHtml(s.number)+'</span>'
         + '<span class="sc-ar">'+s.name+'</span>'
         + '</button>';
     }).join("");
@@ -4469,12 +4635,70 @@ html.no-grain .grain{display:none !important;}
   }
 
   // ---------- opening a surah ----------
-  function openSurah(number, silent){
+  let surahToken = 0;          // bumped on every open: late responses for an old surah are ignored
+  let panelCtx = null;         // what is currently drawn in #surahPanel
+  let surahAudioEl = null;
+  let progTimer = 0;
+
+  function resetListenBtn(){
+    const b = byId("listenBtn");
+    if(b){ b.classList.remove("on"); b.textContent = "▶ Listen (Al-Afasy)"; }
+  }
+  // A detached <audio> keeps playing, so always pause + release the stream before removing it.
+  function stopSurahAudio(){
+    const a = surahAudioEl || byId("surahAudio");
+    surahAudioEl = null;
+    if(a){
+      try{ a.pause(); }catch(e){}
+      try{ a.removeAttribute("src"); a.load(); }catch(e){}
+      if(a.parentNode) a.parentNode.removeChild(a);
+    }
+    const stray = document.querySelectorAll("#surahAudio");
+    for(let i = 0; i < stray.length; i++){ if(stray[i].parentNode) stray[i].parentNode.removeChild(stray[i]); }
+    resetListenBtn();
+  }
+  function startSurahAudio(number){
+    stopSurahAudio();
+    const header = document.querySelector("#surahPanel .surah-header"), btn = byId("listenBtn");
+    if(!header || !btn) return;
+    const audio = document.createElement("audio");
+    audio.id = "surahAudio"; audio.controls = true; audio.autoplay = true; audio.preload = "none";
+    audio.src = "https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/" + number + ".mp3";
+    audio.style.cssText = "display:block;margin:10px 26px 0;width:calc(100% - 52px)";
+    header.insertAdjacentElement("afterend", audio);
+    surahAudioEl = audio;
+    btn.classList.add("on"); btn.textContent = "■ Stop";
+    audio.addEventListener("ended", stopSurahAudio);
+    audio.addEventListener("error", function(){
+      stopSurahAudio();
+      showStatus(btn, "Audio couldn’t be loaded — check your connection.", "err");
+    });
+  }
+
+  function disposePanel(){
+    if(panelCtx && panelCtx.io){ try{ panelCtx.io.disconnect(); }catch(e){} }
+    panelCtx = null;
+  }
+
+  function loadSurahData(number){
+    return Promise.all([
+      getSurahEdition(number, ARABIC_EDITION),
+      // a missing translation must not block the Arabic text (e.g. offline with only Arabic saved)
+      getSurahEdition(number, currentEdition).catch(function(){ return {data:null, from:"none"}; })
+    ]);
+  }
+
+  function openSurah(number, silent, targetAyah){
+    closeEverything();                       // picking a surah in the mobile sidebar must close it
     currentSurah = number;
-    const welcomePanel = document.getElementById("welcomePanel");
+    stopSurahAudio();
+    const token = ++surahToken;
+    disposePanel();
+    const welcomePanel = byId("welcomePanel");
     if(welcomePanel) welcomePanel.classList.add("hidden");
-    const panel = document.getElementById("surahPanel");
+    const panel = byId("surahPanel");
     if(!panel) return;
+    if(silent) panel.style.minHeight = panel.offsetHeight + "px";   // hold the page height during a re-render
     panel.classList.remove("hidden");
     panel.innerHTML = '<div class="loading"><div class="spin"></div>Loading surah…</div>';
 
@@ -4482,128 +4706,262 @@ html.no-grain .grain{display:none !important;}
       li.classList.toggle("active", parseInt(li.dataset.num,10) === number);
     });
 
-    Promise.all([
-      fetchJSON(API + "/surah/" + number + "/" + ARABIC_EDITION),
-      fetchJSON(API + "/surah/" + number + "/" + currentEdition)
-    ]).then(function(results){
-      const arabic = results[0].data;
-      const translation = results[1].data;
-      renderSurahPanel(arabic, translation);
-      recordLastRead(arabic);
-      if(!silent){
-        const app = document.getElementById("app");
-        if(app) app.scrollIntoView({behavior:"smooth", block:"start"});
+    loadSurahData(number).then(function(results){
+      if(token !== surahToken) return;
+      const arabic = results[0].data, translation = results[1].data;
+      const from = (results[0].from === "network" || results[1].from === "network") ? "network"
+                 : (results[0].from === "saved" || results[1].from === "saved") ? "saved" : "memory";
+      renderSurahPanel(arabic, translation, {from:from});
+      panel.style.minHeight = "";
+      recordLastRead(arabic, targetAyah);
+      if(targetAyah){
+        jumpToAyah(targetAyah, {instant:!!silent, flash:!silent});
+      }else if(!silent){
+        const app = byId("app");
+        if(app){
+          if(smoothOK()) app.scrollIntoView({behavior:"smooth", block:"start"});
+          else jumpScroll(app.getBoundingClientRect().top + (window.pageYOffset || 0));
+        }
       }
     }).catch(function(err){
+      if(token !== surahToken) return;
+      panel.style.minHeight = "";
       const offline = (typeof navigator !== "undefined" && navigator.onLine === false);
       const msg = (err && err.name === "AbortError")
         ? "This surah took too long to load."
         : offline
-          ? "You appear to be offline."
+          ? "You appear to be offline, and this surah hasn’t been saved on this device yet."
           : "This surah could not be loaded — the connection may have dropped, or this translation may not be available for this surah.";
       panel.innerHTML = '<div class="error-box">'+msg+'<br><button id="retrySurah">Try again</button></div>';
-      const retryBtn = document.getElementById("retrySurah");
-      if(retryBtn) retryBtn.addEventListener("click", function(){ openSurah(number); });
+      const retryBtn = byId("retrySurah");
+      if(retryBtn) retryBtn.addEventListener("click", function(){ openSurah(number, silent, targetAyah); });
     });
   }
 
-  function renderSurahPanel(arabic, translation){
-    const panel = document.getElementById("surahPanel");
-    const meta = getSurahMeta(surahIndex.find(function(s){ return s.number === arabic.number; }) || arabic);
+  // ---------- lazy ayah rendering ----------
+  // Long surahs (Al-Baqarah = 286 ayat) are drawn in batches as you scroll instead of all
+  // at once: far less DOM and memory on low-end phones, and a much faster first paint.
+  function ayahFirst(){ return isLite() ? 15 : 30; }
+  function ayahBatch(){ return isLite() ? 20 : 40; }
 
-    const ayahsHtml = arabic.ayahs.map(function(a, i){
-      const key = arabic.number + "-" + a.numberInSurah;
-      const tEn = (translation && translation.ayahs[i] && translation.ayahs[i].text) ? translation.ayahs[i].text : "";
-      const hasNote = !!notes[key];
-      const isBookmarked = !!bookmarks[key];
-      return ''
-        + '<div class="ayah'+(isBookmarked?' bookmarked':'')+'" data-key="'+key+'">'
-        +   '<div class="arabic-text">'+a.text+' <span class="ayah-badge">'+a.numberInSurah+'</span></div>'
-        +   '<div class="translation">'+escapeHtml(tEn)+'</div>'
-        +   '<div class="ayah-tools">'
-        +     '<button class="icon-btn bookmark-btn'+(isBookmarked?' active':'')+'" data-key="'+key+'">'+(isBookmarked?'★ Bookmarked':'☆ Bookmark')+'</button>'
-        +     '<button class="icon-btn note-btn'+(hasNote?' active':'')+'" data-key="'+key+'">'+(hasNote?'✎ Edit note':'✎ Add note')+'</button>'
-        +     '<button class="icon-btn tafsir-btn" data-surah="'+arabic.number+'" data-ayah="'+a.numberInSurah+'" aria-expanded="false">📖 Tafsir</button>'
-        +   '</div>'
-        +   '<div class="note-box hidden" data-key="'+key+'">'
-        +     '<textarea placeholder="Write what you learned or want to remember…">'+escapeHtml(notes[key]||"")+'</textarea>'
-        +     '<div class="actions"><button class="cancel">Cancel</button><button class="save">Save note</button></div>'
-        +   '</div>'
-        +   '<div class="tafsir-box hidden" data-surah="'+arabic.number+'" data-ayah="'+a.numberInSurah+'"></div>'
-        + '</div>';
-    }).join("");
+  function ayahHtml(arabic, translation, i){
+    const a = arabic.ayahs[i];
+    const key = arabic.number + "-" + a.numberInSurah;
+    const tEn = (translation && translation.ayahs[i] && translation.ayahs[i].text) ? translation.ayahs[i].text : "";
+    const hasNote = !!notes[key];
+    const isBookmarked = !!bookmarks[key];
+    return ''
+      + '<div class="ayah'+(isBookmarked?' bookmarked':'')+'" data-key="'+key+'">'
+      +   '<div class="arabic-text">'+escapeHtml(a.text)+' <span class="ayah-badge">'+a.numberInSurah+'</span></div>'
+      +   (tEn ? '<div class="translation">'+escapeHtml(tEn)+'</div>' : '<div class="translation"></div>')
+      +   '<div class="ayah-tools">'
+      +     '<button type="button" class="icon-btn bookmark-btn'+(isBookmarked?' active':'')+'" data-key="'+key+'">'+(isBookmarked?'★ Bookmarked':'☆ Bookmark')+'</button>'
+      +     '<button type="button" class="icon-btn note-btn'+(hasNote?' active':'')+'" data-key="'+key+'">'+(hasNote?'✎ Edit note':'✎ Add note')+'</button>'
+      +     '<button type="button" class="icon-btn tafsir-btn" data-surah="'+arabic.number+'" data-ayah="'+a.numberInSurah+'" aria-expanded="false">📖 Tafsir</button>'
+      +     '<button type="button" class="icon-btn copy-btn" data-key="'+key+'">⧉ Copy verse</button>'
+      +   '</div>'
+      +   '<div class="note-box hidden" data-key="'+key+'">'
+      +     '<textarea placeholder="Write what you learned or want to remember…">'+escapeHtml(notes[key]||"")+'</textarea>'
+      +     '<div class="actions"><button type="button" class="cancel">Cancel</button><button type="button" class="save">Save note</button></div>'
+      +   '</div>'
+      +   '<div class="tafsir-box hidden" data-surah="'+arabic.number+'" data-ayah="'+a.numberInSurah+'"></div>'
+      + '</div>';
+  }
+
+  function appendAyahs(ctx, n){
+    if(panelCtx !== ctx) return;
+    const list = byId("ayahList");
+    if(!list) return;
+    const end = Math.min(ctx.total, ctx.rendered + n);
+    if(end > ctx.rendered){
+      let html = "";
+      for(let i = ctx.rendered; i < end; i++) html += ayahHtml(ctx.arabic, ctx.translation, i);
+      list.insertAdjacentHTML("beforeend", html);
+      ctx.rendered = end;
+    }
+    armSentinel(ctx);
+  }
+  function ensureAyahRendered(ctx, n){
+    if(ctx.rendered < n) appendAyahs(ctx, n - ctx.rendered);
+  }
+  function armSentinel(ctx){
+    const more = byId("ayahMore");
+    if(!more) return;
+    if(ctx.rendered >= ctx.total){
+      more.innerHTML = "";
+      if(ctx.io){ try{ ctx.io.disconnect(); }catch(e){} ctx.io = null; }
+      return;
+    }
+    more.innerHTML = '<button type="button" class="tool-btn" id="ayahMoreBtn">Show more ayat ('+(ctx.total - ctx.rendered)+' left)</button>';
+    if("IntersectionObserver" in window){
+      if(!ctx.io){
+        ctx.io = new IntersectionObserver(function(entries){
+          if(entries[0] && entries[0].isIntersecting && panelCtx === ctx) appendAyahs(ctx, ayahBatch());
+        }, {rootMargin:"1200px 0px"});
+      }
+      ctx.io.disconnect();
+      ctx.io.observe(more);              // re-observing forces a fresh callback if it is still near the viewport
+    }
+  }
+
+  function renderSurahPanel(arabic, translation, info){
+    const panel = byId("surahPanel");
+    if(!panel) return;
+    const meta = getSurahMeta(surahIndex.find(function(s){ return s.number === arabic.number; }) || arabic);
+    const total = arabic.ayahs.length;
+    const ctx = {arabic:arabic, translation:translation, meta:meta, total:total, rendered:0, io:null};
+    disposePanel();
+    panelCtx = ctx;
+
+    const offline = (typeof navigator !== "undefined" && navigator.onLine === false);
+    let badges = "";
+    if(offline) badges += '<span class="sh-badge warn">Offline · saved copy</span>';
+    if(!translation) badges += '<span class="sh-badge warn">Translation unavailable · Arabic only</span>';
+
+    const resumeAt = progress[arabic.number];
+    const resumeBtn = (resumeAt && resumeAt > 1 && resumeAt <= total)
+      ? '<button type="button" class="tool-btn" id="resumeBtn" data-ayah="'+resumeAt+'">Resume · ayah '+resumeAt+'</button>' : '';
 
     panel.innerHTML = ''
       + '<div class="surah-header">'
       +   '<div>'
-      +     '<h2>'+escapeHtml(meta.number)+'. '+escapeHtml(meta.englishName)+' <span class="arabic-name">'+meta.name+'</span></h2>'
+      +     '<h2>'+escapeHtml(meta.number)+'. '+escapeHtml(meta.englishName)+' <span class="arabic-name">'+escapeHtml(meta.name)+'</span>'+badges+'</h2>'
       +     '<div class="desc">"'+escapeHtml(meta.englishNameTranslation)+'" · '+meta.numberOfAyahs+' ayat · Revealed in '+escapeHtml(meta.revelationType)+'</div>'
+      +     '<div class="jump-ayah"><label for="ayahJump">Go to ayah</label>'
+      +       '<input id="ayahJump" type="number" inputmode="numeric" min="1" max="'+total+'" placeholder="1–'+total+'" autocomplete="off">'
+      +       '<button type="button" class="tool-btn" id="ayahJumpBtn">Go</button>'+resumeBtn+'</div>'
       +   '</div>'
       +   '<div class="tools">'
-      +     '<button class="tool-btn" id="listenBtn">▶ Listen (Al-Afasy)</button>'
-      +     '<button class="tool-btn" id="topBtn">↑ Top</button>'
+      +     '<button type="button" class="tool-btn" id="listenBtn">▶ Listen (Al-Afasy)</button>'
+      +     '<button type="button" class="tool-btn" id="topBtn">↑ Top</button>'
       +   '</div>'
       + '</div>'
-      + (arabic.number !== 9 ? '<div class="bismillah-block">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '')
-      + '<div class="ayah-list">'+ayahsHtml+'</div>';
+      + ((arabic.number !== 9 && arabic.number !== 1) ? '<div class="bismillah-block">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>' : '')
+      + '<div class="ayah-list" id="ayahList"></div>'
+      + '<div class="ayah-more" id="ayahMore"></div>';
 
-    document.getElementById("listenBtn").addEventListener("click", function(){
-      const btn = this;
-      const existing = document.getElementById("surahAudio");
-      if(existing){ existing.remove(); if(btn.classList.contains("on")){ btn.classList.remove("on"); btn.textContent = "▶ Listen (Al-Afasy)"; return; } }
-      const audio = document.createElement("audio");
-      audio.id = "surahAudio";
-      audio.controls = true;
-      audio.autoplay = true;
-      audio.src = "https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/" + arabic.number + ".mp3";
-      audio.style.display = "block";
-      audio.style.margin = "10px 26px 0";
-      audio.style.width = "calc(100% - 52px)";
-      btn.parentElement.parentElement.insertAdjacentElement("afterend", audio);
-      btn.classList.add("on");
-      btn.textContent = "■ Stop";
-      audio.addEventListener("ended", function(){ btn.classList.remove("on"); btn.textContent = "▶ Listen (Al-Afasy)"; });
-    });
-    document.getElementById("topBtn").addEventListener("click", function(){
-      document.getElementById("app").scrollIntoView({behavior:"smooth"});
-    });
-
-    bindAyahTools(panel, meta);
+    bindPanelOnce(panel);
+    appendAyahs(ctx, ayahFirst());
   }
 
-  function bindAyahTools(panel, meta){
-    panel.querySelectorAll(".bookmark-btn").forEach(function(btn){
-      btn.addEventListener("click", function(){ toggleBookmark(btn.dataset.key, meta); });
+  function copyText(text){
+    if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function(resolve, reject){
+      try{
+        const ta = document.createElement("textarea");
+        ta.value = text; ta.setAttribute("readonly", "");
+        ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
+        document.body.appendChild(ta);
+        ta.select(); ta.setSelectionRange(0, text.length);
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        if(ok) resolve(); else reject(new Error("copy failed"));
+      }catch(e){ reject(e); }
     });
-    panel.querySelectorAll(".note-btn").forEach(function(btn){
-      btn.addEventListener("click", function(){
-        const box = panel.querySelector('.note-box[data-key="'+btn.dataset.key+'"]');
+  }
+  function verseCopyText(ctx, key){
+    const n = parseInt(key.split("-")[1], 10), i = n - 1;
+    const a = ctx.arabic.ayahs[i];
+    if(!a) return "";
+    const t = ctx.translation && ctx.translation.ayahs[i];
+    return a.text + "\n\n" + ((t && t.text) ? t.text + "\n\n" : "")
+         + "— " + ctx.meta.englishName + " (" + ctx.arabic.number + ":" + n + ")";
+  }
+
+  function jumpToAyah(n, opts){
+    opts = opts || {};
+    const ctx = panelCtx;
+    if(!ctx) return false;
+    n = parseInt(n, 10);
+    if(!(n >= 1 && n <= ctx.total)) return false;
+    ensureAyahRendered(ctx, n);
+    const el = document.querySelector('#surahPanel .ayah[data-key="'+ctx.arabic.number+'-'+n+'"]');
+    if(!el) return false;
+    const y = el.getBoundingClientRect().top + (window.pageYOffset || 0) - (parseInt(getComputedStyle(document.documentElement).getPropertyValue("--header-h"), 10) || 66) - 14;
+    if(opts.instant || !smoothOK()) jumpScroll(Math.max(0, y));
+    else window.scrollTo({top:Math.max(0, y), behavior:"smooth"});
+    if(opts.flash !== false){
+      el.classList.remove("ayah-flash");
+      requestAnimationFrame(function(){ el.classList.add("ayah-flash"); });
+      setTimeout(function(){ el.classList.remove("ayah-flash"); }, 1800);
+    }
+    noteReading(ctx.arabic.number, n);
+    return true;
+  }
+
+  // One set of listeners for the whole panel (instead of 4 per ayah): far less memory on long surahs.
+  function bindPanelOnce(panel){
+    if(panel.__bound) return;
+    panel.__bound = true;
+
+    panel.addEventListener("click", function(e){
+      const t = e.target.closest ? e.target.closest("button") : null;
+      const ctx = panelCtx;
+      if(!t || !ctx || !panel.contains(t)) return;
+      const id = t.id, cl = t.classList;
+
+      if(id === "listenBtn"){ if(surahAudioEl) stopSurahAudio(); else startSurahAudio(ctx.arabic.number); return; }
+      if(id === "topBtn"){
+        const app = byId("app");
+        if(app){ if(smoothOK()) app.scrollIntoView({behavior:"smooth"}); else jumpScroll(app.getBoundingClientRect().top + (window.pageYOffset || 0)); }
+        return;
+      }
+      if(id === "ayahMoreBtn"){ appendAyahs(ctx, ayahBatch()); return; }
+      if(id === "resumeBtn"){ jumpToAyah(t.dataset.ayah); return; }
+      if(id === "ayahJumpBtn"){ doAyahJump(); return; }
+
+      if(cl.contains("bookmark-btn")){ toggleBookmark(t.dataset.key, ctx.meta); return; }
+      if(cl.contains("note-btn")){
+        const box = panel.querySelector('.note-box[data-key="'+t.dataset.key+'"]');
+        if(!box) return;
         box.classList.toggle("hidden");
-        if(!box.classList.contains("hidden")) box.querySelector("textarea").focus();
-      });
-    });
-    panel.querySelectorAll(".note-box .cancel").forEach(function(btn){
-      btn.addEventListener("click", function(){ btn.closest(".note-box").classList.add("hidden"); });
-    });
-    panel.querySelectorAll(".note-box .save").forEach(function(btn){
-      btn.addEventListener("click", function(){
-        const box = btn.closest(".note-box");
+        const ta = box.querySelector("textarea");
+        if(!box.classList.contains("hidden") && ta) ta.focus();
+        return;
+      }
+      if(cl.contains("cancel")){ const nb = t.closest(".note-box"); if(nb) nb.classList.add("hidden"); return; }
+      if(cl.contains("save")){
+        const box = t.closest(".note-box");
+        if(!box) return;
         const key = box.dataset.key;
         const text = box.querySelector("textarea").value.trim();
         if(text){ notes[key] = text; } else { delete notes[key]; }
         saveJSON(LS_NOTES, notes);
         updateSavedStat();
+        refreshMarks();
         box.classList.add("hidden");
         const noteBtn = panel.querySelector('.note-btn[data-key="'+key+'"]');
         if(noteBtn){
           noteBtn.classList.toggle("active", !!text);
           noteBtn.textContent = text ? "✎ Edit note" : "✎ Add note";
         }
-      });
+        return;
+      }
+      if(cl.contains("tafsir-btn")){ toggleTafsir(t); return; }
+      if(cl.contains("copy-btn")){
+        copyText(verseCopyText(ctx, t.dataset.key)).then(function(){ t.textContent = "✓ Copied"; },
+                                                          function(){ t.textContent = "Copy failed"; })
+          .then(function(){ setTimeout(function(){ t.textContent = "⧉ Copy verse"; }, 1400); });
+      }
     });
-    panel.querySelectorAll(".tafsir-btn").forEach(function(btn){
-      btn.addEventListener("click", function(){ toggleTafsir(btn); });
+
+    panel.addEventListener("keydown", function(e){
+      if(e.key === "Enter" && e.target && e.target.id === "ayahJump"){ e.preventDefault(); doAyahJump(); }
     });
+  }
+
+  function doAyahJump(){
+    const input = byId("ayahJump"), btn = byId("ayahJumpBtn");
+    if(!input || !panelCtx) return;
+    const n = parseInt(input.value, 10);
+    if(!jumpToAyah(n)){
+      showStatus(btn, "Enter a number from 1 to " + panelCtx.total + ".", "err");
+      input.focus();
+    }else{
+      input.blur();
+    }
   }
 
   function toggleBookmark(key, meta){
@@ -4628,37 +4986,114 @@ html.no-grain .grain{display:none !important;}
       btn.textContent = on ? "★ Bookmarked" : "☆ Bookmark";
       if(ayahEl) ayahEl.classList.toggle("bookmarked", on);
     }
+    refreshMarks();
   }
 
-  function recordLastRead(arabic){
-    lastRead = { surah: arabic.number, name: arabic.englishName, ayah: 1, ts: Date.now() };
+  // ---------- reading position + markers ----------
+  function recordLastRead(arabic, ayah){
+    const a = ayah || 1;
+    lastRead = { surah: arabic.number, name: arabic.englishName, ayah: a, total: arabic.ayahs.length, ts: Date.now() };
+    if(ayah) progress[arabic.number] = ayah;
     saveJSON(LS_LAST_READ, lastRead);
+    saveJSON(LS_PROGRESS, progress);
     renderContinueCard();
+  }
+  // Called while scrolling (debounced): remembers which ayah is at the reading line.
+  function noteReading(surah, ayah){
+    if(progress[surah] === ayah && lastRead && lastRead.surah === surah) return;
+    progress[surah] = ayah;
+    if(!lastRead || lastRead.surah !== surah){
+      lastRead = {surah: surah, name: panelCtx ? panelCtx.arabic.englishName : "", total: panelCtx ? panelCtx.total : 0, ayah: ayah, ts: Date.now()};
+    }else{
+      lastRead.ayah = ayah; lastRead.ts = Date.now();
+    }
+    clearTimeout(progTimer);
+    progTimer = setTimeout(function(){
+      saveJSON(LS_PROGRESS, progress);
+      saveJSON(LS_LAST_READ, lastRead);
+      renderContinueCard();
+    }, 700);
+  }
+  function ayahAtReadingLine(){
+    if(!panelCtx) return null;
+    const el = document.elementFromPoint(Math.round(window.innerWidth / 2), Math.round(window.innerHeight * 0.3));
+    const a = (el && el.closest) ? el.closest(".ayah") : null;
+    if(!a || !a.dataset.key) return null;
+    const p = a.dataset.key.split("-");
+    return (parseInt(p[0],10) === panelCtx.arabic.number) ? parseInt(p[1],10) : null;
+  }
+  function initReadingTracker(){
+    let raf = 0, t = 0;
+    window.addEventListener("scroll", function(){
+      if(raf || !panelCtx || currentView !== "home" || scrollLocks.size) return;
+      raf = requestAnimationFrame(function(){
+        raf = 0;
+        clearTimeout(t);
+        t = setTimeout(function(){
+          if(document.hidden || !panelCtx) return;
+          const n = ayahAtReadingLine();
+          if(n) noteReading(panelCtx.arabic.number, n);
+        }, 300);
+      });
+    }, {passive:true});
+  }
+
+  function computeMarks(){
+    const m = {};
+    Object.keys(notes).forEach(function(k){ const s = k.split("-")[0]; (m[s] || (m[s] = {n:0, b:0})).n++; });
+    Object.keys(bookmarks).forEach(function(k){ const s = k.split("-")[0]; (m[s] || (m[s] = {n:0, b:0})).b++; });
+    return m;
+  }
+  function marksHtml(num){
+    const x = marksCache[num];
+    if(!x) return "";
+    return (x.b ? '<i title="Bookmarks">★ '+x.b+'</i>' : '') + (x.n ? '<i title="Notes">✎ '+x.n+'</i>' : '');
+  }
+  function refreshMarks(){
+    marksCache = computeMarks();
+    document.querySelectorAll("#surahList li[data-num], #surahGrid .surah-card[data-num]").forEach(function(el){
+      const mk = el.querySelector(".mk");
+      if(mk) mk.innerHTML = marksHtml(el.dataset.num);
+    });
   }
 
   function renderContinueCard(){
-    const card = document.getElementById("continueCard");
-    if(!lastRead){ card.classList.add("hidden"); return; }
+    const card = byId("continueCard"), label = byId("continueLabel");
+    if(!card || !label) return;
+    if(!lastRead || !lastRead.surah){ card.classList.add("hidden"); return; }
     card.classList.remove("hidden");
-    document.getElementById("continueLabel").textContent = lastRead.surah + ". " + lastRead.name;
-    card.onclick = function(){ showView("home"); openSurah(lastRead.surah); };
+    const ay = progress[lastRead.surah] || lastRead.ayah || 1;
+    let total = lastRead.total || 0;
+    if(!total){ const s = surahIndex.find(function(x){ return x.number === lastRead.surah; }); total = s ? s.numberOfAyahs : 0; }
+    label.textContent = lastRead.surah + ". " + lastRead.name + (ay > 1 ? " · ayah " + ay : "");
+    const prog = byId("continueProg");
+    if(prog){
+      if(total && ay > 1){ prog.hidden = false; prog.firstElementChild.style.width = Math.min(100, Math.round(ay / total * 100)) + "%"; }
+      else prog.hidden = true;
+    }
+    card.setAttribute("role", "button"); card.tabIndex = 0;
+    const go = function(){ showView("home"); openSurah(lastRead.surah, false, (progress[lastRead.surah] || 0) > 1 ? progress[lastRead.surah] : null); };
+    card.onclick = go;
+    card.onkeydown = function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } };
   }
 
   function updateSavedStat(){
-    document.getElementById("statSaved").textContent = Object.keys(notes).length;
+    setText(byId("statSaved"), String(Object.keys(notes).length));
   }
 
   // ---------- announcement banner (data binding) ----------
   function renderAnnounceBanner(){
-    const el = document.getElementById("announceBanner");
+    const el = byId("announceBanner"), txt = byId("announceText");
+    if(!el || !txt) return;
     if(!adminBanner || !adminBanner.text){ el.classList.add("hidden"); return; }
     let html = escapeHtml(adminBanner.text);
-    if(adminBanner.linkUrl){
-      html += ' — <a href="'+escapeHtml(adminBanner.linkUrl)+'" target="_blank" rel="noopener noreferrer">'
+    const link = safeUrl(adminBanner.linkUrl);
+    if(link){
+      html += ' — <a href="'+escapeHtml(link)+'" target="_blank" rel="noopener noreferrer">'
             + escapeHtml(adminBanner.linkText || "Learn more") + '</a>';
     }
     // duplicate the text so the marquee loop has no visible gap
-    document.getElementById("announceText").innerHTML = html + '&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;' + html;
+    txt.innerHTML = html + '&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;' + html;
     el.classList.remove("hidden");
   }
 
@@ -4672,75 +5107,101 @@ html.no-grain .grain{display:none !important;}
       return url;
     }catch(e){ return url; }
   }
+  function videoIframeHtml(){
+    const src = adminVideo ? safeUrl(videoEmbedUrl(adminVideo.url)) : "";
+    if(!src) return "";
+    return '<iframe src="'+escapeHtml(src)+'" title="'+escapeHtml(adminVideo.title)+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+  }
+  function videoPlaceholderHtml(){
+    return '<button type="button" class="tool-btn fv-load" data-load-video>▶ Load video</button>';
+  }
+  // Leaving the home view must not leave a video playing (or buffering) in a hidden panel.
+  function parkVideo(){
+    const f = byId("fvFrame");
+    if(f && f.querySelector("iframe")) f.innerHTML = videoPlaceholderHtml();
+  }
   function renderFeaturedVideo(){
-    const el = document.getElementById("featuredVideo");
-    if(!adminVideo || !adminVideo.url || !adminVideo.title){ el.classList.add("hidden"); return; }
-    document.getElementById("fvTitle").textContent = adminVideo.title;
-    const descEl = document.getElementById("fvDesc");
-    if(adminVideo.desc){ descEl.textContent = adminVideo.desc; descEl.style.display=""; }
-    else{ descEl.style.display="none"; }
-    const embedSrc = videoEmbedUrl(adminVideo.url);
-    document.getElementById("fvFrame").innerHTML =
-      '<iframe src="'+escapeHtml(embedSrc)+'" title="'+escapeHtml(adminVideo.title)+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>';
+    const el = byId("featuredVideo"), frame = byId("fvFrame");
+    if(!el || !frame) return;
+    if(!adminVideo || !adminVideo.url || !adminVideo.title || !safeUrl(videoEmbedUrl(adminVideo.url))){
+      el.classList.add("hidden"); frame.innerHTML = ""; return;
+    }
+    setText(byId("fvTitle"), adminVideo.title);
+    const descEl = byId("fvDesc");
+    if(descEl){
+      if(adminVideo.desc){ descEl.textContent = adminVideo.desc; descEl.style.display = ""; }
+      else{ descEl.style.display = "none"; }
+    }
+    frame.onclick = function(e){
+      if(e.target.closest && e.target.closest("[data-load-video]")) frame.innerHTML = videoIframeHtml();
+    };
+    // Lite mode / Save-Data: don't pull a heavy third-party player until the person asks for it.
+    frame.innerHTML = (isLite() || saveDataOn() || currentView !== "home") ? videoPlaceholderHtml() : videoIframeHtml();
     el.classList.remove("hidden");
   }
 
   // ---------- interactive image slider (data binding) ----------
-  let sliderIndex = 0;
-  let sliderTimer = null;
+  let sliderIndex = 0, sliderTimer = null, sliderShow = null;
+  function sliderStop(){ if(sliderTimer){ clearInterval(sliderTimer); sliderTimer = null; } }
+  function sliderStart(){
+    sliderStop();
+    // no auto-advance when hidden, in Lite mode, or with prefers-reduced-motion (manual controls still work)
+    if(!sliderShow || adminSlides.length < 2 || !homeActive() || !smoothOK()) return;
+    sliderTimer = setInterval(function(){ if(sliderShow) sliderShow(sliderIndex + 1); }, 5000);
+  }
   function renderImgSlider(){
-    const el = document.getElementById("imgSlider");
-    if(sliderTimer){ clearInterval(sliderTimer); sliderTimer = null; }
-    if(!adminSlides.length){ el.classList.add("hidden"); return; }
+    const el = byId("imgSlider");
+    sliderStop(); sliderShow = null;
+    if(!el) return;
+    const slides = adminSlides.filter(function(s){ return safeUrl(s.url); });
+    if(!slides.length){ el.classList.add("hidden"); return; }
     el.classList.remove("hidden");
     sliderIndex = 0;
 
-    const viewport = document.getElementById("isViewport");
-    viewport.innerHTML = adminSlides.map(function(s,i){
-      const img = '<img src="'+escapeHtml(s.url)+'" alt="'+escapeHtml(s.caption || "Slide "+(i+1))+'" loading="lazy">';
+    const viewport = byId("isViewport"), dots = byId("isDots");
+    if(!viewport || !dots) return;
+    viewport.innerHTML = slides.map(function(s,i){
+      const img = '<img src="'+escapeHtml(safeUrl(s.url))+'" alt="'+escapeHtml(s.caption || "Slide "+(i+1))+'" loading="lazy" decoding="async">';
+      const link = safeUrl(s.link);
       const captionInner = (s.caption ? '<strong>'+escapeHtml(s.caption)+'</strong>' : '')
-        + (s.link ? '<span><a href="'+escapeHtml(s.link)+'" target="_blank" rel="noopener noreferrer">Learn more →</a></span>' : '');
+        + (link ? '<span><a href="'+escapeHtml(link)+'" target="_blank" rel="noopener noreferrer">Learn more →</a></span>' : '');
       const caption = captionInner ? '<div class="is-caption">'+captionInner+'</div>' : '';
       return '<div class="is-slide'+(i===0?' active':'')+'" data-i="'+i+'">'+img+caption+'</div>';
     }).join("");
 
-    document.getElementById("isDots").innerHTML = adminSlides.map(function(_,i){
+    dots.innerHTML = slides.map(function(_,i){
       return '<button class="is-dot'+(i===0?' active':'')+'" data-i="'+i+'" aria-label="Go to slide '+(i+1)+'"></button>';
     }).join("");
 
-    const showSlide = function(i){
-      sliderIndex = (i + adminSlides.length) % adminSlides.length;
+    sliderShow = function(i){
+      sliderIndex = (i + slides.length) % slides.length;
       viewport.querySelectorAll(".is-slide").forEach(function(s){
         s.classList.toggle("active", parseInt(s.dataset.i,10) === sliderIndex);
       });
-      document.getElementById("isDots").querySelectorAll(".is-dot").forEach(function(d){
+      dots.querySelectorAll(".is-dot").forEach(function(d){
         d.classList.toggle("active", parseInt(d.dataset.i,10) === sliderIndex);
       });
     };
 
-    document.getElementById("isPrev").onclick = function(){ showSlide(sliderIndex - 1); resetAutoplay(); };
-    document.getElementById("isNext").onclick = function(){ showSlide(sliderIndex + 1); resetAutoplay(); };
-    document.getElementById("isDots").querySelectorAll(".is-dot").forEach(function(d){
-      d.addEventListener("click", function(){ showSlide(parseInt(d.dataset.i,10)); resetAutoplay(); });
+    const prev = byId("isPrev"), next = byId("isNext");
+    if(prev) prev.onclick = function(){ sliderShow(sliderIndex - 1); sliderStart(); };
+    if(next) next.onclick = function(){ sliderShow(sliderIndex + 1); sliderStart(); };
+    dots.querySelectorAll(".is-dot").forEach(function(d){
+      d.addEventListener("click", function(){ sliderShow(parseInt(d.dataset.i,10)); sliderStart(); });
     });
-
-    function resetAutoplay(){
-      if(sliderTimer) clearInterval(sliderTimer);
-      if(adminSlides.length > 1){
-        sliderTimer = setInterval(function(){ showSlide(sliderIndex + 1); }, 5000);
-      }
-    }
-    resetAutoplay();
+    // pause while the pointer / keyboard focus is on the slider
+    el.onmouseenter = sliderStop; el.onmouseleave = sliderStart;
+    el.onfocusin = sliderStop;    el.onfocusout = sliderStart;
+    sliderStart();
   }
 
+
   // ---------- global search (Qur'an) ----------
-  // Rebuilt for reliable mobile touch: on Android, a tap that lands on a
-  // freshly-rendered result can get eaten by a keyboard-close / viewport
-  // reflow between touchstart and click, so the dropdown "opens then
-  // disappears" without ever registering the tap. Selecting on touchstart
-  // (with preventDefault, so the browser doesn't also fire a trailing
-  // click) sidesteps that race entirely, and a small guard flag makes the
-  // handler idempotent even if a click slips through anyway.
+  // Mobile touch handling: a tap is told apart from a scroll by finger movement
+  // (see initResultDelegation). Nothing is preventDefault()ed on touchstart/touchmove, so the
+  // dropdown scrolls natively. A real tap is selected on touchend and its synthetic click is
+  // suppressed, so the input never blurs mid-tap (no keyboard-close reflow can eat the tap).
+  // A small guard flag keeps selection idempotent if a click slips through anyway.
   let searchSelecting = false;
   // Verse-search responses are cached per edition+query so switching
   // back to a query you already typed (very common while narrowing down
@@ -4751,7 +5212,8 @@ html.no-grain .grain{display:none !important;}
   let searchRequestId = 0;
 
   function hideSearchResults(){
-    document.getElementById("searchResults").classList.add("hidden");
+    const r = document.getElementById("searchResults");
+    if(r) r.classList.add("hidden");
   }
 
   function surahResultHtml(raw){
@@ -4765,7 +5227,7 @@ html.no-grain .grain{display:none !important;}
   }
 
   function ayahResultHtml(m){
-    return '<div class="search-result-item" data-surah="'+m.surah.number+'" tabindex="-1">'
+    return '<div class="search-result-item" data-surah="'+m.surah.number+'" data-ayah="'+m.numberInSurah+'" tabindex="-1">'
       + '<span class="ref">'+escapeHtml(m.surah.englishName)+' '+m.surah.number+':'+m.numberInSurah+'</span>'
       + '<p>'+escapeHtml(m.text)+'</p>'
       + '</div>';
@@ -4774,17 +5236,31 @@ html.no-grain .grain{display:none !important;}
   // Wires click/touch/keyboard selection onto whatever result items are
   // currently in the dropdown. Safe to call repeatedly as the dropdown's
   // content is replaced (surah section first, verse section a moment later).
-  function wireResultItems(){
-    const results = document.getElementById("searchResults");
-    if(!results) return;
-    results.querySelectorAll(".search-result-item").forEach(function(item){
-      item.addEventListener("touchstart", function(e){
-        e.preventDefault();
-        selectSearchResult(item);
-      }, {passive:false});
-      item.addEventListener("click", function(){
-        selectSearchResult(item);
-      });
+  // Result items are handled by ONE delegated set of listeners (see initGlobalSearch).
+  function wireResultItems(){ /* intentionally empty - delegated */ }
+  function initResultDelegation(results){
+    // Tap vs scroll: a touch only selects if the finger barely moved. Nothing is
+    // preventDefault()ed on touchstart/touchmove, so the list scrolls natively.
+    let start = null;
+    results.addEventListener("touchstart", function(e){
+      const t = e.touches[0];
+      start = {x:t.clientX, y:t.clientY, moved:false, item:e.target.closest ? e.target.closest(".search-result-item") : null};
+    }, {passive:true});
+    results.addEventListener("touchmove", function(e){
+      if(!start) return;
+      const t = e.touches[0];
+      if(Math.abs(t.clientX - start.x) > 8 || Math.abs(t.clientY - start.y) > 8) start.moved = true;
+    }, {passive:true});
+    results.addEventListener("touchend", function(e){
+      const s = start; start = null;
+      if(!s || s.moved || !s.item) return;
+      if(e.cancelable) e.preventDefault();        // suppress the ghost click that follows a tap
+      selectSearchResult(s.item);
+    });
+    results.addEventListener("touchcancel", function(){ start = null; });
+    results.addEventListener("click", function(e){
+      const it = e.target.closest ? e.target.closest(".search-result-item") : null;
+      if(it) selectSearchResult(it);
     });
   }
 
@@ -4792,6 +5268,7 @@ html.no-grain .grain{display:none !important;}
     const input = document.getElementById("globalSearch");
     const results = document.getElementById("searchResults");
     if(!input || !results) return;
+    initResultDelegation(results);
 
     input.addEventListener("input", debounce(function(){
       const q = input.value.trim();
@@ -4830,6 +5307,7 @@ html.no-grain .grain{display:none !important;}
         if(idx >= 0){ e.preventDefault(); selectSearchResult(items[idx]); }
       }else if(e.key === "Escape"){
         hideSearchResults();
+        e.stopPropagation();
       }
     });
 
@@ -4851,7 +5329,7 @@ html.no-grain .grain{display:none !important;}
     const number = parseInt(item.dataset.surah, 10);
     input.value = "";
     input.blur();
-    openSurah(number);
+    openSurah(number, false, parseInt(item.dataset.ayah, 10) || null);
     // Keep the sidebar's surah search in sync: clear its filter so the
     // full list is showing, then scroll the now-active surah into view —
     // so picking a result in the header panel is reflected in the sidebar
@@ -4933,59 +5411,58 @@ html.no-grain .grain{display:none !important;}
   }
 
   // ---------- drawers ----------
+  function openDrawerPanel(id){
+    const d = byId(id), ov = byId("overlay");
+    if(d) d.classList.add("open");
+    if(ov) ov.classList.add("open");
+    lockScroll();
+  }
+  function openSavedItem(item){
+    closeEverything();
+    showView("home");
+    openSurah(parseInt(item.dataset.surah,10), false, parseInt(item.dataset.ayah,10) || null);
+  }
+
   function openNotesDrawer(){
     closeEverything();
-    const body = document.getElementById("notesDrawerBody");
+    const body = byId("notesDrawerBody");
+    if(!body) return;
     const keys = Object.keys(notes);
     if(!keys.length){
-      body.innerHTML = '<p style="color:var(--slate);font-size:.88rem;">No notes yet. Open a surah and tap "Add note" on any verse.</p>';
+      body.innerHTML = '<div class="empty-msg">No notes yet. Tap “Add note” under any ayah to start building your collection.</div>';
     }else{
-      body.innerHTML = keys.map(function(key){
-        const parts = key.split("-");
-        const s = surahIndex.find(function(x){ return x.number === parseInt(parts[0],10); });
-        const name = s ? s.englishName : ("Surah " + parts[0]);
-        return '<div class="drawer-item" data-surah="'+parts[0]+'">'
-          + '<span class="ref">'+escapeHtml(name)+' '+parts[0]+':'+parts[1]+'</span>'
-          + '<p>'+escapeHtml(notes[key])+'</p>'
-          + '</div>';
+      body.innerHTML = keys.map(function(k){
+        const parts = k.split("-");
+        const name = (surahIndex.find(function(s){ return s.number === parseInt(parts[0],10); }) || {}).englishName || ("Surah " + parts[0]);
+        return '<div class="drawer-item" data-surah="'+escapeHtml(parts[0])+'" data-ayah="'+escapeHtml(parts[1]||"")+'">'
+             + '<div class="ref">'+escapeHtml(name)+' · ayah '+escapeHtml(parts[1]||"")+'</div>'
+             + '<div class="preview">'+escapeHtml(notes[k])+'</div></div>';
       }).join("");
       body.querySelectorAll(".drawer-item").forEach(function(item){
-        item.addEventListener("click", function(){
-          closeEverything();
-          showView("home");
-          openSurah(parseInt(item.dataset.surah,10));
-        });
+        item.addEventListener("click", function(){ openSavedItem(item); });
       });
     }
-    document.getElementById("notesDrawer").classList.add("open");
-    document.getElementById("overlay").classList.add("open");
-    lockScroll();
+    openDrawerPanel("notesDrawer");
   }
 
   function openBookmarksDrawer(){
     closeEverything();
-    const body = document.getElementById("bookmarksDrawerBody");
+    const body = byId("bookmarksDrawerBody");
+    if(!body) return;
     const keys = Object.keys(bookmarks);
     if(!keys.length){
-      body.innerHTML = '<p style="color:var(--slate);font-size:.88rem;">No bookmarks yet. Tap the ☆ next to any verse to save it here.</p>';
+      body.innerHTML = '<div class="empty-msg">No bookmarks yet. Tap “Bookmark” under any ayah to save it here.</div>';
     }else{
-      body.innerHTML = keys.map(function(key){
-        const b = bookmarks[key];
-        return '<div class="drawer-item" data-surah="'+b.surah+'">'
-          + '<span class="ref">'+escapeHtml(b.surahName)+' '+b.surah+':'+b.ayah+'</span>'
-          + '</div>';
+      body.innerHTML = keys.map(function(k){
+        const b = bookmarks[k];
+        return '<div class="drawer-item" data-surah="'+escapeHtml(b.surah)+'" data-ayah="'+escapeHtml(b.ayah)+'">'
+             + '<div class="ref">'+escapeHtml(b.surahName)+' · ayah '+escapeHtml(b.ayah)+'</div></div>';
       }).join("");
       body.querySelectorAll(".drawer-item").forEach(function(item){
-        item.addEventListener("click", function(){
-          closeEverything();
-          showView("home");
-          openSurah(parseInt(item.dataset.surah,10));
-        });
+        item.addEventListener("click", function(){ openSavedItem(item); });
       });
     }
-    document.getElementById("bookmarksDrawer").classList.add("open");
-    document.getElementById("overlay").classList.add("open");
-    lockScroll();
+    openDrawerPanel("bookmarksDrawer");
   }
 
   // ============================================================
@@ -5372,193 +5849,55 @@ html.no-grain .grain{display:none !important;}
   //  phones never hold the whole collection.
   // ============================================================
   const BK_BASE = "hadith/bukhari/";
-    // ---------- Collection state for all hadith collections ----------
-  const HADITH_COLLECTIONS = {
-    bukhari:  {base: "hadith/bukhari/",  panel: "hdPanelBukhari",  bookSel: "bkBook",  jumpInp: "bkJump",  jumpBtn: "bkJumpBtn",  searchInp: "bkSearch",  searchBtn: "bkSearchBtn",  allChk: "bkAll",  list: "bkList",  prevBtn: "bkPrev",  nextBtn: "bkNext",  pageInfo: "bkPageInfo",  count: "bkCount",  state: "idle",  index: null,  books: {},  book: 1,  page: 0,  hit: null,  hitFixed: false,  scroll: false,  search: null,  token: 0,  cache: {},  order: [],  timer: null,  posKey: "noor_bukhari_pos_v1"},
-    muslim:   {base: "hadith/muslim/",   panel: "hdPanelMuslim",   bookSel: "msBook",  jumpInp: "msJump",  jumpBtn: "msJumpBtn",  searchInp: "msSearch",  searchBtn: "msSearchBtn",  allChk: "msAll",  list: "msList",  prevBtn: "msPrev",  nextBtn: "msNext",  pageInfo: "msPageInfo",  count: "msCount",  state: "idle",  index: null,  books: {},  book: 1,  page: 0,  hit: null,  hitFixed: false,  scroll: false,  search: null,  token: 0,  cache: {},  order: [],  timer: null,  posKey: "noor_muslim_pos_v1"},
-    abudawud: {base: "hadith/abudawud/", panel: "hdPanelAbuDawud", bookSel: "adBook",  jumpInp: "adJump",  jumpBtn: "adJumpBtn",  searchInp: "adSearch",  searchBtn: "adSearchBtn",  allChk: "adAll",  list: "adList",  prevBtn: "adPrev",  nextBtn: "adNext",  pageInfo: "adPageInfo",  count: "adCount",  state: "idle",  index: null,  books: {},  book: 1,  page: 0,  hit: null,  hitFixed: false,  scroll: false,  search: null,  token: 0,  cache: {},  order: [],  timer: null,  posKey: "noor_abudawud_pos_v1"},
-    tirmidhi: {base: "hadith/tirmidhi/", panel: "hdPanelTirmidhi", bookSel: "trBook",  jumpInp: "trJump",  jumpBtn: "trJumpBtn",  searchInp: "trSearch",  searchBtn: "trSearchBtn",  allChk: "trAll",  list: "trList",  prevBtn: "trPrev",  nextBtn: "trNext",  pageInfo: "trPageInfo",  count: "trCount",  state: "idle",  index: null,  books: {},  book: 1,  page: 0,  hit: null,  hitFixed: false,  scroll: false,  search: null,  token: 0,  cache: {},  order: [],  timer: null,  posKey: "noor_tirmidhi_pos_v1"},
-    nasai:    {base: "hadith/nasai/",    panel: "hdPanelNasai",    bookSel: "nsBook",  jumpInp: "nsJump",  jumpBtn: "nsJumpBtn",  searchInp: "nsSearch",  searchBtn: "nsSearchBtn",  allChk: "nsAll",  list: "nsList",  prevBtn: "nsPrev",  nextBtn: "nsNext",  pageInfo: "nsPageInfo",  count: "nsCount",  state: "idle",  index: null,  books: {},  book: 1,  page: 0,  hit: null,  hitFixed: false,  scroll: false,  search: null,  token: 0,  cache: {},  order: [],  timer: null,  posKey: "noor_nasai_pos_v1"}
-  };
-  const BK_BASE = "hadith/bukhari/";
   const BK_PAGE = 10;
   const BK_CACHE_MAX = 5;
   const BK_MAX_RESULTS = 60;
-  const BK_AR_MARKS = /[ؐ-ًؚ-ٰٟۖ-ۭـ]/g;
+  const LS_BK_POS = "noor_bukhari_pos_v1";
 
+  let bkState = "idle";            // idle | loading | ready | failed
+  let bkIndex = null, bkBooks = {};
+  let bkBook = 1, bkPage = 0;
+  let bkHit = null, bkHitFixed = false, bkScroll = false;
+  let bkSearch = null;             // null = browsing, else {q, all, results[], page, running, scanned, total, error, shown}
+  let bkToken = 0;                 // bumps whenever the view changes, so late downloads are ignored
+  let bkCache = {}, bkOrder = [];
+  let bkTimer = null;
+
+  function bkEl(id){ return document.getElementById(id); }
+  function bkSetCount(t){ const c = bkEl("bkCount"); if(c) c.textContent = t || ""; }
   function bkIsLite(){
     return document.documentElement.classList.contains("lite")
       || !!(navigator.connection && navigator.connection.saveData);
   }
 
-  let currentCollection = "bukhari";
-
-  function c(coll){ return HADITH_COLLECTIONS[coll]; }
-  function collEl(coll, id){ return document.getElementById(c(coll)[id]); }
-
-  // ---------- tabs / lazy start ----------
-  function hdSetTab(t){
-    // Update tab buttons
-    document.querySelectorAll("#hdCollectionTabs button").forEach(function(b){
-      const on = b.dataset.collection === t;
-      b.classList.toggle("active", on);
-      b.setAttribute("aria-selected", on ? "true" : "false");
-    });
-
-    // Show/hide panels
-    const allPanels = ["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "featured"];
-    allPanels.forEach(function(p){
-      const panel = document.getElementById("hdPanel" + (p === "featured" ? "Featured" : p.charAt(0).toUpperCase() + p.slice(1)));
-      if(panel) panel.hidden = (p !== t);
-    });
-
-    // Show/hide unified search
-    const unifiedSearch = document.getElementById("hdUnifiedSearch");
-    if(unifiedSearch) unifiedSearch.style.display = (t === "featured" ? "none" : "block");
-
-    currentCollection = t;
-
-    // Initialize the collection if needed
-    if(t !== "featured"){
-      ensureCollection(t);
-    }
+  const bkInflight = {};
+  function bkCacheMax(){ return isLite() ? 2 : BK_CACHE_MAX; }
+  function bkErrMsg(err){
+    if(err && err.name === "AbortError") return "This is taking too long — the connection looks slow.";
+    if(typeof navigator !== "undefined" && navigator.onLine === false) return "You appear to be offline.";
+    return "Couldn’t load this part. Please check your connection.";
   }
-
-  // Called the first time a collection is opened
-  function ensureCollection(coll){
-    const C = c(coll);
-    if(C.state !== "idle") return;
-    C.state = "loading";
-
-    fetch(C.base + "index.json").then(function(r){
-      if(!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    }).then(function(idx){
-      if(!idx || !idx.books || !idx.books.length) throw new Error("empty index");
-      idx.books.sort(function(a, b){ return a.n - b.n; });
-      C.index = idx;
-      idx.books.forEach(function(b){ C.books[b.n] = b; });
-
-      const sel = collEl(coll, "bookSel");
-      sel.innerHTML = idx.books.map(function(b){
-        return '<option value="' + b.n + '">' + b.n + '. ' + escapeHtml(b.en) + ' (' + b.c + ')</option>';
-      }).join("");
-
-      const pos = loadJSON(C.posKey, null);
-      if(pos && C.books[pos.b]){
-        C.book = pos.b;
-        C.page = Math.max(0, parseInt(pos.p, 10) || 0);
-      }else{
-        C.book = idx.books[0].n; C.page = 0;
-      }
-      sel.value = String(C.book);
-      C.state = "ready";
-      collRenderBrowse(coll);
-    }).catch(function(err){
-      C.state = "failed";
-      if(window.console) console.warn("[Noor] " + coll + " data not available.", err);
-      const tab = document.querySelector('#hdCollectionTabs button[data-collection="' + coll + '"]');
-      if(tab) tab.hidden = true;
-      // Switch to next available collection
-      const available = Object.keys(HADITH_COLLECTIONS).filter(function(k){ return HADITH_COLLECTIONS[k].state !== "failed"; });
-      if(available.length) hdSetTab(available[0]);
-      else hdSetTab("featured");
-    });
-  
-  // ---------- tabs / lazy start ----------
-  function hdSetTab(t){
-    // Update tab buttons
-    document.querySelectorAll("#hdCollectionTabs button").forEach(function(b){
-      const on = b.dataset.collection === t;
-      b.classList.toggle("active", on);
-      b.setAttribute("aria-selected", on ? "true" : "false");
-    });
-
-    // Show/hide panels
-    const allPanels = ["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "featured"];
-    allPanels.forEach(function(p){
-      const panel = document.getElementById("hdPanel" + (p === "featured" ? "Featured" : p.charAt(0).toUpperCase() + p.slice(1)));
-      if(panel) panel.hidden = (p !== t);
-    });
-
-    // Show/hide unified search
-    const unifiedSearch = document.getElementById("hdUnifiedSearch");
-    if(unifiedSearch) unifiedSearch.style.display = (t === "featured" ? "none" : "block");
-
-    currentCollection = t;
-
-    // Initialize the collection if needed
-    if(t !== "featured"){
-      ensureCollection(t);
+  function bkFetchChunk(file){
+    if(bkCache[file]){
+      const i = bkOrder.indexOf(file);
+      if(i > -1) bkOrder.splice(i, 1);
+      bkOrder.push(file);
+      return Promise.resolve(bkCache[file]);
     }
-  }
-
-  // Called the first time a collection is opened
-  function ensureCollection(coll){
-    const C = c(coll);
-    if(C.state !== "idle") return;
-    C.state = "loading";
-
-    fetch(C.base + "index.json").then(function(r){
-      if(!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    }).then(function(idx){
-      if(!idx || !idx.books || !idx.books.length) throw new Error("empty index");
-      idx.books.sort(function(a, b){ return a.n - b.n; });
-      C.index = idx;
-      idx.books.forEach(function(b){ C.books[b.n] = b; });
-
-      const sel = collEl(coll, "bookSel");
-      sel.innerHTML = idx.books.map(function(b){
-        return '<option value="' + b.n + '">' + b.n + '. ' + escapeHtml(b.en) + ' (' + b.c + ')</option>';
-      }).join("");
-
-      const pos = loadJSON(C.posKey, null);
-      if(pos && C.books[pos.b]){
-        C.book = pos.b;
-        C.page = Math.max(0, parseInt(pos.p, 10) || 0);
-      }else{
-        C.book = idx.books[0].n; C.page = 0;
-      }
-      sel.value = String(C.book);
-      C.state = "ready";
-      collRenderBrowse(coll);
-    }).catch(function(err){
-      C.state = "failed";
-      if(window.console) console.warn("[Noor] " + coll + " data not available.", err);
-      const tab = document.querySelector('#hdCollectionTabs button[data-collection="' + coll + '"]');
-      if(tab) tab.hidden = true;
-      // Switch to next available collection
-      const available = Object.keys(HADITH_COLLECTIONS).filter(function(k){ return HADITH_COLLECTIONS[k].state !== "failed"; });
-      if(available.length) hdSetTab(available[0]);
-      else hdSetTab("featured");
-    });
-  }
-
-  // ============================================================
-  //  GENERIC COLLECTION FUNCTIONS (work for all collections)
-  // ============================================================
-
-  function collFetchChunk(coll, file){
-    const C = c(coll);
-    if(C.cache[file]){
-      const i = C.order.indexOf(file);
-      if(i > -1) C.order.splice(i, 1);
-      C.order.push(file);
-      return Promise.resolve(C.cache[file]);
-    }
-    return fetch(C.base + file).then(function(r){
-      if(!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    }).then(function(arr){
-      C.cache[file] = arr;
-      C.order.push(file);
-      while(C.order.length > BK_CACHE_MAX){ delete C.cache[C.order.shift()]; }
+    if(bkInflight[file]) return bkInflight[file];        // prefetch + render of the same chunk share one request
+    const p = fetchJSON(BK_BASE + file, 15000).then(function(arr){
+      delete bkInflight[file];
+      bkCache[file] = arr;
+      bkOrder.push(file);
+      while(bkOrder.length > bkCacheMax()){ delete bkCache[bkOrder.shift()]; }
       return arr;
-    });
+    }, function(err){ delete bkInflight[file]; throw err; });
+    bkInflight[file] = p;
+    return p;
   }
 
-  function collCardHtml(h, book, showBook, coll){
+  // ---------- card ----------
+  function bkCardHtml(h, book, showBook){
     const num = h[0], ar = h[1] || "", en = h[2] || "", bn = h[3] || "";
     let tr = "";
     if(hadithLang === "en"){
@@ -5572,93 +5911,89 @@ html.no-grain .grain{display:none !important;}
          + (bn ? '<div class="translation bn-text">' + escapeHtml(bn) + '</div>' : "");
     }
     const bookName = book ? book.en : "";
-    const C = c(coll);
     return ''
-      + '<article class="hadith-card bk-card' + (C.hit === num ? ' hd-hit' : '') + '" data-n="' + num + '">'
+      + '<article class="hadith-card bk-card' + (bkHit === num ? ' hd-hit' : '') + '" data-n="' + num + '">'
       +   '<div class="hd-head"><span class="hd-num">' + num + '</span>'
-      +     (showBook ? '<span class="hd-title">Book ' + book.n + ' · ' + escapeHtml(bookName) + '</span>' : '<span class="hd-title">' + escapeHtml(C.index.collection || coll) + '</span>')
+      +     (showBook ? '<span class="hd-title">Book ' + book.n + ' · ' + escapeHtml(bookName) + '</span>' : '<span class="hd-title">Sahih al-Bukhari</span>')
       +   '</div>'
       +   (ar ? '<div class="arabic-text" lang="ar">' + escapeHtml(ar) + '</div>' : '')
       +   tr
-      +   '<div class="reference">' + escapeHtml(C.index.collection || coll) + ' ' + num + (book ? ' · Book ' + book.n + ': ' + escapeHtml(bookName) : '') + '</div>'
+      +   '<div class="reference">Sahih al-Bukhari ' + num + (book ? ' · Book ' + book.n + ': ' + escapeHtml(bookName) : '') + '</div>'
       + '</article>';
   }
 
-  function collUpdatePager(coll, page, pages, canPrev, canNext){
-    const info = collEl(coll, "pageInfo"), prev = collEl(coll, "prevBtn"), next = collEl(coll, "nextBtn");
+  // ---------- pager ----------
+  function bkUpdatePager(page, pages, canPrev, canNext){
+    const info = bkEl("bkPageInfo"), prev = bkEl("bkPrev"), next = bkEl("bkNext");
     if(info) info.textContent = "Page " + (page + 1) + " / " + pages;
     if(prev) prev.disabled = !canPrev;
     if(next) next.disabled = !canNext;
   }
 
-  function collBookPos(coll, n){
-    const C = c(coll);
-    for(let i = 0; i < C.index.books.length; i++){ if(C.index.books[i].n === n) return i; }
+  function bkBookPos(n){
+    for(let i = 0; i < bkIndex.books.length; i++){ if(bkIndex.books[i].n === n) return i; }
     return 0;
   }
 
   // ---------- browse a book ----------
-  function collRenderBrowse(coll){
-    const C = c(coll);
-    const list = collEl(coll, "list");
-    const book = C.books[C.book];
-    if(!list || !book) return;
-    const pages = Math.max(1, Math.ceil(book.c / BK_PAGE));
-    if(C.page > pages - 1) C.page = pages - 1;
-    if(C.page < 0) C.page = 0;
-    const start = C.page * BK_PAGE;
-    const ci = Math.floor(start / book.s);
-    const token = ++C.token;
-    const bi = collBookPos(coll, C.book);
-    collUpdatePager(coll, C.page, pages, bi > 0 || C.page > 0, bi < C.index.books.length - 1 || C.page < pages - 1);
-    if(!C.cache[book.f[ci]]) list.innerHTML = '<div class="dua-empty">Loading…</div>';
+  function bkRenderBrowse(){
+    const list = bkEl("bkList");
+    const b = bkBooks[bkBook];
+    if(!list || !b) return;
+    const pages = Math.max(1, Math.ceil(b.c / BK_PAGE));
+    if(bkPage > pages - 1) bkPage = pages - 1;
+    if(bkPage < 0) bkPage = 0;
+    const start = bkPage * BK_PAGE;
+    const ci = Math.floor(start / b.s);
+    const token = ++bkToken;
+    const bi = bkBookPos(bkBook);
+    bkUpdatePager(bkPage, pages, bi > 0 || bkPage > 0, bi < bkIndex.books.length - 1 || bkPage < pages - 1);
+    if(!bkCache[b.f[ci]]) list.innerHTML = '<div class="dua-empty">Loading…</div>';
 
-    collFetchChunk(coll, book.f[ci]).then(function(arr){
-      if(token !== C.token) return;
-      const off = start - ci * book.s;
+    bkFetchChunk(b.f[ci]).then(function(arr){
+      if(token !== bkToken) return;
+      const off = start - ci * b.s;
       const slice = arr.slice(off, off + BK_PAGE);
       // jumped-to hadith is not on the guessed page (numbering gaps): find it once and redraw
-      if(C.hit !== null && !C.hitFixed && !slice.some(function(h){ return h[0] === C.hit; })){
-        C.hitFixed = true;
+      if(bkHit !== null && !bkHitFixed && !slice.some(function(h){ return h[0] === bkHit; })){
+        bkHitFixed = true;
         for(let i = 0; i < arr.length; i++){
-          if(arr[i][0] === C.hit){ C.page = Math.floor((ci * book.s + i) / BK_PAGE); return collRenderBrowse(coll); }
+          if(arr[i][0] === bkHit){ bkPage = Math.floor((ci * b.s + i) / BK_PAGE); return bkRenderBrowse(); }
         }
       }
-      list.innerHTML = slice.map(function(h){ return collCardHtml(h, book, false, coll); }).join("");
+      list.innerHTML = slice.map(function(h){ return bkCardHtml(h, b, false); }).join("");
       if(slice.length){
-        const cnt = collEl(coll, "count");
-        if(cnt) cnt.textContent = "Book " + book.n + ": " + book.en + " · hadith " + slice[0][0] + "–" + slice[slice.length - 1][0] + " (" + book.c + " in this book)";
+        bkSetCount("Book " + b.n + ": " + b.en + " · hadith " + slice[0][0] + "–" + slice[slice.length - 1][0] + " (" + b.c + " in this book)");
       }
-      collSavePos(coll);
-      if(C.scroll){
-        C.scroll = false;
+      bkSavePos();
+      if(bkScroll){
+        bkScroll = false;
         const hit = list.querySelector(".hd-hit");
         const y = (hit || list).getBoundingClientRect().top + (window.pageYOffset || 0) - 84;
         window.scrollTo(0, Math.max(0, y));
       }
       // warm the next part while the person reads (skipped on lite / Save-Data)
-      const nextStart = (C.page + 1) * BK_PAGE;
-      if(!bkIsLite() && nextStart < book.c){
-        const nci = Math.floor(nextStart / book.s);
-        if(nci !== ci) collFetchChunk(coll, book.f[nci]).catch(function(){});
+      const nextStart = (bkPage + 1) * BK_PAGE;
+      if(!bkIsLite() && nextStart < b.c){
+        const nci = Math.floor(nextStart / b.s);
+        if(nci !== ci) bkFetchChunk(b.f[nci]).catch(function(){});
       }
-    }).catch(function(){
-      if(token !== C.token) return;
-      list.innerHTML = '<div class="dua-empty">Couldn\'t load this part. Please check your connection. <button class="bk-btn" type="button" data-collretry="' + coll + '">Retry</button></div>';
+    }).catch(function(err){
+      if(token !== bkToken) return;
+      list.innerHTML = '<div class="dua-empty">' + bkErrMsg(err) + ' <button class="bk-btn" type="button" data-bkretry="1">Retry</button></div>';
     });
   }
 
   // ---------- search results ----------
-  function collRenderResults(coll){
-    const C = c(coll);
-    const list = collEl(coll, "list");
-    const s = C.search;
+  function bkRenderResults(){
+    const list = bkEl("bkList");
+    const s = bkSearch;
     if(!list || !s) return;
     const pages = Math.max(1, Math.ceil(s.results.length / BK_PAGE));
     if(s.page > pages - 1) s.page = pages - 1;
     const slice = s.results.slice(s.page * BK_PAGE, s.page * BK_PAGE + BK_PAGE);
     if(slice.length){
-      list.innerHTML = slice.map(function(r){ return collCardHtml(r.h, C.books[r.b], true, coll); }).join("");
+      list.innerHTML = slice.map(function(r){ return bkCardHtml(r.h, bkBooks[r.b], true); }).join("");
     }else if(s.running){
       list.innerHTML = '<div class="dua-empty">Searching…</div>';
     }else{
@@ -5667,87 +6002,79 @@ html.no-grain .grain{display:none !important;}
     let msg = s.results.length + (s.results.length === 1 ? " match" : " matches");
     if(s.results.length >= BK_MAX_RESULTS) msg += " (first " + BK_MAX_RESULTS + " shown — refine your search)";
     if(s.running) msg += " · searching book " + Math.min(s.scanned + 1, s.total) + " of " + s.total + "…";
-    else if(!s.all) msg += " in Book " + C.book + ": " + C.books[C.book].en;
-    const cnt = collEl(coll, "count");
-    if(cnt) cnt.textContent = msg;
-    collUpdatePager(coll, s.page, pages, s.page > 0, s.page < pages - 1);
+    else if(!s.all) msg += " in Book " + bkBook + ": " + bkBooks[bkBook].en;
+    bkSetCount(msg);
+    bkUpdatePager(s.page, pages, s.page > 0, s.page < pages - 1);
   }
 
-  function collRender(coll){
-    const C = c(coll);
-    if(C.search) collRenderResults(coll); else collRenderBrowse(coll);
-  }
+  function bkRender(){ if(bkSearch) bkRenderResults(); else bkRenderBrowse(); }
 
-  function collNormAr(t){
-    return t.replace(BK_AR_MARKS, "").replace(/[آأإٱ]/g, "ا")
-            .replace(/ى/g, "ي").replace(/ة/g, "ه");
+  const BK_AR_MARKS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g;
+  function bkNormAr(t){
+    return t.replace(BK_AR_MARKS, "").replace(/[\u0622\u0623\u0625\u0671]/g, "\u0627")
+            .replace(/\u0649/g, "\u064A").replace(/\u0629/g, "\u0647");
   }
-  function collMatcher(q){
-    if(/[؀-ۿ]/.test(q)){
-      const nq = collNormAr(q);
-      return function(h){ return collNormAr(h[1] || "").indexOf(nq) > -1; };
+  function bkMatcher(q){
+    if(/[\u0600-\u06FF]/.test(q)){
+      const nq = bkNormAr(q);
+      return function(h){ return bkNormAr(h[1] || "").indexOf(nq) > -1; };
     }
-    if(/[ঀ-৿]/.test(q)){
+    if(/[\u0980-\u09FF]/.test(q)){
       return function(h){ return (h[3] || "").indexOf(q) > -1; };
     }
     const lq = q.toLowerCase();
     return function(h){ return (h[2] || "").toLowerCase().indexOf(lq) > -1; };
   }
 
-  function collSetSearchBtn(coll, running){
-    const btn = collEl(coll, "searchBtn");
+  function bkSetSearchBtn(running){
+    const btn = bkEl("bkSearchBtn");
     if(btn) btn.textContent = running ? "Stop" : "Search";
   }
 
-  function collStopSearch(coll){
-    const C = c(coll);
-    ++C.token;
-    if(C.search){ C.search.running = false; }
-    collSetSearchBtn(coll, false);
-    collRenderResults(coll);
+  function bkStopSearch(){
+    ++bkToken;
+    if(bkSearch){ bkSearch.running = false; }
+    bkSetSearchBtn(false);
+    bkRenderResults();
   }
 
-  function collStartSearch(coll){
-    clearTimeout(c(coll).timer);
-    const C = c(coll);
-    const q = (collEl(coll, "searchInp").value || "").trim();
-    const all = collEl(coll, "allChk").checked;
-    const token = ++C.token;
-    if(!q){ C.search = null; collSetSearchBtn(coll, false); collRenderBrowse(coll); return; }
-    if(/^\d+$/.test(q)){ collJump(coll, parseInt(q, 10)); return; }
-    const test = collMatcher(q);
-    const books = all ? C.index.books : [C.books[C.book]];
-    C.search = {q: q, all: all, results: [], page: 0, running: true, scanned: 0, total: books.length, error: false, shown: false};
+  function bkStartSearch(){
+    clearTimeout(bkTimer);
+    const q = (bkEl("bkSearch").value || "").trim();
+    const all = bkEl("bkAll").checked;
+    const token = ++bkToken;
+    if(!q){ bkSearch = null; bkSetSearchBtn(false); bkRenderBrowse(); return; }
+    if(/^\d+$/.test(q)){ bkJump(parseInt(q, 10)); return; }
+    const test = bkMatcher(q);
+    const books = all ? bkIndex.books : [bkBooks[bkBook]];
+    const s = bkSearch = {q: q, all: all, results: [], page: 0, running: true, scanned: 0, total: books.length, error: false, shown: false};
     let bi = 0, ci = 0;
-    collSetSearchBtn(coll, true);
-    collRenderResults(coll);
+    bkSetSearchBtn(true);
+    bkRenderResults();
 
     function finish(){
-      if(token !== C.token) return;
-      C.search.running = false;
-      collSetSearchBtn(coll, false);
-      collRenderResults(coll);
+      if(token !== bkToken) return;
+      s.running = false;
+      bkSetSearchBtn(false);
+      bkRenderResults();
     }
     function step(){
-      if(token !== C.token) return;
-      if(bi >= books.length || C.search.results.length >= BK_MAX_RESULTS){ finish(); return; }
+      if(token !== bkToken) return;
+      if(bi >= books.length || s.results.length >= BK_MAX_RESULTS){ finish(); return; }
       const b = books[bi];
-      collFetchChunk(coll, b.f[ci]).then(function(arr){
-        if(token !== C.token) return;
-        for(let i = 0; i < arr.length && C.search.results.length < BK_MAX_RESULTS; i++){
-          if(test(arr[i])) C.search.results.push({h: arr[i], b: b.n});
+      bkFetchChunk(b.f[ci]).then(function(arr){
+        if(token !== bkToken) return;
+        for(let i = 0; i < arr.length && s.results.length < BK_MAX_RESULTS; i++){
+          if(test(arr[i])) s.results.push({h: arr[i], b: b.n});
         }
         ci++;
-        if(ci >= b.f.length){ ci = 0; bi++; C.search.scanned = bi; }
-        if(!C.search.shown && C.search.results.length >= BK_PAGE){ C.search.shown = true; collRenderResults(coll); }
-        else {
-          const cnt = collEl(coll, "count");
-          if(cnt) cnt.textContent = C.search.results.length + " found · searching book " + Math.min(bi + 1, C.search.total) + " of " + C.search.total + "…";
-        }
+        if(ci >= b.f.length){ ci = 0; bi++; s.scanned = bi; }
+        if(!s.shown && s.results.length >= BK_PAGE){ s.shown = true; bkRenderResults(); }
+        else bkSetCount(s.results.length + " found · searching book " + Math.min(bi + 1, s.total) + " of " + s.total + "…");
         setTimeout(step, 0);
       }).catch(function(){
-        if(token !== C.token) return;
-        C.search.error = true;
+        if(token !== bkToken) return;
+        s.error = true;
         finish();
       });
     }
@@ -5755,228 +6082,110 @@ html.no-grain .grain{display:none !important;}
   }
 
   // ---------- jump to a hadith number ----------
-  function collJump(coll, n){
-    const C = c(coll);
-    if(!C.index || !n) return;
+  function bkJump(n){
+    if(!bkIndex || !n) return;
     let target = null;
-    C.index.books.forEach(function(b){ if(n >= b.first && n <= b.last) target = b; });
+    bkIndex.books.forEach(function(b){ if(n >= b.first && n <= b.last) target = b; });
     if(!target){
-      const last = C.index.books[C.index.books.length - 1].last;
-      const cnt = collEl(coll, "count");
-      if(cnt) cnt.textContent = "No hadith numbered " + n + ". Valid numbers: " + C.index.books[0].first + "–" + last + ".";
+      const last = bkIndex.books[bkIndex.books.length - 1].last;
+      bkSetCount("No hadith numbered " + n + ". Valid numbers: " + bkIndex.books[0].first + "–" + last + ".");
       return;
     }
-    ++C.token;
-    C.search = null;
-    collSetSearchBtn(coll, false);
-    collEl(coll, "searchInp").value = "";
-    collEl(coll, "jumpInp").value = "";
-    C.book = target.n;
-    collEl(coll, "bookSel").value = String(target.n);
-    C.page = Math.floor((n - target.first) / BK_PAGE);
-    C.hit = n; C.hitFixed = false; C.scroll = true;
-    collRenderBrowse(coll);
+    ++bkToken;
+    bkSearch = null;
+    bkSetSearchBtn(false);
+    bkEl("bkSearch").value = "";
+    bkEl("bkJump").value = "";
+    bkBook = target.n;
+    bkEl("bkBook").value = String(target.n);
+    bkPage = Math.floor((n - target.first) / BK_PAGE);
+    bkHit = n; bkHitFixed = false; bkScroll = true;
+    bkRenderBrowse();
   }
 
-  function collSavePos(coll){
-    const C = c(coll);
-    saveJSON(C.posKey, {b: C.book, p: C.page});
-  }
+  function bkSavePos(){ saveJSON(LS_BK_POS, {b: bkBook, p: bkPage}); }
 
-  function collGoPage(coll, delta){
-    const C = c(coll);
-    C.hit = null;
-    C.scroll = true;
-    if(C.search){
-      const pages = Math.max(1, Math.ceil(C.search.results.length / BK_PAGE));
-      C.search.page = Math.min(pages - 1, Math.max(0, C.search.page + delta));
-      collRenderResults(coll);
-      const list = collEl(coll, "list");
-      if(list){
-        const y = list.getBoundingClientRect().top + (window.pageYOffset || 0) - 84;
-        window.scrollTo(0, Math.max(0, y));
-      }
-      C.scroll = false;
+  function bkGoPage(delta){
+    bkHit = null;
+    bkScroll = true;
+    if(bkSearch){
+      const pages = Math.max(1, Math.ceil(bkSearch.results.length / BK_PAGE));
+      bkSearch.page = Math.min(pages - 1, Math.max(0, bkSearch.page + delta));
+      bkRenderResults();
+      const y = bkEl("bkList").getBoundingClientRect().top + (window.pageYOffset || 0) - 84;
+      window.scrollTo(0, Math.max(0, y));
+      bkScroll = false;
       return;
     }
-    const book = C.books[C.book];
-    const pages = Math.max(1, Math.ceil(book.c / BK_PAGE));
-    const np = C.page + delta;
-    if(np >= 0 && np < pages){ C.page = np; }
+    const b = bkBooks[bkBook];
+    const pages = Math.max(1, Math.ceil(b.c / BK_PAGE));
+    const np = bkPage + delta;
+    if(np >= 0 && np < pages){ bkPage = np; }
     else{
-      const bi = collBookPos(coll, C.book) + (delta > 0 ? 1 : -1);
-      if(bi < 0 || bi >= C.index.books.length){ C.scroll = false; return; }
-      const nb = C.index.books[bi];
-      C.book = nb.n;
-      collEl(coll, "bookSel").value = String(nb.n);
-      C.page = delta > 0 ? 0 : Math.max(0, Math.ceil(nb.c / BK_PAGE) - 1);
+      const bi = bkBookPos(bkBook) + (delta > 0 ? 1 : -1);
+      if(bi < 0 || bi >= bkIndex.books.length){ bkScroll = false; return; }
+      const nb = bkIndex.books[bi];
+      bkBook = nb.n;
+      bkEl("bkBook").value = String(nb.n);
+      bkPage = delta > 0 ? 0 : Math.max(0, Math.ceil(nb.c / BK_PAGE) - 1);
     }
-    collRenderBrowse(coll);
+    bkRenderBrowse();
   }
 
-  // ============================================================
-  //  UNIFIED SEARCH ACROSS ALL COLLECTIONS
-  // ============================================================
-  let unifiedSearchState = {
-    q: "",
-    all: true,
-    results: [],
-    page: 0,
-    running: false,
-    scanned: 0,
-    total: 0,
-    error: false,
-    collections: []
-  };
-  let unifiedSearchToken = 0;
-
-  function unifiedSearchMatcher(q){
-    if(/[؀-ۿ]/.test(q)){
-      const nq = collNormAr(q);
-      return function(h){ return collNormAr(h[1] || "").indexOf(nq) > -1; };
-    }
-    if(/[ঀ-৿]/.test(q)){
-      return function(h){ return (h[3] || "").indexOf(q) > -1; };
-    }
-    const lq = q.toLowerCase();
-    return function(h){ return (h[2] || "").toLowerCase().indexOf(lq) > -1; };
+  // ---------- tabs / lazy start ----------
+  function hdSetTab(t){
+    document.querySelectorAll("#hdTabs button").forEach(function(b){
+      const on = b.dataset.hdtab === t;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    const pb = bkEl("hdPanelBukhari"), pf = bkEl("hdPanelFeatured");
+    if(pb) pb.hidden = (t !== "bukhari");
+    if(pf) pf.hidden = (t !== "featured");
   }
 
-  function unifiedSearchRender(){
-    const list = document.getElementById("hdUnifiedList");
-    const pager = document.getElementById("hdUnifiedPager");
-    const pageInfo = document.getElementById("hdUnifiedPageInfo");
-    const prev = document.getElementById("hdUnifiedPrev");
-    const next = document.getElementById("hdUnifiedNext");
-    const count = document.getElementById("hdUnifiedCount");
-    const status = document.getElementById("hdSearchStatus");
-
-    if(!list) return;
-
-    const s = unifiedSearchState;
-    const pages = Math.max(1, Math.ceil(s.results.length / BK_PAGE));
-    if(s.page > pages - 1) s.page = pages - 1;
-    const slice = s.results.slice(s.page * BK_PAGE, s.page * BK_PAGE + BK_PAGE);
-
-    if(slice.length){
-      list.innerHTML = slice.map(function(r){
-        const C = c(r.coll);
-        return collCardHtml(r.h, C.books[r.b], true, r.coll);
+  // Called the first time the Hadith page is opened (nothing is downloaded before that).
+  function ensureBukhari(){
+    if(bkState !== "idle") return;
+    bkState = "loading";
+    fetchJSON(BK_BASE + "index.json", 12000).then(function(idx){
+      if(!idx || !idx.books || !idx.books.length) throw new Error("empty index");
+      idx.books.sort(function(a, b){ return a.n - b.n; });
+      bkIndex = idx;
+      idx.books.forEach(function(b){ bkBooks[b.n] = b; });
+      const sel = bkEl("bkBook");
+      sel.innerHTML = idx.books.map(function(b){
+        return '<option value="' + b.n + '">' + b.n + '. ' + escapeHtml(b.en) + ' (' + b.c + ')</option>';
       }).join("");
-    }else if(s.running){
-      list.innerHTML = '<div class="dua-empty">Searching across all collections…</div>';
-    }else{
-      list.innerHTML = '<div class="dua-empty">' + (s.error ? 'Search stopped because a part could not be loaded.' : 'No hadith match your search.') + '</div>';
-    }
-
-    let msg = s.results.length + (s.results.length === 1 ? " match" : " matches");
-    if(s.results.length >= BK_MAX_RESULTS) msg += " (first " + BK_MAX_RESULTS + " shown — refine your search)";
-    if(s.running) msg += " · searching " + s.collections[s.scanned] + " (" + (s.scanned + 1) + " of " + s.total + ")…";
-    if(count) count.textContent = msg;
-    if(status){
-      if(s.running) status.textContent = "Searching…";
-      else status.textContent = "";
-    }
-
-    if(pager){
-      pager.style.display = (pages > 1 || s.results.length > 0) ? "flex" : "none";
-      if(pageInfo) pageInfo.textContent = "Page " + (s.page + 1) + " / " + pages;
-      if(prev) prev.disabled = s.page <= 0;
-      if(next) next.disabled = s.page >= pages - 1;
-    }
-  }
-
-  function unifiedSearchStop(){
-    ++unifiedSearchToken;
-    unifiedSearchState.running = false;
-    unifiedSearchRender();
-  }
-
-  function unifiedSearchStart(){
-    const input = document.getElementById("hdUnifiedSearchInput");
-    const allChk = document.getElementById("hdSearchAll");
-    if(!input) return;
-
-    clearTimeout(unifiedSearchToken);
-    const q = (input.value || "").trim();
-    const all = allChk ? allChk.checked : true;
-    const token = ++unifiedSearchToken;
-
-    if(!q){
-      unifiedSearchState = {q: "", all: true, results: [], page: 0, running: false, scanned: 0, total: 0, error: false, collections: []};
-      unifiedSearchRender();
-      return;
-    }
-    if(/^\d+$/.test(q)){
-      // Jump to hadith number in current collection
-      collJump(currentCollection, parseInt(q, 10));
-      return;
-    }
-
-    const test = unifiedSearchMatcher(q);
-    const collections = Object.keys(HADITH_COLLECTIONS).filter(function(k){ return HADITH_COLLECTIONS[k].state === "ready"; });
-
-    unifiedSearchState = {q: q, all: all, results: [], page: 0, running: true, scanned: 0, total: collections.length, error: false, collections: collections};
-    unifiedSearchRender();
-
-    let ci = 0, bi = 0;
-
-    function finish(){
-      if(token !== unifiedSearchToken) return;
-      unifiedSearchState.running = false;
-      unifiedSearchRender();
-    }
-
-    function step(){
-      if(token !== unifiedSearchToken) return;
-      if(ci >= collections.length || unifiedSearchState.results.length >= BK_MAX_RESULTS){ finish(); return; }
-
-      const coll = collections[ci];
-      const C = c(coll);
-      if(!C.index){
-        ci++;
-        unifiedSearchState.scanned = ci;
-        setTimeout(step, 0);
+      const pos = loadJSON(LS_BK_POS, null);
+      if(pos && bkBooks[pos.b]){
+        bkBook = pos.b;
+        bkPage = Math.max(0, parseInt(pos.p, 10) || 0);
+      }else{
+        bkBook = idx.books[0].n; bkPage = 0;
+      }
+      sel.value = String(bkBook);
+      bkState = "ready";
+      bkRenderBrowse();
+    }).catch(function(err){
+      // Missing data (404 / opened from file://) -> featured hadith only.
+      // Transient trouble (timeout / dropped connection) -> keep the tab and offer a retry.
+      const msg = (err && err.message) || "";
+      const transient = location.protocol !== "file:" && !/^HTTP /.test(msg) && msg !== "empty index";
+      if(!transient){
+        bkState = "failed";
+        if(window.console) console.warn("[Noor] Sahih al-Bukhari data not available - showing featured hadith only.", err);
+        const tab = document.querySelector('#hdTabs button[data-hdtab="bukhari"]');
+        if(tab) tab.hidden = true;
+        hdSetTab("featured");
         return;
       }
-
-      const books = all ? C.index.books : [C.books[C.book]];
-      bi = 0;
-
-      function searchNextBook(){
-        if(token !== unifiedSearchToken) return;
-        if(bi >= books.length || unifiedSearchState.results.length >= BK_MAX_RESULTS){
-          ci++;
-          unifiedSearchState.scanned = ci;
-          unifiedSearchRender();
-          setTimeout(step, 0);
-          return;
-        }
-
-        const b = books[bi];
-        collFetchChunk(coll, b.f[0]).then(function(arr){
-          if(token !== unifiedSearchToken) return;
-          // For unified search, we need to check all chunks, not just first
-          // This is a simplified version - in production you'd search all chunks
-          for(let i = 0; i < arr.length && unifiedSearchState.results.length < BK_MAX_RESULTS; i++){
-            if(test(arr[i])) unifiedSearchState.results.push({h: arr[i], b: b.n, coll: coll});
-          }
-          bi++;
-          searchNextBook();
-        }).catch(function(){
-          if(token !== unifiedSearchToken) return;
-          unifiedSearchState.error = true;
-          finish();
-        });
-      }
-      searchNextBook();
-    }
-    step();
+      bkState = "idle";
+      const list = bkEl("bkList");
+      if(list) list.innerHTML = '<div class="dua-empty">' + bkErrMsg(err) + ' <button class="bk-btn" type="button" data-bkretry-index="1">Retry</button></div>';
+    });
   }
 
-  // ============================================================
-  //  INIT HADITH - updated for multi-collection
-  // ============================================================
   function initHadith(){
     // featured collection (always available)
     renderHadith(true);
@@ -5992,7 +6201,7 @@ html.no-grain .grain{display:none !important;}
     const more = document.getElementById("hadithMore");
     if(more) more.addEventListener("click", function(){ hadithShown += HADITH_PAGE; renderHadith(false); });
 
-    // language toggle (shared by all collections)
+    // language toggle (shared by both collections)
     const toggle = document.getElementById("hadithLangToggle");
     if(toggle){
       const btns = toggle.querySelectorAll("button");
@@ -6003,129 +6212,304 @@ html.no-grain .grain{display:none !important;}
           saveJSON(LS_HADITH_LANG, hadithLang);
           btns.forEach(function(x){ x.classList.toggle("active", x === b); });
           renderHadith(false);
-          // Re-render current collection
-          if(currentCollection !== "featured"){
-            const C = c(currentCollection);
-            if(C.state === "ready") collRender(currentCollection);
-          }
+          if(bkState === "ready") bkRender();
         });
       });
     }
 
-    // Collection tabs
-    document.querySelectorAll("#hdCollectionTabs button").forEach(function(b){
-      b.addEventListener("click", function(){ hdSetTab(b.dataset.collection); });
+    // tabs
+    document.querySelectorAll("#hdTabs button").forEach(function(b){
+      b.addEventListener("click", function(){ hdSetTab(b.dataset.hdtab); });
     });
 
-    // Unified search
-    const unifiedInput = document.getElementById("hdUnifiedSearchInput");
-    const unifiedAll = document.getElementById("hdSearchAll");
-    if(unifiedInput){
-      unifiedInput.addEventListener("input", function(){
-        if(unifiedSearchState.running) return;
-        clearTimeout(unifiedSearchToken);
-        if(!unifiedInput.value.trim()){
-          unifiedSearchStart();
-          return;
+    // Bukhari controls
+    const sel = bkEl("bkBook");
+    if(sel) sel.addEventListener("change", function(){
+      bkBook = parseInt(sel.value, 10) || 1;
+      bkPage = 0; bkHit = null; bkSearch = null; bkScroll = true;
+      bkEl("bkSearch").value = "";
+      bkSetSearchBtn(false);
+      bkRenderBrowse();
+    });
+    const jump = bkEl("bkJump");
+    function doJump(){ const n = parseInt((jump.value || "").replace(/\D/g, ""), 10); if(n) bkJump(n); }
+    if(jump){
+      jump.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); doJump(); } });
+      bkEl("bkJumpBtn").addEventListener("click", doJump);
+    }
+    const bs = bkEl("bkSearch");
+    if(bs){
+      bs.addEventListener("input", function(){
+        clearTimeout(bkTimer);
+        if(!bs.value.trim()){ bkStartSearch(); return; }
+        if(!bkEl("bkAll").checked && !/^\d+$/.test(bs.value.trim())){
+          bkTimer = setTimeout(bkStartSearch, 350);      // live search inside the open book
         }
-        unifiedSearchToken = setTimeout(unifiedSearchStart, 350);
       });
-      unifiedInput.addEventListener("keydown", function(e){
-        if(e.key === "Enter"){ e.preventDefault(); unifiedSearchStart(); }
-      });
+      bs.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); bkStartSearch(); } });
     }
-    if(unifiedAll){
-      unifiedAll.addEventListener("change", function(){
-        if(unifiedInput.value.trim()) unifiedSearchStart();
-      });
-    }
-    const unifiedPrev = document.getElementById("hdUnifiedPrev");
-    const unifiedNext = document.getElementById("hdUnifiedNext");
-    if(unifiedPrev) unifiedPrev.addEventListener("click", function(){
-      if(unifiedSearchState.page > 0){
-        unifiedSearchState.page--;
-        unifiedSearchRender();
+    const sbtn = bkEl("bkSearchBtn");
+    if(sbtn) sbtn.addEventListener("click", function(){
+      if(bkSearch && bkSearch.running) bkStopSearch(); else bkStartSearch();
+    });
+    const all = bkEl("bkAll");
+    if(all) all.addEventListener("change", function(){ if(bkEl("bkSearch").value.trim()) bkStartSearch(); });
+    bkEl("bkPrev").addEventListener("click", function(){ bkGoPage(-1); });
+    bkEl("bkNext").addEventListener("click", function(){ bkGoPage(1); });
+    bkEl("bkList").addEventListener("click", function(e){
+      const t = e.target;
+      if(!t || !t.getAttribute) return;
+      if(t.getAttribute("data-bkretry")) bkRender();
+      else if(t.getAttribute("data-bkretry-index")){
+        const l = bkEl("bkList");
+        if(l) l.innerHTML = '<div class="dua-empty">Loading Sahih al-Bukhari…</div>';
+        ensureBukhari();
       }
     });
-    if(unifiedNext) unifiedNext.addEventListener("click", function(){
-      const pages = Math.max(1, Math.ceil(unifiedSearchState.results.length / BK_PAGE));
-      if(unifiedSearchState.page < pages - 1){
-        unifiedSearchState.page++;
-        unifiedSearchRender();
-      }
-    });
+  }
 
-    // Setup controls for each collection
-    Object.keys(HADITH_COLLECTIONS).forEach(function(coll){
-      const C = c(coll);
-
-      // Book selector
-      const sel = collEl(coll, "bookSel");
-      if(sel) sel.addEventListener("change", function(){
-        C.book = parseInt(sel.value, 10) || 1;
-        C.page = 0; C.hit = null; C.search = null; C.scroll = true;
-        collEl(coll, "searchInp").value = "";
-        collSetSearchBtn(coll, false);
-        collRenderBrowse(coll);
-      });
-
-      // Jump to hadith number
-      const jump = collEl(coll, "jumpInp");
-      const jumpBtn = collEl(coll, "jumpBtn");
-      function doJump(){ const n = parseInt((jump.value || "").replace(/\D/g, ""), 10); if(n) collJump(coll, n); }
-      if(jump){
-        jump.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); doJump(); } });
-      }
-      if(jumpBtn) jumpBtn.addEventListener("click", doJump);
-
-      // Search
-      const bs = collEl(coll, "searchInp");
-      if(bs){
-        bs.addEventListener("input", function(){
-          clearTimeout(C.timer);
-          if(!bs.value.trim()){ collStartSearch(coll); return; }
-          if(!collEl(coll, "allChk").checked && !/^\d+$/.test(bs.value.trim())){
-            C.timer = setTimeout(function(){ collStartSearch(coll); }, 350);
-          }
-        });
-        bs.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); collStartSearch(coll); } });
-      }
-      const sbtn = collEl(coll, "searchBtn");
-      if(sbtn) sbtn.addEventListener("click", function(){
-        if(C.search && C.search.running) collStopSearch(coll); else collStartSearch(coll);
-      });
-      const all = collEl(coll, "allChk");
-      if(all) all.addEventListener("change", function(){ if(collEl(coll, "searchInp").value.trim()) collStartSearch(coll); });
-
-      // Pagination
-      const prev = collEl(coll, "prevBtn");
-      const next = collEl(coll, "nextBtn");
-      if(prev) prev.addEventListener("click", function(){ collGoPage(coll, -1); });
-      if(next) next.addEventListener("click", function(){ collGoPage(coll, 1); });
-
-      // Retry button
-      const list = collEl(coll, "list");
-      if(list) list.addEventListener("click", function(e){
-        if(e.target && e.target.getAttribute && e.target.getAttribute("data-collretry")){
-          collRender(coll);
-      
   // ============================================================
   //  LITE MODE (low-end device optimisation)
   //  The "lite" class is set before first paint by a tiny script in <head>
   //  (auto-on for <=2GB RAM, <=2 CPU cores or Save-Data). This lets the
   //  user override it. A reload is used so the starfield loop never starts.
   // ============================================================
-  function initLite(){
-    const isLite = document.documentElement.classList.contains("lite");
+  // ============================================================
+  //  v2: timers / visibility / Lite mode
+  // ============================================================
+  // Single place that decides which background timers may run.
+  function syncTimers(){
+    if(homeActive()){ startClock(); resetQuoteTimer(); sliderStart(); }
+    else{ stopClock(); stopQuoteTimer(); sliderStop(); }
+    if(document.hidden || isLite() || reducedMotion()) starsStop(); else starsStart();
+  }
+  function initVisibility(){
+    document.addEventListener("visibilitychange", syncTimers);
+    if(mqReduce){
+      if(mqReduce.addEventListener) mqReduce.addEventListener("change", syncTimers);
+      else if(mqReduce.addListener) mqReduce.addListener(syncTimers);
+    }
+    // bfcache restore: never come back with a stuck scroll lock
+    window.addEventListener("pageshow", function(){
+      if(!scrollLocks.size){ document.body.classList.remove("scroll-locked"); document.body.style.top = ""; }
+      syncTimers();
+    });
+    syncTimers();
+  }
+
+  // Lite mode toggles live (no reload, so the open surah / view / scroll position survive).
+  function setLite(on, persist){
+    document.documentElement.classList.toggle("lite", !!on);
+    if(persist !== false){ try{ localStorage.setItem(LS_LITE, on ? "on" : "off"); }catch(e){} }
     document.querySelectorAll("[data-lite-toggle]").forEach(function(el){
-      el.textContent = "⚡ Lite mode: " + (isLite ? "On" : "Off");
-      el.addEventListener("click", function(e){
-        e.preventDefault();
-        try{ localStorage.setItem(LS_LITE, isLite ? "off" : "on"); }catch(err){}
-        location.reload();
-      });
+      el.textContent = "⚡ Lite mode: " + (on ? "On" : "Off");
+    });
+    if(on){
+      starsStop();
+      while(surahMem.size > 4) surahMem.delete(surahMem.keys().next().value);
+      while(bkOrder.length > 2){ delete bkCache[bkOrder.shift()]; }
+      parkVideo();
+    }else{
+      buildStars();
+    }
+    syncTimers();
+  }
+  function initLite(){
+    setLite(isLite(), false);                 // sync the labels with the class set in <head>
+    document.querySelectorAll("[data-lite-toggle]").forEach(function(el){
+      el.addEventListener("click", function(e){ e.preventDefault(); setLite(!isLite()); });
     });
   }
+
+  // ============================================================
+  //  v2: offline pill
+  // ============================================================
+  function initNetStatus(){
+    const pill = byId("netPill");
+    if(!pill) return;
+    let t = 0;
+    function show(msg, sticky){
+      pill.textContent = msg; pill.classList.add("show");
+      clearTimeout(t);
+      if(!sticky) t = setTimeout(function(){ pill.classList.remove("show"); }, 2500);
+    }
+    window.addEventListener("offline", function(){ show("You’re offline — saved surahs, notes and bookmarks still work.", true); });
+    window.addEventListener("online", function(){ show("Back online ✓", false); });
+    if(navigator.onLine === false) show("You’re offline — saved surahs, notes and bookmarks still work.", true);
+  }
+
+  // ============================================================
+  //  v2: keyboard shortcuts ( / focuses search, Esc closes the top-most layer )
+  // ============================================================
+  function isTypingTarget(t){
+    if(!t || !t.tagName) return false;
+    const n = t.tagName;
+    return n === "INPUT" || n === "TEXTAREA" || n === "SELECT" || !!t.isContentEditable;
+  }
+  function closeTransient(){
+    const modal = byId("authModal");
+    if(modal && modal.classList.contains("open")){ closeAuthModal(); return true; }
+    const lp = byId("langPop");
+    if(lp && lp.classList.contains("open")){ lp.classList.remove("open"); return true; }
+    const ids = ["themePanel", "arFontPanel"];
+    for(let i = 0; i < ids.length; i++){
+      const p = byId(ids[i]);
+      if(p && p.classList.contains("open")){ p.classList.remove("open"); return true; }
+    }
+    const boxes = document.querySelectorAll(".tafsir-box:not(.hidden)");
+    if(boxes.length){
+      boxes.forEach(function(box){
+        box.classList.add("hidden");
+        const b = document.querySelector('.tafsir-btn[data-surah="'+box.dataset.surah+'"][data-ayah="'+box.dataset.ayah+'"]');
+        if(b){ b.classList.remove("active"); b.setAttribute("aria-expanded", "false"); }
+      });
+      return true;
+    }
+    const sr = byId("searchResults");
+    if(sr && !sr.classList.contains("hidden") && sr.innerHTML){ hideSearchResults(); return true; }
+    const anyOpen = ["sidebar","navDrawer","notesDrawer","bookmarksDrawer"].some(function(id){
+      const e = byId(id); return e && e.classList.contains("open");
+    });
+    if(anyOpen){ closeEverything(); return true; }
+    return false;
+  }
+  function initKeyboard(){
+    document.addEventListener("keydown", function(e){
+      if(e.defaultPrevented) return;
+      if(e.key === "Escape"){ closeTransient(); return; }
+      if(e.ctrlKey || e.metaKey || e.altKey) return;
+      if(e.key === "/" && !isTypingTarget(e.target)){
+        const input = byId("globalSearch");
+        if(!input) return;
+        e.preventDefault();
+        if(currentView !== "home") showView("home");
+        closeEverything();
+        input.focus(); input.select();
+        return;
+      }
+      // quiz: 1-4 pick an answer
+      if(currentView === "quiz" && !isTypingTarget(e.target) && /^[1-4]$/.test(e.key)){
+        const opts = document.querySelectorAll("#quizWrap .quiz-option");
+        const b = opts[parseInt(e.key,10) - 1];
+        if(b && !b.disabled){ e.preventDefault(); b.click(); }
+      }
+    });
+  }
+
+  // ============================================================
+  //  v2: backup / restore (notes, bookmarks, progress, tafsir and admin content)
+  //  Accounts and password hashes are deliberately NOT exported.
+  // ============================================================
+  const BACKUP_SPEC = [
+    [LS_NOTES, "map"], [LS_BOOKMARKS, "map"], [LS_PROGRESS, "map"], [LS_LAST_READ, "obj?"],
+    [LS_TRANSLATION, "str"], [LS_ADMIN_TAFSIR, "map"], [LS_ADMIN_SURAH_OVERRIDES, "map"],
+    [LS_ADMIN_DUAS, "arr"], [LS_ADMIN_QUOTES, "arr"], [LS_ADMIN_QUIZ, "arr"], [LS_ADMIN_SLIDER, "arr"],
+    [LS_ADMIN_BANNER, "obj?"], [LS_ADMIN_VIDEO, "obj?"], [LS_QUIZ_BEST, "obj?"]
+  ];
+  let pendingBackup = null;
+  function isPlainObj(v){ return !!v && typeof v === "object" && !Array.isArray(v); }
+  function validBackupValue(kind, v){
+    if(kind === "map") return isPlainObj(v);
+    if(kind === "arr") return Array.isArray(v);
+    if(kind === "obj?") return v === null || isPlainObj(v);
+    if(kind === "str") return typeof v === "string" && TRANSLATIONS.some(function(t){ return t.code === v; });
+    return false;
+  }
+  function setBackupStatus(msg, kind, actions){
+    document.querySelectorAll("[data-backup-status]").forEach(function(el){
+      el.className = "bk-status " + (kind || "");
+      el.textContent = msg || "";
+      if(actions){
+        const row = document.createElement("div");
+        row.className = "row"; row.style.marginTop = "6px";
+        actions.forEach(function(a){
+          const b = document.createElement("button");
+          b.type = "button"; b.textContent = a.label;
+          b.addEventListener("click", a.fn);
+          row.appendChild(b);
+        });
+        el.appendChild(row);
+      }
+    });
+  }
+  function backupSummary(data){
+    const n = function(k){ const v = data[k]; return v ? (Array.isArray(v) ? v.length : Object.keys(v).length) : 0; };
+    return n(LS_NOTES) + " notes · " + n(LS_BOOKMARKS) + " bookmarks · " + n(LS_ADMIN_TAFSIR) + " tafsir entries · "
+         + (n(LS_ADMIN_DUAS) + n(LS_ADMIN_QUOTES) + n(LS_ADMIN_QUIZ) + n(LS_ADMIN_SLIDER)) + " custom items";
+  }
+  function exportBackup(){
+    try{
+      const data = {};
+      BACKUP_SPEC.forEach(function(s){
+        const raw = localStorage.getItem(s[0]);
+        if(raw === null) return;
+        try{ data[s[0]] = JSON.parse(raw); }catch(e){ if(s[1] === "str") data[s[0]] = raw; }
+      });
+      const payload = {app:"noor", version:1, exportedAt:new Date().toISOString(), data:data};
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "noor-backup-" + new Date().toISOString().slice(0,10) + ".json";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      setBackupStatus("Backup saved — " + backupSummary(data), "ok");
+    }catch(e){
+      setBackupStatus("Couldn’t create the backup on this device.", "err");
+    }
+  }
+  function mergeBackupValue(key, kind, cur, inc){
+    if(kind === "map") return Object.assign({}, cur || {}, inc);
+    if(kind === "arr"){
+      const out = (cur || []).slice(), seen = new Set(out.map(function(x){ return JSON.stringify(x); }));
+      inc.forEach(function(x){ const k = JSON.stringify(x); if(!seen.has(k)){ seen.add(k); out.push(x); } });
+      return out;
+    }
+    if(key === LS_LAST_READ && cur && inc && (cur.ts || 0) > (inc.ts || 0)) return cur;   // keep the more recent position
+    return inc;
+  }
+  function applyBackup(data, mode){
+    BACKUP_SPEC.forEach(function(s){
+      const key = s[0], kind = s[1];
+      if(!(key in data) || !validBackupValue(kind, data[key])) return;
+      const next = (mode === "merge") ? mergeBackupValue(key, kind, loadJSON(key, null), data[key]) : data[key];
+      saveJSON(key, next);
+    });
+    pendingBackup = null;
+    setBackupStatus("Restored ✓ — reloading…", "ok");
+    setTimeout(function(){ location.reload(); }, 700);
+  }
+  function readBackupFile(file){
+    if(file.size > 5 * 1024 * 1024){ setBackupStatus("That file is too large to be a Noor backup.", "err"); return; }
+    const fr = new FileReader();
+    fr.onerror = function(){ setBackupStatus("Couldn’t read that file.", "err"); };
+    fr.onload = function(){
+      let parsed;
+      try{ parsed = JSON.parse(String(fr.result)); }catch(e){ setBackupStatus("That file isn’t valid JSON.", "err"); return; }
+      if(!parsed || parsed.app !== "noor" || !isPlainObj(parsed.data)){ setBackupStatus("That doesn’t look like a Noor backup file.", "err"); return; }
+      const clean = {};
+      BACKUP_SPEC.forEach(function(s){ if(s[0] in parsed.data && validBackupValue(s[1], parsed.data[s[0]])) clean[s[0]] = parsed.data[s[0]]; });
+      if(!Object.keys(clean).length){ setBackupStatus("The backup contains no usable data.", "err"); return; }
+      pendingBackup = clean;
+      setBackupStatus("Found: " + backupSummary(clean) + ". How should it be restored?", "", [
+        {label:"Merge", fn:function(){ if(pendingBackup) applyBackup(pendingBackup, "merge"); }},
+        {label:"Replace", fn:function(){ if(pendingBackup) applyBackup(pendingBackup, "replace"); }},
+        {label:"Cancel", fn:function(){ pendingBackup = null; setBackupStatus("", ""); }}
+      ]);
+    };
+    fr.readAsText(file);
+  }
+  function initBackup(){
+    document.querySelectorAll("[data-backup-export]").forEach(function(b){ b.addEventListener("click", exportBackup); });
+    const input = byId("backupFile");
+    document.querySelectorAll("[data-backup-import]").forEach(function(b){
+      b.addEventListener("click", function(){ if(input){ input.value = ""; input.click(); } });
+    });
+    if(input) input.addEventListener("change", function(){
+      const f = input.files && input.files[0];
+      if(f) readBackupFile(f);
+    });
+  }
+
 
     // ============================================================
   //  QUIZ VIEW
@@ -6191,9 +6575,17 @@ html.no-grain .grain{display:none !important;}
 
   function renderQuizQuestion(){
     const wrap = document.getElementById("quizWrap");
+    if(!wrap) return;
     const total = quizOrder.length;
     const item = allQuizQuestions()[quizOrder[quizIndex]];
+    if(!total || !item){
+      wrap.innerHTML = '<div class="quiz-card"><p>No questions available yet.</p></div>';
+      return;
+    }
     const pct = Math.round((quizIndex/total)*100);
+    // Shuffle option order (admin-added questions always store the right answer first).
+    // data-idx keeps the ORIGINAL index so scoring stays correct.
+    const order = shuffle(item.options.map(function(_,i){ return i; }));
 
     wrap.innerHTML = ''
       + '<div class="quiz-progress-track"><div class="quiz-progress-bar" style="width:'+pct+'%"></div></div>'
@@ -6201,30 +6593,34 @@ html.no-grain .grain{display:none !important;}
       + '<div class="quiz-card">'
       +   '<h3 class="quiz-question">'+escapeHtml(item.q)+'</h3>'
       +   '<div class="quiz-options">'
-      +     item.options.map(function(opt,i){
-              return '<button class="quiz-option" data-idx="'+i+'">'+escapeHtml(opt)+'</button>';
+      +     order.map(function(orig){
+              return '<button class="quiz-option" data-idx="'+orig+'">'+escapeHtml(item.options[orig])+'</button>';
             }).join("")
       +   '</div>'
       +   '<div class="quiz-footer"><button class="quiz-next-btn" id="quizNextBtn" disabled>'+(quizIndex===total-1?'See results':'Next question')+' →</button></div>'
       + '</div>';
 
     const optionBtns = wrap.querySelectorAll(".quiz-option");
+    const nextBtn = document.getElementById("quizNextBtn");
     optionBtns.forEach(function(btn){
       btn.addEventListener("click", function(){
+        if(btn.disabled) return;
         const chosen = parseInt(btn.dataset.idx,10);
         const correct = item.answer;
-        optionBtns.forEach(function(b,i){
+        optionBtns.forEach(function(b){
           b.disabled = true;
-          if(i === correct) b.classList.add("correct");
-          else if(i === chosen) b.classList.add("incorrect");
+          const bi = parseInt(b.dataset.idx,10);
+          if(bi === correct) b.classList.add("correct");
+          else if(bi === chosen) b.classList.add("incorrect");
         });
         if(chosen === correct) quizScore++;
-        document.querySelector(".quiz-meta span:last-child").textContent = "Score " + quizScore;
-        document.getElementById("quizNextBtn").disabled = false;
+        const meta = wrap.querySelector(".quiz-meta span:last-child");
+        if(meta) meta.textContent = "Score " + quizScore;
+        if(nextBtn) nextBtn.disabled = false;
       });
     });
 
-    document.getElementById("quizNextBtn").addEventListener("click", function(){
+    if(nextBtn) nextBtn.addEventListener("click", function(){
       if(quizIndex < total-1){
         quizIndex++;
         renderQuizQuestion();
@@ -6237,6 +6633,16 @@ html.no-grain .grain{display:none !important;}
   function renderQuizResult(){
     const wrap = document.getElementById("quizWrap");
     const total = quizOrder.length;
+    let bestLine = "";
+    try{
+      const best = loadJSON(LS_QUIZ_BEST, null);
+      if(total && (!best || !best.total || (quizScore/total) > (best.score/best.total))){
+        saveJSON(LS_QUIZ_BEST, {score:quizScore, total:total});
+        if(best && best.total) bestLine = "New personal best!";
+      }else if(best && best.total){
+        bestLine = "Personal best: " + best.score + "/" + best.total;
+      }
+    }catch(e){}
     let message = "Well done!";
     if(quizScore === total) message = "Perfect score — MashaAllah!";
     else if(quizScore >= total*0.7) message = "Great work — you know your Qur'an well.";
@@ -6249,6 +6655,7 @@ html.no-grain .grain{display:none !important;}
       +   '<div class="score-ring"><b>'+quizScore+'/'+total+'</b><span>Correct</span></div>'
       +   '<h3>'+message+'</h3>'
       +   '<p>Keep exploring the Qur\'an to build on what you know.</p>'
+      +   (bestLine ? '<p>'+bestLine+'</p>' : '')
       +   '<button class="quiz-retry-btn" id="quizRetryBtn">↻ Try again</button>'
       + '</div>';
 
@@ -6283,6 +6690,11 @@ html.no-grain .grain{display:none !important;}
     safeCall(initDua, "initDua");
     safeCall(initHadith, "initHadith");
     safeCall(initLite, "initLite");
+    safeCall(initVisibility, "initVisibility");
+    safeCall(initKeyboard, "initKeyboard");
+    safeCall(initNetStatus, "initNetStatus");
+    safeCall(initReadingTracker, "initReadingTracker");
+    safeCall(initBackup, "initBackup");
     safeCall(function(){
       lastRead = loadJSON(LS_LAST_READ, null);
       renderContinueCard();
@@ -6296,5 +6708,6 @@ html.no-grain .grain{display:none !important;}
   document.addEventListener("DOMContentLoaded", init);
 })();
 </script>
+<input type="file" id="backupFile" accept="application/json,.json" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
 </body>
 </html>
